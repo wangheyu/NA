@@ -5,18 +5,19 @@
 
 比如 numeric_limits<double>::epsilon() 这个模板函数提供了 double 型变
 量的 machine epsilon，它的严格定义是在双精度浮点下，满足
-
 <img src="http://latex.codecogs.com/gif.latex?1.0 + \varepsilon > 1.0" />
-
-为真的最小正数 $\varepsilon$。因此当计算相对误差时，
+为真的最小正数 epsilon。因此当计算相对误差时，
 它就是可以达到的最小精度分辨率。这里考虑一下，
-$$ 1.0 + \varepsilon * 0.6 > 1.0 $$
+<img src="http://latex.codecogs.com/gif.latex?1.0 + 0.6 * \varepsilon > 1.0" />
 是真还是假？
-$$ 1.0 + \varepsilon * 0.5 > 1.0 $$
+<img src="http://latex.codecogs.com/gif.latex?1.0 + 0.5 * \varepsilon > 1.0" />
 呢？
 
-结果参见目录下的程序。自己考虑原因，提示一下，对 $\varepsilon$ 级别数，
-$0.6 * \varepsilon$ 和 $0.7 * \varepsilon$ 有区别么？想明白这个事情，
+结果参见目录下的程序。自己考虑原因，提示一下，对 epsilon 级别数，
+<img src="http://latex.codecogs.com/gif.latex?0.6 * \varepsilon" />
+和
+<img src="http://latex.codecogs.com/gif.latex?0.7 * \varepsilon" />
+有区别么？机器能区分么？想明白这个事情，
 你对浮点数的本质以及精度就有了较深刻的理解。
 
 limits 模板库里提供了大量和具体机器精度有关的参数，
