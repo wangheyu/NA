@@ -5,11 +5,11 @@
 
 比如 numeric_limits<double>::epsilon() 这个模板函数提供了 double 型变
 量的 machine epsilon，它的严格定义是在双精度浮点下，满足
-<img src="http://latex.codecogs.com/gif.latex?1.0 + \varepsilon > 1.0" />
+![avatar](./1pe.gif)
 为真的最小正数 epsilon。因此当计算相对误差时，
 它就是可以达到的最小精度分辨率。这里考虑一下，
 
-![avatar](./1pe.gif)
+<img src="http://latex.codecogs.com/gif.latex?1.0 + 0.4 * \varepsilon > 1.0" />
 
 是真还是假？
 
