@@ -7,3 +7,6 @@
 1. [工作环境设置；](doc/env.md)
 
 2. [机器精度探查；](limits/README.md)
+
+3. [gsl工具包；](gsl/README.md)
+
