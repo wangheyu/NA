@@ -9,11 +9,11 @@
 为真的最小正数 epsilon。因此当计算相对误差时，
 它就是可以达到的最小精度分辨率。这里考虑一下，
 
-![avatar](images/1p04.gif)
+![avatar](./1p04.gif)
 
 是真还是假？
 
-![avatar](images/1p05.gif)
+![avatar](./1p05.gif)
 
 呢？
 
