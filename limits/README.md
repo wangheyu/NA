@@ -9,11 +9,11 @@
 为真的最小正数 epsilon。因此当计算相对误差时，
 它就是可以达到的最小精度分辨率。这里考虑一下，
 
-<img src="http://latex.codecogs.com/gif.latex?1.0 + 0.4 * \varepsilon > 1.0" />
+![avatar](images/1p04.gif)
 
 是真还是假？
 
-<img src="http://latex.codecogs.com/gif.latex?1.0 + 0.5 * \varepsilon > 1.0" />
+![avatar](images/1p05.gif)
 
 呢？
 
