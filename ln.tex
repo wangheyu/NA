@@ -2653,11 +2653,11 @@ $$
 \subsubsection{单个数的舍入误差}
 \noindent{\bf 定义 4.24} 舍入 (rounding) 是一个映射
 $$
-\mbox{fl} : \mathbb{R} \to \mathscr{F} \cup \{+\infty, -\infty, NaN\}.
+\mbox{fl} : \mathbb{R} \to \mathscr{F} \cup \{+\infty, -\infty, \mbox{NaN}\}.
 $$
 具体的规则是最近的一个数 (nearest), 或者说
 $$
-\mbox{fl}(x) = \mbox{argmin}_{x' \in \mathscr{R}} |x' - x|, x \in mathbb{R}
+\mbox{fl}(x) = \mbox{argmin}_{x' \in \mathscr{R}} |x' - x|, x \in \mathbb{R}
 $$
 当结果有两个时, $\mbox{fl}(x)$ 总是选最后一位 $d_{p - 1}$ 是偶数的那个.
 
@@ -2665,7 +2665,7 @@ $$
 $$
 \mbox{fl}(x) = \mbox{NaN},
 $$
-(这时一般是 qNaN), 一般程序在此时会报异常. 当 $0 < |x| < UFL(\mathscr{F})$ 时,
+(这时一般是 qNaN), 一般程序在此时会报异常. 当 $0 < |x| < \mbox{UFL}(\mathscr{F})$ 时,
 向下溢出发生, 此时
 $$
 \mbox{fl}(x) = 0,
@@ -2681,10 +2681,14 @@ $$
 注意 $\epsilon_u$ 的实际意义是
 $$
 \epsilon_u = \max_{x \in \mathscr{R}(\mathscr{F})}\min
-\frac{|\mbox{fl}(x) - x|}{\beta_{e_x}},
+\frac{|\mbox{fl}(x) - x|}{\beta^{e_x}},
 $$
 这里 $e_x$ 是规格化浮点数 $x$ 的指数(阶数). 这可以看作一个浮点系统的特征值.
-所以定理 4.27 和 4.28 的结果是自然的:
+所以定理 4.27 和 4.28 的结果是自然的.
+
+这两个定理告诉我们, 绝对值越大的浮点数, 舍入误差(绝对)也越大, 
+因为舍入误差本身是一个相对的概念.
+
 
 \noindent{\bf 例子 4.29} 能在机器上验证这些结果么?
 
@@ -2742,9 +2746,46 @@ x/4tb &x
 我们只需要知道, 存在这样一些考虑和这样一些规范来确保浮点运算系统的稳定.
 当我们在具体工作的时候, 我们必须清楚地知道, 由于浮点运算系统的存在,
 因此我们的数学结果和算法, 会受到什么影响. 在必要的时候, 通过文档和测试程序,
-去查明具体的规则. 其实大部分时候, 并不需要这么具体.
+去查明具体的规则. 换言之, 这一章的定义, 其实设计了一个抽象的浮点数计算系统.
 
-\noindent{\bf 定义 4.30} 这个其实是一个算法, 这里没有特别的, 除了:
+
+% 两个浮点数 (FPNs) 的加/减法. 
+% 对: $a, b \in \mathscr{F}$, 即
+% $$
+% a = M_a \times \beta^{e_a},
+% $$
+% 和
+% $$
+% b = M_b \times \beta^{e_b},
+% $$
+% 其中 $M_a = \pm m_a$, $M_b = \pm m_b$. 不妨设 $|a| \ge |b|$,
+% 则(浮点计算下的)和
+% $$
+% c := fl(a + b) \in \mathscr{F}
+% $$ is calculated in a register of
+% precision at least 2p as follows.
+% (i) Exponent comparison:
+% • If ea − eb > p + 1, set c = a and return c;
+% • otherwise set ec ← ea and Mb ← Mb /β ea −eb .
+% (ii) Perform the addition Mc ← Ma + Mb in the register
+% with rounding to nearest.
+% (iii) Normalization:
+% • If |Mc | = 0, return 0.
+% • If |Mc | ∈ (β, β 2 ), set Mc ← Mc /β and ec ← ec +1.
+% • If |Mc | ∈ (0, β − u (p)), repeat Mc ← Mcβ,
+% ec ← ec − 1 until |Mc| ∈ [1, β).
+% • If |Mc | ∈ [β − u (p), β], set |Mc | ← 1.0 and
+% ec ← ec + 1.
+% (iv) Check range:
+% • return NaN if ec overflows,
+% • return 0 if ec underflows.
+% (v) Round Mc (to nearest) to precision p.
+% (vi) Set c ← Mc × β ec .
+% Here u(p) in step (iii) is the unit round-off for FPNs with
+% precision p, c.f. Definition 4.26.
+
+\noindent{\bf 定义 4.30} 这个其实是一个算法, 
+这里没有特别的, 除了:
 \begin{itemize}
 \item 为了正规化, 需要做一些调整;
 \item 如果向上溢出, 返回 NaN, 如果向下溢出, 返回 $0$.
@@ -2776,20 +2817,46 @@ $$
     也就是根本表示不出来. 所以在规格化表示下, $c = a$.
     或者说, 如果要让一个浮点数 $a$, 加上一个小数之后有变化,
     那么这个小数 $b$, 至少也要能影响到 $a$ 的现有有效数字.
-  \item, 如果 $b$ 确实能影响到 $a$, 那么下面要做的事情就是{\bf 对齐},
+    比如:
+    $$
+    a = 1.234 \times 10^4, b = 5.678 \times 10^{-1},
+    $$
+    那么这里 $p = 4$, 但 $e_a - e_b = 5$, 实际上的计算是
+    $$
+    c = 12340 + 0.5678, 
+    $$
+    在 $4$ 位有效数字的规格化表示下, 仍然是 $1.234 \times 10^4$.
+    这就是定义 4.30 中 (i) 的第一种情形.  
+  \item 如果 $b$ 确实能影响到 $a$, 那么下面要做的事情就是{\bf 对齐},
     也就是让 $b$ 用 $a$ 的指数来表示, 这样两个数字才能对齐小数点,
     再做加法. 这里 $b$ 失去规格化, 因此我们需要一个 $2 p$ 的缓存空间,
     以确保这一步不产生额外的信息丢失 (前一种情况是一种极端, 我们丢失了 $b$ 的全部信息.)
+    注意这里例 4.31 的 (i) 恰好就是这里的极限情形:
+    $$
+    a = 1.234 \times 10^4, b = 5.678 \times 10^{0},
+    $$
+    仍然 $p = 4$. 这时的实际计算是:
+    $$
+    c = 12340 + 5.678, 
+    $$
+    为了进行这个对齐计算, 我们需要一个 $8$ 位寄存器, 以完成 (ii)
+    步. 
+    这里可能有同学说, 寄存器 $p + 1$ 就够了, 而不用 $2p$. 
+    那么这里考虑一个极端情况:
+    $$
+    b = 4.999 \times 10^{0},
+    $$
+    如果寄存器只保留 $p + 1 = 5$ 位, 
+    那么 $b$ 就会被截断成 $5.0000$, 从而影响了最后一位的正确舍入.
+  
   \end{itemize}
-\item 现在开始做对位加法: $M_c = M_a + M_b$. 这里最后一位需要舍入,
-  这一步的舍入未必会影响最终的精度, 因为它发生在缓存的第 $2 p$ 位.
+\item 现在开始做对位加法: $M_c = M_a + M_b$. 
 \item 现在我们在缓存中已经得到了 $c = M_c \times \beta^{e_c}$,
   但是, 由于可能的进位, 和对应位数互相消去(最极端可以前 $p$ 位直接全部消为 $0$),
   我们得到的 $c$ 可能不是规格化的, 而且位数过长 ($2 p$),
   因此需要重新规格化成 $p$ 长度.
   \begin{itemize}
   \item $|M_c| = 0$, 所有 $2 p$ 位数都是 $0$. 那么结果直接设成 $0$.
-    (这里可以想到, 实际上缓存可以再大一点.)
   \item $|M_c| \in (\beta, \beta^2)$, 这是进位了(之前输入都是规格化,
     因此不可能有比 $\beta^2$ 更大的 $|M_c|$), 把这一位按回去.
   \item $|M_c| \in (0, \beta - \epsilon_u(p))$, 整数位被消除了,
@@ -2811,6 +2878,19 @@ $$
   所以舍弃的最大可能是 $\beta^{e_c - p - 1} \times \frac{1}{2}$,
   舍掉那一位的一半.
 \end{enumerate}
+
+\begin{remark}
+  需要强调的是, 定义 4.30 中的 $a$ 和 $b$ 不是实数, 而是机器数. 在步骤(iii)中, 
+  对于 $|M_c | \in [\beta - \epsilon_u, \beta]$ 的情况, 操作防止了
+  $M_c$ 在步骤 (v) 中被舍入到 $\beta$ 的可能性. 对于 $|M_c| \in (1, \beta - \epsilon_u)$ 
+  的情况不需要任何处理, $|M_c | \geq \beta^2$ 的情况根本不可能发生, 
+  因此我们只需将 $e_c$ 增加一. 需要强调的是, 步骤 (iii) 中的四个子步骤是按顺序进行的. 
+  这保证了步骤 (iii) 中第三子步骤的结果可能仍然需要在第四子步骤中进行处理的情况. 
+  例如, 取$(\beta, p, L, U ) = (10, 5, -6, 4)$, 我们有
+  $\epsilon_u = 5 \times 10^{-4}$. 对于$a = 1 \times 10^0$, 
+  $b = 4 \times 10^{-5}$, 第三和第四子步骤的条件都将被调用.
+\end{remark}
+
 
 请自己验证剩下的运算和例子.
 
@@ -3063,9 +3143,26 @@ $$
 $$
 \mbox{cond}_A := \|A\|\|A^{-1}\|.
 $$
-这是判断矩阵问题是否病态的重要指标. 例 4.67 给出了一个病态矩阵的例子.
+这是判断矩阵问题是否病态的重要指标. 例 4.69 给出了一个病态矩阵的例子. 注意到, 
+对问题 $A x = b$, 有
+$$
+\left[
+\begin{array}{cc}
+  1 & 1 - \delta \\
+  1 & 1 + \delta
+\end{array}
+\right]\left[\begin{array}{c}
+  x_1 \\ x_2
+\end{array}
+\right] = \left[\begin{array}{c}
+  b_1 \\ b_2
+\end{array} \right] \Rightarrow x_2 = \frac{b_2 - b_1}{2 \delta}.
+$$
+于是 $b_2 - b_1$ 的舍入误差 $\epsilon_u$ 会被放大到 $\frac{1}{\delta}$. 
+导致这个线性方程组数值求解困难. 定理 4.70 将这个问题推广到一般. 
 
-\noindent{\bf 定义 4.68} 向量函数 $\vec{f}: \mathbb{R}^m \to \mathbb{R}^n$
+
+\noindent{\bf 定义 4.71} 向量函数 $\vec{f}: \mathbb{R}^m \to \mathbb{R}^n$
 分量形式的条件数为:
 $$
 \mbox{cond}_{\vec{f}}(\vec{x}) = \|A(\vec{x})\|,
@@ -3075,14 +3172,18 @@ $$
 a_{ij}(\vec{x})
 = \left|\frac{x_j\frac{\partial f_i}{\partial x_j}}{f_i(\vec{x})}\right|.
 $$
-注意条件数一般用于理论分析, 不用于计算的判定. 也就是实际计算并不会去算条件数.
+这个分量形式的结果, 有时会比向量形式(定义 4.65) 更加精确一些, 例 4.67 给出了一个定义4.71 
+比定义 4.65 更好捕捉到病态性质的例子. 注意条件数一般用于理论分析, 
+不用于计算的判定. 也就是作为一个算法, 并不会去算条件数. 只有在分析这个算法是否病态时, 
+才会从理论角度去分析.
 
-定义 4.70 的 Hilbert 矩阵是著名的病态矩阵. 和它具有类似结构的 Vandermonde
-矩阵也是病态的. 对于病态的矩阵, 唯一的办法是绕路走.
+定义 4.73 说明了 Vandermonde
+矩阵也是病态的. 对于病态的矩阵, 唯一的办法是绕路走. 
+这也是为什么第二章我们不能直接求解这个矩阵的原因之一.
 
 \subsubsection{算法的条件数}
 
-\noindent{\bf 定义 4.74} 考虑在浮点系统 $\mathscr{F}$ 下近似计算向量函数,
+\noindent{\bf 定义 4.76} 考虑在浮点系统 $\mathscr{F}$ 下近似计算向量函数,
 即用
 $$
 \vec{f}_A : \mathscr{F}^m \to \mathscr{F}^n
@@ -3104,13 +3205,42 @@ $$
 \mbox{cond}_A (\vec{x}) = \frac{1}{\epsilon_u}
 \inf_{\{\vec{x}_A\}}\frac{\|\vec{x}_A - \vec{x}\|}{\|\vec{x}\|}.
 $$
-也即由舍入误差可能引起的最大干扰. 而定理 4.76 给出了条件数的上界.
+也即由舍入误差可能引起的最大干扰. 而定理 4.78 给出了条件数的上界.
 
-作为一整章的总结, 最后的定理 4.79 表达的意思是: 当我们将数学问题转化成算法时,
-会产生一次系统误差, 这个误差是由问题本身决定的. 当我们将算法真正在浮点系统中进行计算时,
-会产生舍入误差, 这个误差会积累, 但可以通过算法设计调整. 
+\begin{remark}
+
+  函数 $f : \mathbb{R}^m \rightarrow \mathbb{R}^n$ 下的 $y \in \mathbb{R}^n$ 的纤维是集合
+\[f^{-1}(y) = \{x : f(x) = y\}\]
+因此, 定义4.76中的条件数可以被视为度量 $f^{-1}$ 在 $y$ 处对于 (4.45) 中所取的下确界的准确性. 
+因此, 按定义精确性和稳定性具有一定程度的重叠.
+
+(4.46)中的不等式仅来自于条件 $|\delta| \leq \phi(x)\epsilon_u$,
+其中$\phi(x)$作为一个上界, 表示最坏情况的情景. 因此, (4.46)中的RHS应该被解释为给定$x$的条件数的最大估计. 
+这是一个``最大-最小''特性, 其中最小值取自所有满足 (4.44) 中的 $f_A(x) = f(x_A)$ 的 $x_A$, 
+而最大值则取自算法的所有可能输入. 
+
+在例 4.79 中, 当 $x \rightarrow 0$ 时, 数学问题的条件数为 $0$, 
+因为 
+$$
+\lim_{x\rightarrow0} \frac{x^2}{2\sin x} = 0,
+$$
+而算法 (4.47) 的条件数为 $\infty$. 这是一个典型的示例, 表明粗心的实现可能改变数学问题的条件属性. 
+为了在 $x \rightarrow 0$ 的情况下恢复数学问题的良好条件, 应通过 Taylor 级数重写 $f$, 以得到另一种算法.
+\end{remark}
+
+我们已经量化了数学问题以及相应算法的敏感性. 当我们使用算法来解决数学问题时, 
+问题的条件数和算法的条件数都会影响总体误差. 
+
+作为一整章的总结, 最后的定理 4.81 表达的意思是: 如果函数$f$的条件数过大, 那么近似它是不可行的: 
+(4.50)在右侧的每一项中都包含一个因子$condf(x^*)$或$condf(x)$. 另一方面, 
+对于一个条件良好的函数$f$, 在设计近似算法时仍需要谨慎, 否则$condA(x^*)$这一项可能会使(4.50)右边的上界过大.
+
+关于计算机算术与数值精度和稳定性之间的交互的更多例子, 读者可以参考Higham [2002]的书.
+
 
 \section*{计算软件介绍}
+
+eigen
 
 我们已经学习了一些基本的计算方法, 以及浮点数计算原理. 这一周我们水一下.
 主要目的是给大家完成项目作业创造契机.
@@ -3272,7 +3402,7 @@ $$
 
 \hl{定理 5.6} 若 $X$ 是赋范向量空间 $Y$ 的有限维线性空间, 则 $\forall y \in Y$, $X$ 中的最佳逼近元存在, 也即
 $$
-\exists \hat{\phi} \in X, s.t. \forall \phi \in X, \|\hat{\phi} - y\| \leq \|phi - y\|. 
+\exists \hat{\phi} \in X, s.t. \forall \phi \in X, \|\hat{\phi} - y\| \leq \|\phi - y\|. 
 $$
 
 该定理的证明使用了极值原理 (the extreme value theorem, 闭区间上连续函数必有最大最小值, 扩展到一般赋范空间就是紧集上的连续函数必能取到极值. )
