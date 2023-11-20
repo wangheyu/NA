@@ -4044,12 +4044,20 @@ $$
 称为积分权重或系数.
 
 这里设置权函数 $\rho(x) > 0$ 是剧情需要, 比如我们很自然在处理函数内积时就可以用上. 
+而且这个假设没有失去一般性: 可以将区间划分为子区间, 在这些子区间中 $\rho$ 不改变其符号, 然后将这些子积分相加. 
+更深入的问题是: 我们为什么需要 $\rho$?
+
+\begin{itemize}
+  \item 主要原因是为了将两个函数 $u, v$ 的积分表达为内积 $\langle u, v \rangle$, 
+  这样我们就可以利用内积空间的强大概念, 如正交性. 因此, 内积的 ``正定性'' 得出了对 $\rho$ 的条件. 
+  \item 还有一个原因是为了处理具有奇异被积函数的反常积分; 参见例子 6.2 和 6.11.
+\end{itemize}
 
 \hl{例 6.2} 如果 $a$ 或 $b$ 无限, 那么上述定义依旧成立, 如果权函数的各阶矩
 $$
 \mu_j := \int_a^b x^j \rho(x) dx, \forall j \in \mathbb{N}, 
 $$
-存在且收敛.
+存在且收敛. 
 
 \subsection{精度和收敛性}
 \hl{定义 6.3} 求积公式的误差余项为
@@ -4068,6 +4076,369 @@ $$
 \max_{x \in [a, b]}\left|f(x) - f_\varepsilon(x)\right| \leq \varepsilon. 
 $$
 这里用了最大模范数. 
+
+\hl{定理6.5} 设 $\{I_n(f) : n \in \mathbb{N}^+\}$ 是一系列近似 $I(f)$ 的求积公式, 
+其中 $I_n$ 和 $I(f)$ 在 (6.1) 和 (6.2) 中定义. 设 $\mathbb{V}$ 是 $C[a, b]$ 的一个稠密子集. 
+$I_n(f)$ 对 $C[a, b]$ 收敛当且仅当: 
+
+(a) 对于所有 $f \in \mathbb{V}$, 有$\lim_{n \to +\infty} I_n(f) = I(f)$; 
+(对稠密子集中元素都是收敛的)
+
+(b) 存在 $B \in \mathbb{R}$, 使得对于所有 $n \in \mathbb{N}^+$, $W_n := \sum_{k = 1}^{n} |w_k| < B$. 
+(对取定的公式, 即固定的 $n$, 积分系数和有界)
+
+\hl{证明}. 为了证明充分性, 我们需要证明对于任意给定的 $f$, 有 $\lim_{n \to +\infty} I_n(f) = I(f)$. 
+为此, 我们找到 $f_{\epsilon} \in \mathbb{V}$ 使得 (6.6) 成立, 定义 
+$K := \max_{x \in [a,b]} |f(x) - f_{\epsilon}(x)|$ ($K < \varepsilon$). 然后我们有
+\[
+|E_n(f)| \leq |I(f) - I(f_{\epsilon})| 
++ |I(f_{\epsilon}) - I_n(f_{\epsilon})| + |I_n(f_{\epsilon}) - I_n(f)|
+\]
+(加一项减一项)
+\[
+= \int_{a}^{b} [f(x) - f_{\epsilon}(x)] \rho(x)dx + 
+|I(f_{\epsilon}) - I_n(f_{\epsilon})| + \sum_{k = 1}^{n} w_k [f(x_k) - f_{\epsilon}(x_k)]
+\]
+(注意此时 $n$ 是定值)
+\[
+\leq K \int_{a}^{b} \rho(x)dx + \sum_{k=1}^{n} |w_k| + |I(f_{\epsilon}) - I_n(f_{\epsilon})|,
+\]
+其中第一步是由三角不等式得到的, 第二步是由 定义6.1 得到的, 第三步是由 $K$ 的定义得到的. 
+方括号内的项是有界的, 因为 $\rho \in C[a, b]$ 和条件 (b). 由条件(a), 
+$|I(f_{\epsilon}) - I_n(f_{\epsilon})|$ 可以被任意缩小, 股 $K$ 也可以是任意小, 我们得到 (6.5).
+
+对于必要性, 从 (6.5) 推导出 (a) 是显而易见的. 相反, 从 (6.5) 推导出 (b) 则不是平凡的, 
+因为这个过程涉及到泛函分析中的一些关键定理. 不熟悉一致有界性原理的读者可以跳过证明的剩余部分. 
+(你可以认为至少对 $f \equiv 1$, 积分公式必须收敛, 于是积分系数有界. 但这个只适用于 $a$, $b$ 有限等正常情况.)
+
+数值求积公式 $I_n : C[a, b] \rightarrow \mathbb{R}$ 是一个线性泛函, 并且由于定义 E.62 和以下事实在 $f = 0$ 
+时是连续的:
+\[ 
+\forall \epsilon > 0, \exists \delta = \frac{\epsilon}{2 \sum_k |w_k|}, 
+\text{ s.t. } \forall f \in C[a, b], 
+\]
+\[ 
+\|f - 0\|_{\infty} < \delta \Rightarrow |I_n(f) - I_n(0)| = \left| \sum_k w_k f(x_k) \right|
+\]
+\[ 
+\leq \sum_k |w_k| |f(x_k)| \leq \delta \sum_k |w_k| < \epsilon. 
+\]
+根据定理 E.100, $I_n$ 是连续的, 并且对于每个 $n \in \mathbb{N}^+$ 我们有
+\[ 
+\sup_{f \in C[a, b]} |I_n(f)| < +\infty, 
+\]
+由定理 E.89 和一致有界性原理 (定理E.152) 得出 (b). 注意, 根据引理 E.113, $I_n$ 的算子范数等于 $W_n$.
+
+在实际计算中, 显然我们可以方便地选取 $\mathbb{V}$ 为多项式集合, 而它在 $C[a, b]$ 中是稠密的. 而且很便于处理. 
+多项式本身也很容易获得, 比如插值. 而检查这个公式是否收敛, 只需要检查积分系数是否有界. 
+
+\hl{定义6.6} 加权求积公式 (6.1) 具有 (多项式) 精确度 $d_E$, 当且仅当
+\[ 
+\forall f \in P_{d_E}, E_n(f) = 0, 
+\]
+\[ 
+\exists g \in P_{d_E+1}, \text{ s.t. } E_n(g) \neq 0, 
+\]
+其中 $P_d$ 表示度数不超过 $d$ 的多项式集合. 即对 $d_E$ 次多项式精确成立. 对 $d_E + 1$ 次一定不成立. 
+代数精度是一个衡量积分公式的重要指标. 因为我们很多场合下, 数值积分就是对多项式做的.
+
+\hl{例6.7} 根据定义6.6, $d_E \geq 0$ 意味着 $\sum_k w_k$ 是有界的, 
+因为对于任何常数 $c \in \mathbb{R}$, 都有 $I_n(c) = c \int_{a}^{b} \rho(x)dx$ 成立.
+
+举个例子, 我们构建一个积分公式:
+$$
+I^T(f) = \frac{b - a}{2} [f(a) + f(b)].
+$$
+这个公式又称梯形公式(定义 6.10). 它是几阶代数精度? 
+$1$ 阶, 只对 $1$ 次多项式(线性函数)精确成立. 
+那么节操放一放, 再构建一个积分公式:
+$$
+I^M(f) = f(\frac{a + b}{2})(b - a).
+$$
+这个公式又称中点公式(定义 6.13). 它是几阶代数精度? 你会注意到它其实也有一阶代数精度. 
+所以这两个公式都有一阶代数精度. 
+但是 $I^T$ 用到了两次函数计算, 本质上是一个一次多项式的积分公式, 而 $I^M$ 只用到了一次函数计算, 
+本质上是一个零次多项式积分公式. 但二者的多项式精度相等. 
+有没有本质二次的多项式积分公式? 即定义 6.14, 又称辛普森积分公式. 它本质上是对 $(a, f(a))$, 
+$\left(\frac{a + b}{2}, f\left(\frac{a + b}{2}\right)\right)$, 和 $(b, f(b))$ 这三个点做一个二次插值多项式,
+然后用这个二次多项式在 $[a, b]$ 上的积分来逼近 $I(f)$. 你猜它有几次代数精度?
+
+\hl{引理6.8} 设 $x_1, \ldots, x_n$ 为 $In(f)$ 的不同节点. 如果 $d_E \geq n - 1$, 
+那么其权重可以推导为
+\[ 
+\forall k = 1, \ldots, n, \quad w_k = \int_{a}^{b} \rho(x)l_k(x)dx, 
+\]
+其中 $l_k(x)$ 是应用于给定节点的点插值多项式基函数(Lagrange), 定义为
+\[ 
+l_k(x) := \prod_{i=1;i \neq k}^{n} \frac{x - x_i}{x_k - x_i}. 
+\]
+
+\hl{证明} 设 $p_{n-1}(f; x)$ 是在给定节点上的插值多项式, 由多项式插值唯一性定理 (定理2.5), 我们有
+\[ 
+\sum_{k = 1}^{n} w_k p_{n-1}(x_k) = \int_{a}^{b} p_{n-1}(f; x) \rho(x) dx 
+\]
+\[ 
+= \int_{a}^{b} \sum_{k=1}^{n} l_k(x) f(x_k) \rho(x) dx = \sum_{k=1}^{n} w_k f(x_k), 
+\]
+其中第一步是由于 $d_E \geq n - 1$, 第二步是由插值条件(2.4), 拉格朗日公式以及 $p_{n-1}(f; x)$ 的唯一性得出. 
+证明完成. 即 $n$ 个节点的 $n - 1$ 次 Lagrange 插值多项式, 得到的积分公式, 至少有 $n - 1$ 次代数精度. 
+而且涉及到的 $x_k$, 甚至可以随便取. 既然可以随便取, 那么马上就跟上两个问题: 怎么取最方便? 怎么取最优(精度最高)? 
+
+\subsection{Newton-Cotes 公式}
+
+\hl{定义6.9} 牛顿-科特斯公式是基于在 $[a, b]$ 区间内均匀间隔的节点 
+$x_1, \ldots, x_n$ 上对函数 $f(x)$ 进行插值来近似 $f(x)$ 的公式 (6.1).
+选择等距节点作为积分节点. 
+
+牛顿-科特斯公式的两个特殊情况, 当 $n = 2$ 时也被称为梯形规则, 当 $n = 3$ 时被称为辛普森规则.
+
+\hl{定义6.10} 梯形规则是一个公式 (6.1), 基于用连接点 $(a, f(a))^T$ 和 $(b, f(b))^T$ 
+的直线来近似 $f(x)$. 特别地, 对于 $\rho(x) \equiv 1$, 它简单地表示为
+\[ 
+I_T(f) = \frac{b - a}{2} [f(a) + f(b)]. 
+\]
+
+在定义 6.10 中, 公式 (6.10) 中的上标 $T$ 意味着 ``梯形'', 
+而所有其他上标 $T$ 表示行向量的转置. 从定义 6.10 中梯形规则的几何描述出发, 公式 (6.10) 可以推导为
+\[ 
+I(f) \approx \int_{a}^{b} \left[ \frac{x - a}{b - a} f(b) + \frac{x - b}{a - b} f(a) \right] dx 
+\]
+\[ 
+= \frac{1}{b - a} 
+\left[ f(b) \int_{a}^{b} \frac{(x - a)^2}{2} dx - f(a) \int_{a}^{b} \frac{(x - b)^2}{2} dx \right] 
+\]
+\[ 
+= \frac{b - a}{2} [f(a) + f(b)] = I_T(f). 
+\]
+(就是对 $(a, f(a))$, $(b, f(b))$ 的一阶插值的积分就是梯形公式)
+同样根据定义6.10, 梯形规则的精确度 $d_E = 1$. 因此, 权重也可以通过引理 6.8 推导出来,
+\[ 
+w_a = \int_{a}^{b} \frac{x - b}{a - b} dx 
+= \frac{b - a}{2} = \int_{a}^{b} \frac{x - a}{b - a} dx = w_b. 
+\]
+(这是个权重相等的例子)
+
+\hl{例6.11} 导出权函数 $\rho(x) = x^{-1/2}$ 在区间 [0, 1]
+上的梯形公式. 注意, 不能将 (6.10) 应用于 $\rho(x)f(x)$, 
+因为$\rho(0) = \infty$. (6.8) 给出
+\[ 
+w_1 = \int_{0}^{1} x^{-1/2} (1 - x) dx = \frac{4}{3}, 
+\]
+\[ 
+w_2 = \int_{0}^{1} x^{-1/2} x dx = \frac{2}{3}. 
+\]
+因此, 公式是
+\[ 
+I_T(f) = \frac{2}{3} [2f(0) + f(1)]. 
+\] 
+
+\hl{定理6.12} 对于 $f \in C^2[a, b]$ 且权函数 $\rho(x) \equiv 1$,
+梯形公式的余项满足, 存在 $\zeta \in [a, b]$, 使得
+\[ 
+E_T(f) = -\frac{(b - a)^3}{12} f''(\zeta). 
+\] 
+
+\hl{证明} 显然要用一下 Lagrange 的插值余项. 根据定理2.5, 
+插值多项式 $p_1(f; x)$ 是唯一的. 那么我们有
+\[ 
+E_T(f) = -\int_{a}^{b} \frac{f''(\xi(x))}{2}(x - a)(b - x)dx 
+\]
+(插值余项丢进去)
+\[ 
+= -\frac{f''(\zeta)}{2} 
+\int_{a}^{b} (x - a)(b - x)dx = -\frac{(b - a)^3}{12}f''(\zeta), 
+\]
+其中第一步是根据定理2.7, 第二步是根据积分中值定理(定理C.72). 
+这里我们可以应用定理 C.72, 因为 $w(x) = (x - a)(b - x)$ 在 $(a, b)$ 上总是正的. 
+还要注意, $\xi$ 是 $x$ 的函数, 而 $\zeta$ 是一个常数, 只依赖于$f$, $a$和$b$.
+
+\hl{定义6.13} 中点规则是一个公式(6.1), 基于用常数 $f(\frac{a+b}{2})$来近似$f(x)$. 
+特别地, 对于 $\rho(x) \equiv 1$, 它简单地表示为
+\[ 
+I_M(f) = (b - a)f\left(\frac{b + a}{2}\right). 
+\] 
+
+\hl{定义6.14} 辛普森规则是一个公式(6.1), 基于用通过点 $(a, f(a))$, 
+$(b, f(b))$ 和 $\left(\frac{a+b}{2}, f\left(\frac{a+b}{2}\right)\right)$
+的二次多项式来近似 $f(x)$. 对于 $\rho(x) \equiv 1$, 它简单地表示为
+\[ 
+I_S(f) = \frac{b - a}{6} 
+\left[ f(a) + 4f\left(\frac{a + b}{2}\right) + f(b) \right].
+\] 
+
+\hl{定理6.15} 对于 $f \in C^4[a, b]$ 且权函数 $\rho(x) \equiv 1$, 
+辛普森规则的余项满足存在 $\zeta \in (a, b)$, 使得
+\[ 
+E_S(f) = -\frac{(b - a)^5}{2880} f^{(4)}(\zeta). 
+\]
+
+\hl{证明} 模仿定理 6.12 的证明是困难的, 因为 
+$(x - a)(x - b)\left(x - \frac{a+b}{2}\right)$ 在 $[a, b]$ 上改变符号, 
+积分中值定理不适用. 为了克服这个困难, 我们可以通过一个 Hermite 问题来构建插值, 
+这样就可以应用定理 C.72. 关于主要步骤, 请参见第 6.6 节的问题 I.
+
+\hl{例6.16} 考虑积分
+\[ 
+I = \int_{-4}^{4} \frac{dx}{1 + x^2} = 2 \tan^{-1}(4) = 2.6516\ldots 
+\] 
+设 $n - 1$ 是将区间 $[a, b]$ 划分为子区间的数量, 在定义 6.9 中. 如下所示, 
+牛顿-科特斯公式似乎是不收敛的.
+\[ 
+\begin{array}{cccccc}
+n - 1 & 2 & 4 & 6 & 8 & 10 \\
+I_{n-1} & 5.4902 & 2.2776 & 3.3288 & 1.9411 & 3.5956 \\
+\end{array} 
+\]
+对于等距节点, 插值多项式随着度数的增加而有越来越疯狂的振荡. 
+因此, 定理6.5 的条件(b)不成立. 因此, 即使对于在 $C[a, b]$ 中表现良好的函数, 
+牛顿-科特斯公式也是不收敛的. 在实践中, 很少使用 $n > 8$ 的牛顿-科特斯公式.
+
+以下讨论默认 $\rho(x) \equiv 1$. 对牛顿-科特斯公式系数 $w_k$, 用变量替换 $x = a + th$, 
+这里 $h = x_{k + 1} - x_k$ 是常数. 于是
+$$
+\omega_{n+1}(x)=\omega_{n+1}(a+th)=h^{n+1}t(t-1)\cdots(t-n)
+$$
+而
+$$
+\omega'_{n+1}(x_k)=\omega_{n+1}(a+th)=(-1)^{n-k}h^ni!(n-k)!
+$$
+这样
+\begin{align}
+  w_i&=\int^b_a\frac{\omega_{n+1}(x)}{(x-x_k)\omega'_{n+1}(x_x)}
+  {\rm d}x=\int^n_0\frac{h^{n+1}t(t-1)\cdots(t-n)}{(-1)^{n-k}h^nk!
+  (n-k)!h(t-k)}h{\rm d}t\\
+  &=\frac{(-1)^{n-k}h}{k!(n-k)!}\int^n_0\frac{t(t-1)\cdots(t-n)}
+  {t-k}{\rm d}t  
+\end{align}
+引进记号 
+\begin{equation}
+C_k^{(n)}=\frac{(-1)^{n-k}}{k!(n-k)!n}\int^n_0\frac{t(t-1)\cdots(t-n)
+}{t-k}{\rm d}t 
+\end{equation}
+则 
+\begin{equation} 
+w_k=(b-a)C_k^{(n)}
+\end{equation}
+这时 $C_i^{(n)}$ 是不依赖于函数 $f(x)$ 和区间 $[a,b]$ 的常数, 可以事先计算出来.
+这些数称为{\bf Newton-Cotes系数}, 我们给出取值的Newton-Cotes系数表.
+
+\begin{table}[h]
+\zihao{-5}
+\caption{\bf Newton-Cotes系数}
+\begin{center}
+ \begin{tabular}{|c|c|c|c|c|c|c|c|c|}\hline
+ \ \ \   $n$\ \ \   & \multicolumn{8}{|c|}{   $C_i^{(n)}$   }\\
+   \hline
+  1  &  $\frac{1 }{2} $ & $ \frac{1 }{2}$  &   &    &   &   &   &    \\\hline
+  2  &  $\frac{1 }{6} $ & $ \frac{4 }{6}$  & $\frac{1 }{6} $  &    &   &   &   &    \\\hline
+  3  &  $\frac{1 }{8} $ & $ \frac{3 }{8}$  & $\frac{3 }{8} $ &$\frac{1 }{8}$    &   &   &   &    \\\hline
+  4  &  $\frac{7 }{90}$  & $ \frac{16 }{45}$  & $\frac{2 }{15}$  & $\frac{16 }{45} $   &$ \frac{7 }{90}$  &   &   &    \\\hline
+  5  &  $\frac{19 }{288}$  &  $\frac{25 }{96}$  &  $\frac{25 }{144}$ & $\frac{25}{144}$   &$\frac{25 }{96}$   &  $\frac{19 }{288}$   &   &    \\\hline
+  6  &  $\frac{41 }{840}$  &  $\frac{9 }{35}$  &  $\frac{9 }{280}$ & $\frac{34}{105}$   &$\frac{9 }{280}$   & $\frac{9 }{35}$   & $\frac{41 }{840}$   &    \\\hline
+  7  &  $\frac{751 }{17280}$  &  $\frac{3577 }{17280}$  &  $\frac{1323 }{17280}$ & $\frac{2989 }{17280}$    &$\frac{2989 }{17280}$   &  $\frac{1323 }{17280}$   &   $\frac{3577 }{17280}$  &  $\frac{751}{17280}$    \\\hline
+  8  &  $\ \frac{989 }{28350}\ $  &  $\ \frac{5888 }{28350}\ $  & $\ \frac{-928 }{28350}\ $ &$\ \frac{10496 }{28350}\ $   &\ $\frac{-4540 }{28350}\ $  &\ $\frac{10496 }{28350}\ $   & $\ \frac{5888}{28350}\ $  &  $\ \frac{989 }{28350}\ $  \\\hline
+ \end{tabular}
+\end{center}
+\end{table}
+
+查表得到 Newton-Cotes 系数后, 便可以写出相应的 Newton-Cotes公式. 当 $n = 1$ 时, Newton-Cotes 公式为
+\begin{equation}
+T=\frac{b-a}{2}[f(a)+f(b)] 
+\end{equation}
+即之前讨论的梯形积分公式; 当 $n=2$ 时, Newton-Cotes公式为
+\begin{equation}
+S=\frac{b-a}{6}[f(a)+4f(\frac{a+b}{2})+f(b)]
+\end{equation}
+即 Simpson公式. 所以我们可以看出梯形求积公式和 Simpson 求积公式是 Newton-Cotes 公式的特例.
+当 $n=4$ 时, Newton-Cotes公式为
+\begin{equation}
+C=\frac{b-a}{90}[7f(x_0)+32f(x_1)+12f(x_2)+32f(x_3)+7f(x_4)]
+\end{equation}
+其中 $x_k=a+kh$, $k = 0,1,2,3,4$, $h=\frac{b-a}{4}$. 该式特别称为{\bf Cotes公式}.
+
+注意当 $n = 8$ 时, Newton-Cotes 公式表中系数出现负数, 这个是系数无法保持有界的根本. 所以实际上当 $n \geq 8$ 时, 
+我们就不再使用这个系列的公式了. 
+
+最后我们来看一下 Newton-Cotes 公式
+$$
+\int^b_af(x){\rm d}x\approx\sum^n_{k=0}[\int^b_a\frac{\omega_{n+1}(x)}{(x-x_k)\omega'_{n+1}(x_k)}{\rm d}x]
+f(x_k)
+$$
+其中 $\omega_{n+1}(x)=(x-x_0)(x-x_1)\cdots(x-x_n)$, $x_0, x_1, \cdots, x_n$ 为 $[a, b]$ 区间上的等分点.
+
+当 $f(x)\in C^n[a,b]$, $f^{(n+1)}(x)$ 在 $[a, b]$ 存在, 对 $n$ 次插值多项式 $P_n(x)$ 逼近 $f(x)$ 有显示式
+\begin{equation}
+f(x) = P_n(x)+\frac{f^{(n+1)}(\xi)}{(n+1)!}\omega_{n+1}(x)\quad
+a\leq\xi\leq b 
+\end{equation}
+若 $f(x)$ 是 $n$ 次多项式, 则 $f^{(n+1)}(x)\equiv 0$, 因此 $f(x)\equiv P_n(x)$, 
+所以 Newton-Cotes 公式的代数精确度至少是 $n$.
+
+特别地, 当 $n=4$时, Cotes求积公式的代数精确度如表所示.
+
+\begin{table}[h]
+\zihao{-5}
+\caption{\bf Cotes求积公式的代数精度}
+\begin{center}
+ \begin{tabular}{|c|c|}\hline
+ $f(x)$  &   积分公式是否精确成立 \\\hline
+$1$  &  左=右 \\\hline $x$  &  左=右 \\\hline $x^2$  &  左=右
+\\\hline $x^3$  &  左=右 \\\hline $x^4$  &  左=右 \\\hline $x^5$  &
+左=右 \\\hline $x^6$  &  左$\neq$右 \\\hline
+ \end{tabular}
+\end{center}
+\end{table}
+(我们可以这样数值验证代数精度)
+所以当 $n=4$ 时 Cotes 求积公式具有 $5$ 次代数精确度. 一般地, 我们可以证明:
+
+\hl{定理} 当 $n$ 为偶数时, Newton-Cotes 公式的代数精确度可以达到 $n + 1$.
+
+\hl{证明}
+记 $n + 1$ 次多项式为 $\sum^{n+1}_{j=0}a_jx^j$, 
+则其 $n+1$ 次导数为 $(n+1)!a_{n+1}$, 将
+\begin{equation}
+  f(x) = P_n(x)+\frac{f^{(n+1)}(\xi)}{(n+1)!}\omega_{n+1}(x)\quad
+  a\leq\xi\leq b 
+  \end{equation}
+两边求积后把上式代入, 得
+\begin{align}
+  \int^b_af(x){\rm d}x-\int^b_aP_n(x){\rm d}x&
+  =\int^b_a\frac{f^{(n+1)}(\xi)}{(n+1)!}\omega_{n+1}(x){\rm d}x=a_{n+1}\int^b_a\omega_{n+1}(x){\rm d}x\\
+  &=a_{n+1}h^{n+2}\int^n_0t(t-1)\cdots(t-n){\rm d}t    
+\end{align}
+令 $n=2k$, $k$为正整数, 并引进变换 $v=t-k$, 有
+\begin{align}
+  &\int^n_0t(t-1)\cdots(t-n){\rm d}t\\
+  =&\int^{2k}_0t(t-1)\cdots(t-k)(t-k-1)\cdots(t-2k+1)(t-2k){\rm d}t\\
+  =&\int^k_{-k}(v+k)(v+k-1)\cdots v(v-1)\cdots(v-k+1)(v-k){\rm d}v    
+\end{align}
+令 $I(v)=(v+k)(v+k-1)\cdots v(v-1)\cdots(v-k+1)(v-k)$, 则有
+\begin{align}
+  I(-v)=&(-v+k)(-v+k-1)\cdots (-v)(-v-1)\cdots(-v-k+1)(-v-k)\\
+  =&(-1)^{2k+1}I(v)=-I(v)    
+\end{align}
+也即 $I(v)$ 是一个奇函数, 所以
+$$
+\int^n_0t(t-1)\cdots(t-n){\rm d}t=0
+$$
+亦即当 $n$ 为偶数时, Newton-Cotes 公式对 $n + 1$ 次多项式精确成立, 代数精确度达到了 $n + 1$ 次.
+
+而关于 Newton-Cotes 公式的精度, 我们有如下定理:
+
+\hl{定理}   
+对于 Newton-Cotes 公式, 当 $n$ 为偶数且 
+$f(x)\in C^{n+2}[a,b]$时, 则存在一点 $\xi\in(a,b)$ 使得, 
+$$
+\int^b_af(x){\rm d}x =\sum^n_{k=0}w_kf(x_k)+ \frac{h^{n+3}f^{(n+2)}(\xi)}{(n+2)!}
+\int^n_0t^2(t-1)\cdots(t-n){\rm d}t
+$$
+若 $n$ 为奇数且 $f(x)\in C^{n+1}[a,b]$时, 则存在一点$\xi\in(a,b)$, 使得, 
+$$
+\int^b_af(x){\rm d}x =\sum^n_{k=0}w_kf(x_k)+ 
+\frac{h^{n+2}f^{(n+1)}(\xi)}{(n+1)!}\int^n_0t(t-1)\cdots(t-n){\rm d}t.
+$$
+
+对该定理的证明可参见文献: R. L. Burden, J. D. Faires, Numerical Analysis (群文件).
 
 
 \bibliography{crazyfish.bib}
