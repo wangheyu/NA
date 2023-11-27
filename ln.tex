@@ -4839,6 +4839,126 @@ $$
 
 对于更多的数值积分方法, 读者可以参考 Davis and Rabinowitz [2007].
 
+\subsection{数值微分}
+
+\hl{公式 6.37} (待定系数法) 导出逼近 $u^{(k)}(\bar{x})$ 的 FD 
+公式的一般方法基于一个包含 $n > k$ 个不同点 $x_1, x_2, \ldots, x_n$ 的任意模板. 
+在模板中, 对于每个点 $x_i$, 在点 $\bar{x}$ 处展开 $u$ 的泰勒级数得到
+$$
+u(x_i) = u(\bar{x}) + (x_i - \bar{x})u'(\bar{x}) 
++ \frac{1}{2!}(x_i - \bar{x})^2u''(\bar{x}) + \ldots 
++ \frac{1}{k!}(x_i - \bar{x})^ku^{(k)}(\bar{x}) + \ldots
+$$
+对于 $i = 1, 2, \ldots, n$. 
+这导致了点值的线性组合, 用于逼近 $u^{(k)}(\bar{x})$, 
+$$
+u^{(k)}(\bar{x}) = c_1u(x_1) + c_2u(x_2) + \ldots + c_nu(x_n) + O(h^p),
+$$
+其中 $c_j$ 被选择以使得 $p$ 尽可能大:
+对于所有的 $i = 0, \ldots, p - 1$, 
+$$
+\frac{1}{i!} \sum_{j = 1}^{n}c_j (x_j - \bar{x})^i 
+= \begin{cases} 1, & \text{if } i = k, \\ 0, & \text{otherwise}.\end{cases}
+$$
+
+根据引理 2.4, 当 $p = n$ 时, 公式 6.37 对于 $c_j$ 有一个唯一解, 
+因为 $n$ 个点 $x_j$ 是不同的, 因此 $n \times n$ 的范德蒙矩阵是非奇异的. 
+对于 $p < n$ 和 $p > n$, 线性系统 (6.33) 分别是欠定的和超定的. 因此, $p$ 的最大可能值是n. 
+
+\hl{Example 6.38} 为了用一个 FD 公式来逼近 $u'(\bar{x})$, 我们有
+$$
+D^2 u(\bar{x}) = a u(\bar{x}) + b u(\bar{x} - h) + c u(\bar{x} - 2h),
+$$
+(三点公式) 我们需要确定系数 $a$, $b$, 和 $c$ 以获得最佳的精度. 
+在 $\bar{x}$ 处进行泰勒展开得到
+$$
+D^2u(\bar{x}) = (a + b + c) u(\bar{x}) - (b + 2c)h u'(\bar{x}) 
++ \frac{1}{2}(b + 4c)h^2u''(\bar{x}) 
+- \frac{1}{6}(b + 8c)h^3u'''(\bar{x}) + O(h^4).
+$$
+设置 $a + b + c = 0$, $b + 2c = -\frac{1}{h}$, 和 $b + 4c = 0$, 
+解线性方程组
+$$
+\begin{bmatrix}
+1 & 1 & 1 \\
+0 & 1 & 2 \\
+0 & 1 & 4
+\end{bmatrix}
+\begin{bmatrix}
+a \\
+b \\
+c
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 \\
+-\frac{1}{h} \\
+0
+\end{bmatrix}
+$$
+得到
+$$
+a = \frac{3}{2h}, \quad b = -\frac{2}{h}, \quad c = \frac{1}{2h}. 
+$$
+所求 FD 公式确定为
+$$
+D^2u(\bar{x}) = \frac{1}{2h}[3u(\bar{x}) - 4u(\bar{x} - h) + u(\bar{x} - 2h)]. 
+$$
+
+一个 FD 公式的精度是通过其在逼近导数时的误差收敛速度来衡量的. (泰勒展开的余项.)
+
+\hl{定义6.39} 在逼近光滑函数的导数时, 如果一个 FD 公式的误差 $E$ 具有以下形式
+$$
+E(h) = \Theta(h^p),
+$$
+其中 $h$ 是模板中相邻点的最大距离, 那么该 FD 公式是 $p$ 阶精确的.
+
+\hl{Example 6.40} 考虑在点 $\bar{x}$ 处使用附近的函数值 
+$u(\bar{x} \pm h)$ 来逼近 $u'(\bar{x})$. 三个常用的公式分别为
+$$
+D^+u(\bar{x}) := \frac{u(\bar{x} + h) - u(\bar{x})}{h},
+$$
+$$
+D^-u(\bar{x}) := \frac{u(\bar{x}) - u(\bar{x} - h)}{h},
+$$
+$$
+D^0u(\bar{x}) := \frac{u(\bar{x} + h) - u(\bar{x} - h)}{2h} 
+= \frac{1}{2}(D^+ + D^-)u(\bar{x}).
+$$
+对于 $u(x) = \sin(x)$ 和 $\bar{x} = 1$, 
+我们计算上述三个公式在逼近 $u'(1) = \cos(1) \approx 0.5403023$ 时的误差, 
+其中 $h = 0.01$ 和 $0.005$.
+
+定义误差为 $E := Du(\bar{x})-u'(\bar{x})$, 下表显示了三个公式的误差值.
+$$
+\begin{array}{|c|c|c|c|}
+\hline
+h & D^+u(\bar{x}) & D^-u(\bar{x}) & D^0u(\bar{x}) \\
+\hline
+h_1 = 1.0e-2 & -4.2e-3 & -4.2e-3 & -9.00e-6 \\
+h_2 = 5.0e-3 & -2.1e-3 & -2.1e-3 & -2.25e-6 \\
+\hline
+p = \log_2 \frac{E(Du(\bar{x},h_1))}{E(Du(\bar{x},h_2))} & 1 & 1 & 2 \\
+\hline
+\end{array}
+$$
+表的最后一行显示了误差的行为类似于 $E(h) \approx Ch^p$, 
+这意味着将 $h$ 减小为 $r$ 倍会导致误差减小为 $r^p$ 倍. 
+
+\hl{引理6.43} 在逼近 $u \in C^4(\mathbb{R})$ 的二阶导数时, 公式
+$$
+D^2u(\bar{x}) = \frac{u(\bar{x} - h) - 2u(\bar{x}) + u(\bar{x} + h)}{h^2} 
+$$
+是二阶精确的. 此外, 如果输入函数值 $u(\bar{x} - h)$, $u(\bar{x}$, 
+和 $u(\bar{x} + h)$ 分别受到随机误差 $\varepsilon \in [-E, E]$ 的影响, 
+那么存在 $\xi \in [\bar{x} - h, \bar{x} + h]$ 使得
+$$
+|u''(\bar{x}) - D^2u(\bar{x})| \leq \frac{h^2}{12}|u^{(4)}(\xi)| 
++ \frac{4E}{h^2}.
+$$
+
+引理6.43 对于从扰动数据估计涉及二阶导数的量, 比如曲率, 具有重要的影响. 详见张 [2017]. 
+这个结论告诉我们, $h$ 不是越小越好的. 甚至可以去计算一个最优的 $h$.
 
 \bibliography{crazyfish.bib}
 
