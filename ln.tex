@@ -4757,7 +4757,7 @@ $$
 
 \hl{定义 6.29} 一组正交多项式是指满足以下条件的一组多项式 
 $P = \{p_i : \text{deg}(p_i) = i\}$, $i$ 可以是有限的, 如 $i = 0, 1, \cdots, n$, 也可以直到无限. 
-对于任意的 $p_i, p_j \in P$, 当 $i \neq j$ 时, 有 $h(p_i, p_j) = 0$. 
+对于任意的 $p_i, p_j \in P$, 当 $i \neq j$ 时, 有 $\langle p_i, p_j\rangle = 0$. 
 
 \hl{例 6.30} 在本章中, 式 (6.31) 中的内积定义为
 $$
@@ -4778,7 +4778,7 @@ $$
 假设在 $x_1$ 处有一个重根. 那么, 
 $\frac{p_n(x)}{(x - x_1)^2}$ 将是一个 $n - 2$ 次的多项式. 因此有
 $$
-0 = \langle\frac{p_n(x)}{(x - x_1)^2}\rangle = \langle\frac{p_n^2(x)}{(x - x_1)^2}\rangle > 0,
+0 = \langle p_n, \frac{p_n(x)}{(x - x_1)^2}\rangle = \langle1, \frac{p_n^2(x)}{(x - x_1)^2}\rangle > 0,
 $$
 这是不正确的. 因此每一个零点都是单的.
 
