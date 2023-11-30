@@ -16,6 +16,7 @@
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{mathrsfs}
+\usepackage{enumitem}  
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -4959,6 +4960,501 @@ $$
 
 引理6.43 对于从扰动数据估计涉及二阶导数的量, 比如曲率, 具有重要的影响. 详见张 [2017]. 
 这个结论告诉我们, $h$ 不是越小越好的. 甚至可以去计算一个最优的 $h$.
+
+\section{有限差分 (FD) 方法用于边界值问题 (BVPs) } 
+
+\hl{定义 7.1} 一个偏微分方程 (PDE) 是涉及未知函数及其两个或更多变量的一些偏导数的方程.
+
+\hl{定义 7.2} Laplace 方程是形式为 $\Delta u(x) = 0$ 的二阶偏微分方程, 
+其中未知函数为 
+$$
+u : \Omega \rightarrow \mathbb{R},
+$$ 
+其中 $\Omega$ 是开集 $\Omega \subset \mathbb{R}^n$ 的闭包, 而 Laplace 算子 
+$\Delta : C^2(\Omega) \rightarrow C(\Omega)$ 
+定义为 
+$$
+\Delta := \sum_{i = 1}^{n} \frac{\partial^2}{\partial x_i^2}.
+$$
+
+\hl{例子 7.3} 梯度流 (Potential flow) 是一种特殊类型的流动, 
+其中速度场 $u$ 可以表示为标量函数的梯度:
+$$
+u = \nabla \phi,
+$$
+其中 $\phi$ 被称为速度势能. 对于不可压缩流体, 
+满足 $\nabla \cdot u = 0$ 的情况下, 速度势能满足 Laplace 方程 $\Delta \phi = 0$.
+
+\hl{定义 7.4} Poisson 方程是形式为 
+$$
+-\Delta u(x) = f(x)
+$$ 
+的二阶偏微分方程, 其中未知函数为 $u : \Omega \rightarrow \mathbb{R}$, 
+$\Omega$ 是开集 $\Omega \subset \mathbb{R}^n$ 的闭包, 
+而右手边的函数 $f : \Omega \rightarrow \mathbb{R}$ 是预先给定的.
+
+我们在拉普拉斯算子前面添加一个负号是为了与一般二阶椭圆算子的惯例保持一致. 
+此外, 采用中心差分离散化得到的矩阵将是正定的. 
+
+\hl{定义 7.5} 边界值问题 (BVP) 是一个微分方程, 连同一组额外的约束条件组成, 
+这些约束条件被称为边界条件, 只在定义域的边界上成立. 
+
+在边界值问题中, 我们从给定的函数导数和 Dirichlet 边界条件中寻找未知函数在定义域内部和非 
+Dirichlet 边界上的取值. 
+
+\hl{定义 7.6} 一维区间 $\Omega = (a, b)$ 常见的边界条件类型包括
+\begin{itemize}
+  \item Dirichlet 条件: $u(a) = \alpha$ 和 $u(b) = \beta$;
+  \item 混合条件: $u(a) = \alpha$ 和 
+  $\frac{\partial u}{\partial x}\bigg|_b = \beta$;
+  \item Neumann条件: 
+  $\frac{\partial u}{\partial x}\bigg|_a 
+  = \alpha$ 和 $\frac{\partial u}{\partial x}\bigg|_b = \beta$.
+\end{itemize}
+
+\hl{定理 7.7} 假设 $f$ 和 $g$ 是两个充分光滑的函数. 那么对于 Neumann 边界值问题
+\begin{align*}
+\Delta \phi &= f \text{ in } \Omega;  \\
+n \cdot \nabla \phi &= g \text{ on } \partial \Omega. 
+\end{align*}
+当且仅当
+$$
+\int_{\Omega} f \, dV = \int_{\partial \Omega} g \, dA. 
+$$
+时, 存在唯一解 (可以差一个常数).
+
+正明见 [Taylor, 2011, page 409]. 这个定理实际说的是, 边界要有物理意义, 不能瞎给. 
+边界上的总流量要和内部的量相等. 
+
+\hl{例子 7.8} 向量微积分的基本定理表明, 
+一个连续可微的向量场 $v^*$ 可以被唯一分解为一个无散部分和一个无旋部分:
+$$
+v^* = v + \nabla \phi, \quad \nabla \cdot v = 0, 
+\nabla \times \nabla \phi = 0. 
+$$
+当给定的 $v$ 的边界条件满足 
+$\oint_{\partial \Omega} \, v \cdot n = 0$ 时, 
+通过求解 Neumann 边界值问题
+\begin{align*}
+\Delta \phi &= \nabla \cdot v^* \text{ in } \Omega,\\
+n \cdot \nabla \phi &= n \cdot (v^* - v) \text{ on } \partial \Omega, 
+\end{align*}
+来实现分解, 根据定理 7.7 的保证, 唯一解的存在性由以下条件保证
+$$
+\int_{\Omega} \nabla \cdot v^* \, 
+dV = \int_{\Omega} \nabla \cdot (v^* - v) \, 
+dV = \int_{\partial \Omega} n \cdot (v^* - v) \, dA.
+$$
+
+\subsection{有限差分离散化}
+
+\hl{公式 7.9} 在解线性边界值问题时, 有限差分方法的一般步骤如下:
+
+\setlist[enumerate]{label=(FD-\arabic*)}  
+
+\begin{enumerate}
+  \item 通过网格离散化问题域.
+  \item 在每个网格点上用一些有限差分公式逼近偏微分方程中的每个空间导数, 
+  得到一个线性方程组 $AU = F$, 其中向量 $U$ 近似表示网格上的未知变量, 
+  而向量 $F$ 包含边界条件和未知函数的导数等边界值问题的给定条件.
+  \item 解代数方程组. 
+\end{enumerate}
+\setlist[enumerate]{label=arabic*.} 
+
+\hl{例子 7.10} (在单位区间上的 Poisson 方程的有限差分方法). 考虑一维边界值问题
+$$
+-u''(x) = f(x) \in \Omega := (0, 1) 
+$$
+带有Dirichlet边界条件
+$$
+u(0) = \alpha, \quad u(1) = \beta. 
+$$
+基于中心差分的有限差分方法的一般步骤如下:
+
+\noindent (a) 通过均匀间距的笛卡尔网格对 $\Omega$ 进行离散化, 
+即 $x_j = jh, h = \frac{1}{m+1}, j = 0, 1, . . . , m + 1$. 
+设 $U_0 = \alpha, U_{m+1} = \beta$，我们将计算 $m$ 个值 $U_1, . . . , U_m$, 
+其中每个 $U_j$ 近似表示 $u(x_j)$. 
+
+\noindent (b) 用中心差分逼近二阶导数 $u_{00}$:
+$$
+u''(x_j) = \frac{u(x_{j-1}) - 2u(x_j) + u(x_{j+1})}{h^2} + O(h^2)
+$$
+我们得到以下线性方程组:
+\begin{align*}
+-\frac{\alpha - 2U_1 + U_2}{h^2} &= f(x_1), \\
+-\frac{U_{j-1} - 2U_j + U_{j+1}}{h^2} &= f(x_j), \quad j = 2, . . . , m - 1, \\
+-\frac{U_{m-1} - 2U_m + \beta}{h^2} &= f(x_m).
+\end{align*}
+
+这些方程可以写成如下形式
+$$
+AU = F, 
+$$
+其中
+$$
+U = \begin{bmatrix}
+U_1 \\
+U_2 \\
+U_3 \\
+\vdots \\
+U_{m-1} \\
+U_m
+\end{bmatrix},
+\quad
+F = \begin{bmatrix}
+f(x_1) + \frac{\alpha}{h^2} \\
+f(x_2) \\
+f(x_3) \\
+\vdots \\
+f(x_{m-1}) \\
+f(x_m) + \frac{\beta}{h^2}
+\end{bmatrix},
+$$
+$$
+A = \frac{1}{h^2} \begin{bmatrix}
+2 & -1 &   &   &   \\
+-1 & 2 & -1 &   &   \\
+  & -1 & 2 & -1&   \\
+ & & \ddots & \ddots & \ddots \\
+ &  &  & -1 & 2 & -1 \\
+ &  &  &  & -1 & 2 \\
+ 
+\end{bmatrix}.
+$$
+
+\noindent (c) 解上述线性方程组.
+
+\subsection{误差与一致性}
+
+\hl{定义 7.11} 在公式 7.9 中的有限差分方法的全局误差或解误差为
+$$
+E = U - \hat{U}, 
+$$
+其中 $\hat{U} = [u(x_1), u(x_2), \ldots, u(x_m)]^T$ 是真实值向量, $U$ 是计算得到的解. 
+
+我们将 $E$ 定义为 $U - \hat{U}$ 而不是 $\hat{U} - U$, 
+因为将 $E$ 视为 $U$ 在逼近 $\hat{U}$ 时的差值是更自然的. 
+我们需要一些范数来衡量 $E$, 例如 
+$$
+\|E\|_{\infty} = \max_{1 \leq j \leq m} |E_j| 
+= \max_{1 \leq j \leq m} |U_j - u(x_j)|. 
+$$
+是否适用其他向量范数? 例如, 
+$$
+\|E\|_1 = \sum_j |E_j| = \sum_j |U_j - u(x_j)|.$$
+这样有问题么? 
+%不! 这样做有什么问题吗? 实际上, 你并没有用一个向量来逼近精确解, 相反, 
+%你是在用一个由计算得到的解向量隐含定义的网格函数来逼近 $u(x)$. 
+
+\hl{定义 7.12} 离散网格 $X$ 上的网格函数是一个函数 
+$$
+g : X \rightarrow \mathbb{R},
+$$
+其中 $X$ 包含有限数量的点.
+
+\hl{定义 7.13} 在一维网格 $X := \{x_1, x_2, \ldots, x_N\}$ 上, 
+网格函数 $g$ 的 $q$-范数定义为
+$$
+\|g\|_q = \left( \frac{1}{h} \sum_{i=1}^{N} |g_i|^q \right)^{\frac{1}{q}}, 
+$$
+其中 $g = (g_1, g_2, \ldots, g_N)$. 特别地, $1$-范数为
+$$
+\|g\|_1 = \sum_{i = 1}^{N} |g_i|, 
+$$
+最大范数为
+$$
+\|g\|_{\infty} = \max_{1 \leq i \leq N} |g_i|.
+$$
+
+有限差分公式的全局误差可以被视为一个网格函数, 并且可以基于网格函数的 $q$-范数计算相应的收敛速率.
+但是为什么定义 7.13 中的范数是那样定义的呢? 假设 $u(x)$ 是定义在某个区间 
+$a \leq x \leq b$ 上的函数, $U(x)$ 是逼近 $u(x)$ 的函数. 
+那么逼近误差也是一个函数 $g(x) = U(x) - u(x)$. 该函数 
+$g : [a, b] \rightarrow \mathbb{R}$ 的 $q$-范数为
+$$
+\|g\|_q = \left( \int_a^b |g(x)|^q \, dx \right)^{\frac{1}{q}}.
+$$
+给定一个离散化了 $[a, b]$ 区间的网格函数 $g$, 我们可以将其视为函数 
+$g : [a, b] \rightarrow \mathbb{R}$ 的采样. 
+通过黎曼和对上述积分进行离散化, 得到了公式 (7.15). 
+
+我们写成 $g = (g_1, g_2, \ldots, g_N)$ 而不是向量符号 $g = [g_1, g_2, \ldots, g_N]^T$, 
+以区分网格函数和向量, 因为向量范数 $\| \cdot \|_q$ 的定义已经与 (7.15) 的表达式不同.
+
+\hl{习题 7.14} 假设一个网格函数 $g : X \rightarrow \mathbb{R}$, 
+其中 $X := \{x_1, x_2, \ldots, x_N\}$, $g_1 = O(h)$, $g_N = O(h)$, 
+且对所有的 $j = 2, \ldots, N-1$，有 $g_j = O(h^2)$. 证明
+$$
+\|g\|_{\infty} = O(h), \quad \|g\|_1 = O(h^2), \quad \|g\|_2 = O(h^{3/2}). 
+$$
+作为这道练习的主要观点, 网格函数在最大范数, 
+$1$-范数和 $2$-范数上的差异经常显示出具有较大幅度的分量的百分比.
+
+\hl{定义 7.15} 公式 7.9 中的有限差分方法的局部截断误差 (LTE) 
+是用有限差分公式替换连续导数引起的误差. 
+
+在 BVP 边界处, 局部截断误差 (LTE) 是未定义的. 
+
+\hl{例 7.16} 当我们用 
+$$
+D^2u(x_j) := u(x_{j-1}) - 2u(x_j) + u(x_{j+1}) / h^2
+$$ 
+近似 $\Delta u$ 时, 例 7.10 中的有限差分方法的局部截断误差 (LTE) 为
+$$
+\tau_j = -D^2u(x_j) 
+- \frac{\partial^2 u}{\partial x^2}(x_j) 
+= -\frac{h^2}{12} \frac{\partial^4 u}{\partial x^4}(x_j) + O(h^4) = O(h^2).
+$$
+
+\hl{引理 7.17} 设 $AU = F$ 为应用公式 7.9 到区间 $(0, 1)$ 上的线性 BVP 
+$Lu = f(x)$ (带有迪利克雷条件) 所得的线性方程组. 
+那么这个有限差分方法的局部截断误差 (LTE) 即为通过用精确解 $u(x_j)$ 
+替换 $U_j$ 来计算右手边函数 $F$ 的误差, 即
+$$
+\tau = A\hat{U} - F, 
+$$
+其中 $\hat{U}$ 是真实解的向量值. 特别地, 这适用于例 7.10 中的有限差分方法. 
+
+证明思路, 我们只证明例 7.10 中的情况, 因为其他线性 BVP 可以通过类似的论证得到证明. 
+根据 (7.8) 和 (7.11), 对于所有的 $j = 2, \ldots, m-1$, 我们有
+$$
+(A \hat{U} - F)_j = -\frac{u(x_{j-1}) - 2u(x_j) + u(x_{j+1})}{h^2} 
++ \Delta u(x_j),
+$$
+对于 $j = 1$ 和 $j = m$ 也成立, 因为边界条件导致 $u(x_0) = u(0) = \alpha$ 
+和 $u(x_{m+1}) = u(1) = \beta$. 因此, 根据定义 7.15, 证明完成. 
+
+\hl{引理 7.18} 局部截断误差 (LTE) 和全局误差之间存在关系, 即 $AE = -\tau$. 
+
+证明思路, 由引理 7.17, 
+$$
+AE = A(U - \hat{U}) = F - (F + \tau) = -\tau.
+$$
+
+\hl{定义 7.19} 如果在公式 7.9 中的有限差分方法满足
+$$
+\lim_{h \to 0} \frac{\|\tau_h\|}{h} = 0, 
+$$
+其中 $\tau_h$ 是局部截断误差 (LTE), 则称该方法与 BVP 一致.
+(你计算形式和微分方程是一致的.)
+
+
+\subsection{稳定性和收敛性}
+
+\hl{定义 7.20} 如果有限差分方法满足
+$$
+\lim_{h \to 0} \|E^h\|_q = 0, 
+$$
+其中 $E^h$ 是定义 7.11 中的解误差, $\| \cdot \|_q$ 
+是定义 7.13 中的 $q$-范数, 那么该方法是收敛的. 
+(你的数值解和解析解是一致的.)
+
+\setlist[enumerate]{label=\alph*)} 
+\hl{定义 7.21} 如果
+\begin{enumerate}
+  \item 存在 $h_0 \in \mathbb{R}^+$, 使得对于所有 $h \in (0, h_0)$, 
+  线性系统的矩阵 $A$ 的行列式 $\mathrm{det}(A) \neq 0$;
+  \item $\lim_{h \to 0} A^{-1} = O(1)$.
+\end{enumerate}
+\setlist[enumerate]{label=\arabic*)} 
+
+那么公式 7.9 中的有限差分方法是稳定的。
+
+\hl{定理 7.22} 一个一致且稳定的有限差分方法是收敛的. 
+(要翻车就是不稳定...)
+
+证明思路, 引理 7.18 和 定义 7.19 以及 7.21 导出
+$$
+\lim_{h \to 0} \|E^h\| 
+\leq \lim_{h \to 0} \|(A_h)^{-1}\| \|\tau^h\| 
+\leq C \lim_{h \to 0}\|\tau_h\| = 0,
+$$
+其中范数可以是向量范数或诱导矩阵范数. 然后, 通过观察到, 
+根据定义 7.13 $q$-范数 $\| \cdot \|_q$ 和相应的向量范数 $\| \cdot \|$ 之间存在关系, 
+即 $\|E\|_q = h^{1/q} \|E\|$, 得到 (7.23). 
+
+定理 7.22 的证明强调了 $q$-范数和向量范数之间的差异. 在证明过程中, 
+几乎总是采用向量范数和诱导矩阵范数, 只有在最后一步我们才应用关系 
+$\|E\|_q = h^{1/q} \|E\|$. 在接下来的讨论中, 我们将考虑 $2$-范数和 
+$\infty$-范数下的稳定性, 而不会重复从向量范数转换到 $q$-范数. 
+
+\subsubsection{$2$-范数下的收敛性}
+
+\hl{定义 7.23} (由向量范数诱导的矩阵范数) 矩阵 $A \in \mathbb{R}^{n \times n}$ 
+的范数定义为
+$$
+\|A\| = \sup_{\substack{x \in \mathbb{R}^n \\ x \neq 0}} \frac{\|Ax\|}{\|x\|} 
+= \sup_{\substack{\|x\| = 1}} \|Ax\|.
+$$
+
+\hl{例 7.24} 常用的矩阵范数包括
+$$
+\begin{cases}
+\|A\|_{\infty} = \max_{1 \leq i \leq n} \sum_{j = 1}^{n} |a_{ij}|, \\
+\|A\|_1 = \max_{1 \leq j \leq n} \sum_{i = 1}^{n} |a_{ij}|, \\
+\|A\|_2 = \sqrt{\rho(A^T A)},
+\end{cases}
+$$
+其中 $\rho(B) := \max_i |\lambda_i(B)|$ 是矩阵 $B$ 的谱半径, 
+即矩阵 $B$ 的特征值的最大模 (复数). 
+
+\hl{引理 7.25} 矩阵 $A$ (见公式 7.13) 的特征值 $\lambda_k$ 和特征向量 $w_k$ 分别为
+$$
+\lambda_k(A) = \frac{4}{h^2} \sin^2 \frac{k \pi}{2(m + 1)}, 
+$$
+$$
+w_{k,j} = \sin \frac{jk\pi}{m + 1}, 
+$$
+其中 $j, k = 1, 2, \ldots, m$.
+
+\hl{习题 7.26} 证明矩阵 $A$ (见公式 7.13) 的特征向量集合 (7.26) 是正交的, 即
+$$
+\langle w_i, w_k \rangle = 
+\begin{cases}
+0, & \text{if} \ i \neq k, \\
+\frac{m + 1}{2}, & \text{if} \ i = k,
+\end{cases}
+$$
+其中 $\langle \cdot, \cdot \rangle$ 表示内积.
+
+\hl{定理 7.27} 例 7.10 中的有限差分方法在 $2$-范数下是二阶收敛的.
+
+证明思路, 矩阵 $A$ 的对称性给出 $\|A\|_2 = \rho(A)$. 
+然后根据引理 7.25 可得稳定性, 即定义 7.21 中的条件 (b):
+$$
+\lim_{h \to 0} \|A^{-1}\|_2 = \lim_{h \to 0} \frac{1}{\min |\lambda_k(A)|} 
+= \lim_{h \to 0} \frac{h^2}{4 \sin^2 \frac{\pi h}{2}} = \frac{1}{\pi^2}.
+$$
+证明的其余部分可由例 7.16、定义 7.19 和定理 7.22 推得. 
+
+现在有限差分方法在 $2$-范数下是收敛的, 根据定义 7.13, 它在其他 $q$-范数下也是收敛的, 
+因为所有这些 $q$-范数在定义 7.20 的意义下是等价的. 
+定理 7.27 的证明显示了 $2$-范数下的二阶收敛速率. 那么在 max-范数下的收敛速率呢? 
+嗯, max-范数下的收敛速率至少为 $1.5$, 因为
+$$
+\|E\|_2 = O(h^2) \Rightarrow \|E\|_{\infty} \leq 
+\frac{1}{\sqrt{h}} \|E\|_2 = O(h^{3/2}),
+$$
+但等式是否成立呢? 换句话说, 关于 max-范数, 真正的收敛速率是多少呢? 
+答案完全取决于 $\|A^{-1}\|_{\infty}$: 
+$$
+\|E\|_{\infty} 
+\leq \|A^{-1}\|_{\infty} \|\tau\|_{\infty} = \|A^{-1}\|_{\infty} O(h^2).
+$$ 
+我们将在定理 7.32 中看到 $\|A^{-1}\|_{\infty} = O(1)$, 
+这意味着 max-范数下的收敛速率也是 2. 
+
+\subsubsection{Green函数}
+
+\hl{定义 7.28} 对于任意固定的 $\bar{x} \in [0, 1]$, Green 函数 $G(x; \bar{x})$ 
+是关于 $x$ 的函数, 满足以下边界值问题:
+$$
+\begin{cases}
+u''(x) = \delta(x - \bar{x}), \\
+u(0) = u(1) = 0,
+\end{cases} 
+$$
+其中 $\delta(x - \bar{x})$ 是定义 5.41 中的狄拉克 $\delta$ 函数.
+
+\hl{定义 5.41} 以 $\bar{x}$ 为中心的狄拉克 $\delta$ 函数 
+$\delta(x - \bar{x})$ 定义为
+$$
+\delta(x - \bar{x}) = \lim_{\varepsilon \to 0} 
+\phi_{\varepsilon}(x - \bar{x}) 
+$$
+其中 $\phi_{\varepsilon}(x - \bar{x}) = f(x, \varepsilon, \bar{x})$ 
+是均值为 $\bar{x}$, 标准差为 $\varepsilon$ 的正态分布. 
+
+\hl{引理 5.42} 狄拉克 $\delta$ 函数满足
+$$
+\delta(x - \bar{x}) = 
+\begin{cases}
++\infty, & x = \bar{x}, \\
+0, & x \neq \bar{x};
+\end{cases} 
+$$
+$$
+\int_{-\infty}^{+\infty} \delta(x - \bar{x}) \, dx = 1. 
+$$
+证明思路, 这些直接由定义 5.40 和 5.41 以及引理 5.39 推导而来. 与其说是证明, 
+不如说是直观描述.
+
+由于 (5.42) 中的等式是其关键的定义特性, 狄拉克 $\delta$ 函数更多地是通过引理 5.42 
+而不是定义 5.41 来定义的. 我们可以将狄拉克 $\delta$ 函数定义为极限
+$$
+\delta(x - \bar{x}) = \lim_{\epsilon \to 0} \phi_{\epsilon}(x - \bar{x})
+$$
+其中 $\phi_{\epsilon}$ 是一个 ``帽子'' 函数, 即
+$$
+\phi_{\epsilon}(x) = \begin{cases}
+\frac{1}{\epsilon^2} \frac{\epsilon + x}{2}, & x \in [-\epsilon, 0], \\
+-\frac{1}{\epsilon^2} \frac{\epsilon - x}{2}, & x \in [0, \epsilon], \\
+0, & \text{其他}.
+\end{cases}
+$$
+这一观察与狄拉克 $\delta$ 函数的动机相一致, 即用有限的质量模拟 $\bar{x}$ 处的点源. 
+例如, 该函数非常适合模拟一滴墨水落入水库中, 其中水库的长度尺度远大于墨水滴的尺度. 
+
+\hl{引理 7.29} 满足 (7.27) 的 Green函数 $G(x; \bar{x})$ 为
+$$
+G(x; \bar{x}) = \begin{cases}
+(\bar{x} - 1)x, & x \in [0, \bar{x}], \\
+\bar{x}(x - 1), & x \in [\bar{x}, 1].
+\end{cases} 
+$$
+
+证明思路, 对于任意固定的 $\epsilon$, 根据 (7.27) 和 (5.42b), 我们有
+$$
+\int_{x_0 + \epsilon}^{x_0 - \epsilon} G''(x) \, dx 
+= \int_{x_0 + \epsilon}^{x_0 - \epsilon} \delta(x - \bar{x}) \, dx = 
+\begin{cases}
+0, & \text{if} \ \bar{x} \notin (x_0 - \epsilon, x_0 + \epsilon), \\
+1, & \text{if} \ \bar{x} \in (x_0 - \epsilon, x_0 + \epsilon).
+\end{cases}
+$$
+将上述方程取 $\epsilon \to 0$ 的极限, 根据微积分学中的第二基本定理 
+(定理 C.74, 牛顿-莱布尼茨), 我们得到
+$$
+\lim_{\epsilon \to 0} G'(x_0 + \epsilon) - \lim_{\epsilon \to 0} 
+G'(x_0 - \epsilon) = \begin{cases}
+0, & \text{if} \ x_0 \in (0, \bar{x}) \cup (\bar{x}, 1), \\
+1, & \text{if} \ x_0 = \bar{x}.
+\end{cases} \quad (7.29)
+$$
+将 $G(x; \bar{x}) = (ax + b, x \in [0, \bar{x}], cx + d, x \in [\bar{x}, 1]$ 
+代入 (7.29) 和 (7.27), 并考虑 $G(x; \bar{x})$ 的连续性, 我们得到
+$$
+\begin{cases}
+c = a + 1, \\
+b = 0, \\
+c + d = 0, \\
+a\bar{x} + b = c\bar{x} + d,
+\end{cases}
+$$
+由此推出
+$$
+\begin{cases}
+a = \bar{x} - 1, \\
+b = 0, \\
+c = \bar{x}, \\
+d = -\bar{x}.
+\end{cases}
+$$
+这便完成了证明. 
+
+\hl{推论 7.30} 线性边界值问题
+$$
+\begin{cases}
+u''(x) = c\delta(x - \bar{x}), \\
+u(0) = u(1) = 0
+\end{cases}
+$$
+的解为
+$$
+u(x) = cG(x; \bar{x}).
+$$
+这直接由引理 7.29 推得.
 
 \bibliography{crazyfish.bib}
 
