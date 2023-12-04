@@ -5422,7 +5422,12 @@ G'(x_0 - \epsilon) = \begin{cases}
 1, & \text{if} \ x_0 = \bar{x}.
 \end{cases} \quad (7.29)
 $$
-将 $G(x; \bar{x}) = (ax + b, x \in [0, \bar{x}], cx + d, x \in [\bar{x}, 1]$ 
+将 (积分两次)
+$$
+G(x; \bar{x}) = \begin{cases} 
+  ax + b, & x \in [0, \bar{x}], \\
+  cx + d, & x \in [\bar{x}, 1] \end{cases}
+$$ 
 代入 (7.29) 和 (7.27), 并考虑 $G(x; \bar{x})$ 的连续性, 我们得到
 $$
 \begin{cases}
@@ -5456,6 +5461,446 @@ u(x) = cG(x; \bar{x}).
 $$
 这直接由引理 7.29 推得.
 
-\bibliography{crazyfish.bib}
+\subsubsection{最大范数下的收敛}
 
+\hl{引理 7.31} 对于公式 (7.13) 中的矩阵 $A$, 逆矩阵 $B = A^{-1}$ 的任意元素为
+$$
+b_{ij} = -hG(x_i; x_j) = \begin{cases}
+-h(x_j - 1)x_i, & i \leq j, \\
+-hx_j(x_i - 1), & i \geq j.
+\end{cases} \quad (7.30)
+$$
+更具体地，矩阵 $B$ 为
+$$
+B = -h \begin{bmatrix}
+x_1(x_1 - 1) & x_1(x_2 - 1) & \cdots & x_1(x_m - 1) \\
+x_1(x_2 - 1) & x_2(x_2 - 1) & \cdots & x_2(x_m - 1) \\
+\vdots & \vdots & \ddots & \vdots \\
+x_1(x_m - 1) & x_2(x_m - 1) & \cdots & x_m(x_m - 1)
+\end{bmatrix}.
+$$
+(直接把矩阵给解了...)
+
+\begin{proof}
+为了验证 $B$ 确实是 $A$ 的逆矩阵，我们只需将 $h^2 A$ 的第 $i$ 行与 $-\frac{1}{h} B$ 
+的第 $j$ 列相乘(直接乘回去): 
+$$
+\begin{bmatrix}
+0 & \cdots & 0 & -1 & 2 & -1 & 0 & \cdots & 0
+\end{bmatrix}
+\begin{bmatrix}
+x_1(x_j - 1) \\
+\vdots \\
+x_{j-1}(x_j - 1) \\
+x_j(x_j - 1) \\
+x_j(x_{j+1} - 1) \\
+\vdots \\
+x_m(x_m - 1)
+\end{bmatrix}
+$$
+当且仅当 $i = j$ 时, 上述乘积不为零:
+$$
+2x_j(x_j - 1) - x_{j-1}(x_j - 1) - x_j(x_{j+1} - 1) = -h.
+$$
+\end{proof}
+
+记 $B = A^{-1}$, 很明显 $AB = I$ 等价于 
+$$
+A[b_1, b_2, \ldots, b_m] = [e_1, e_2, \ldots, e_m].
+$$
+特别地, 我们有 $Ab_j = e_j$, 这可以被视为离散形式的 $-u''(x) = h\delta(x - x_j)$. 
+将 $\bar{x} = x_j$ 代入解 $G(x; \bar{x})$, 我们得到了 (7.30).
+
+\hl{定理 7.32} 矩阵 $B = A^{-1}$ 的最大范数满足
+$$
+\|B\|_{\infty} 
+= \max_{1 \leq i \leq m} \sum_{j = 1}^{m} |b_{ij}| \leq 1. \quad (7.31)
+$$
+
+\begin{proof}
+引理 7.31 给出
+\begin{eqnarray*}
+\sum_{j = 1}^{m} |b_{ij}| 
+&=& \sum_{j = 1}^{i} h x_j |x_i - 1| 
++ \sum_{j=i+1}^{m} h x_i |x_j - 1| \\
+&\leq& \sum_{j = 1}^{i} h 
+\left(\frac{m}{m+1}\right)^2 
++ \sum_{j = i + 1}^{m} h 
+\left(\frac{m}{m+1}\right)^2 \\
+&=& mh \left(\frac{m}{m + 1}\right)^2 
+= \left(\frac{m}{m+1}\right)^3 \leq 1.
+\end{eqnarray*}   
+\end{proof}
+
+\subsection{通过Green函数求解}
+
+\hl{引理 7.33} 假设 $L$ 是一个可逆的线性微分算子, 满足
+$$
+L u(x) = f(x). \quad (7.32)
+$$
+那么我们有
+$$
+u(x) = \int G(x; \bar{x})f(\bar{x}) \, d\bar{x}, \quad (7.33)
+$$
+其中 $G$ 是满足
+$$
+LG(x; \bar{x}) = \delta(x - \bar{x}). \quad (7.34)
+$$
+
+\begin{proof}
+将 (7.34) 乘以 $f(\bar{x})$, 对 $\bar{x}$ 进行积分, 我们有
+$$
+\int LG(x; \bar{x})f(\bar{x}) \, d\bar{x} 
+= \int \delta(x - \bar{x})f(\bar{x}) \, d\bar{x} = f(x),
+$$
+这里第二个等式来自于狄拉克 $\delta$ 函数的滤波特性 (引理 5.43). 因此
+$$
+L \int G(x; \bar{x})f(\bar{x}) \, d\bar{x} = f(x),
+$$
+由于 $L$ 是可逆的, 这进一步意味着 (7.33) 成立.
+\end{proof}
+
+\hl{引理 5.43} ($\delta$ 函数的滤波特性) 如果 $f: \mathbb{R} \mapsto \mathbb{R}$ 
+是连续函数, 那么
+$$
+\int_{-\infty}^{+\infty} \delta(x - \bar{x})f(x) \, dx = f(\bar{x}). \quad (5.43)
+$$
+
+在引理 7.31 中, 矩阵 $B$ 的每一列对应于一个位于 $x_j$ 处的点源, 
+因此对应于 Green 函数 $G(x; x_j)$. 由此可得
+$$
+AU = F \Rightarrow U = BF = \sum_{j = 1}^{m} f(x_j) b_j,
+$$
+这是 $u(x) = \int G(x; \bar{x})f(\bar{x}) \, d\bar{x}$ 的离散形式. 
+另一方面, 在 (7.11) 中的线性系统 $AU = F$ 可以解释为
+$$
+AU = F_1 e_1 + F_2 e_2 + \cdots + F_m e_m, \quad U = \sum_{j = 1}^{m} U_j,
+$$
+其中 $AU_j = F_je_j$, 因此 $U$ 是对于 $hF_j \delta(x - x_j)$ 的响应的 
+Green 函数的叠加. 
+
+\hl{定理 7.34} 狄利克雷边界值问题
+$$
+\begin{cases}
+u''(x) = f(x), \\
+u(0) = \alpha, \ u(1) = \beta
+\end{cases} \quad (7.35)
+$$
+的解为
+$$
+u(x) = \alpha G_0(x) + \beta G_1(x) + \hat{U}(x), \quad (7.36)
+$$
+其中 $G_0(x)$, $G_1(x)$ 和 $\hat{U}(x)$ 分别由以下边界值问题定义：
+$$
+\begin{cases}
+G''_{00}(x) = 0, \\
+G_0(0) = 1, \ G_0(1) = 0 \Rightarrow G_0(x) = 1 - x, \quad (7.37a)
+\end{cases}
+$$
+
+$$
+\begin{cases}
+G''_{11}(x) = 0, \\
+G_1(0) = 0, \ G_1(1) = 1 \Rightarrow G_1(x) = x, \quad (7.37b)
+\end{cases}
+$$
+
+$$
+\begin{cases}
+\hat{U}''(x) = f(x), \\
+\hat{U}(0) = 0, \ \hat{U}(1) = 0 \Rightarrow \hat{U}(x) 
+= \int_{0}^{1} f(\bar{x})G(x; \bar{x}) \, d\bar{x}. \quad (7.37c)
+\end{cases}
+$$
+
+这是由于边界值问题 (7.35) 的线性性质所导致的.
+
+对于边界值问题, 我们提出了一个重要问题: BVP 的右端项和边界条件的扰动会如何影响解? 
+为了回答这个问题, 我们将离散化狄利克雷边界值问题 (7.35) 为
+$$
+A_g U_g = F_g
+$$
+其中 $U$ 与 (7.12) 中的相同, $A_g$ 为
+$$
+A_g = \frac{1}{h^2} \begin{bmatrix}
+h^2 & 0 &   &  & & \\
+&1 & -2 & 1 & &  \\
+  &  &\ddots & \ddots & \ddots & \\
+ &&  & 1 & -2 & 1 \\
+ &&  &   &  0  & h^2 \\
+\end{bmatrix}
+$$
+$U_g$ 为
+$$
+U_g = \begin{bmatrix}
+U_0 \\
+U \\
+U_{m+1}
+\end{bmatrix}
+$$
+$F$ 为
+$$
+F = \begin{bmatrix}
+f(x_1) \\
+f(x_2) \\
+\vdots \\
+f(x_{m-1}) \\
+f(x_m)
+\end{bmatrix}
+$$
+$F_g$ 为
+$$
+F_g = \begin{bmatrix}
+\alpha \\
+F \\
+\beta
+\end{bmatrix}
+$$
+
+我们希望从 \(B = A^{-1}\) 中推导出 \(B_g = A_g^{-1}\). 为此, 我们将 \(B_g\) 写为
+$$
+B_g = 
+\begin{bmatrix}
+ & T \\
+b_{g,0} & B & b_{g,m+1} \\
+ & T
+\end{bmatrix}
+$$
+其中 \(b_{g,0}\) 和 \(b_{g,m+1}\) 是 \(B_g\) 的第一列和最后一列.
+
+然后我们有
+$$ U_g = 
+\begin{bmatrix}
+ & T \\
+b_{g,0} & B & b_{g,m+1} \\
+ & T
+\end{bmatrix}
+\begin{bmatrix}
+\alpha \\
+F \\
+\beta
+\end{bmatrix}
+= \alpha b_{g,0} + \beta b_{g,m+1} + \begin{bmatrix}
+0 \\
+BF \\
+0
+\end{bmatrix}
+$$
+
+根据定理 7.34, $b_{g, 0}$ 和 $b_{g, m + 1}$ 
+来自于在网格 $x_0, x_1, \ldots, x_{m + 1} $ 上计算 $G_0$ 和 $G_1$.
+
+在上述方程中观察到 $U_g$ 的分解, 以及 $b_{g,0}$ 和 $b_{g,m + 1}$ 的项为 
+$O(1)$ 而 $B$ 的项为 $O(h)$, 我们可以总结对 $\alpha, \beta$ 和 $f(x)$ 
+的绕动的不同影响如下:
+\begin{itemize}
+  \item $f(x)$ 在 $B$ 中被因子 $h$ 缩放, 
+  因此 $f$ 中的 $O(h)$ 误差将导致 $u$ 中的 $O(h^2)$ 误差.
+  \item $\alpha, \beta$ 中 $O(h)$ 误差将导致 $u$ 中的 $O(h)$ 误差.
+\end{itemize}
+主要观点是, 对狄利克雷条件的 $O(1)$ 扰动会导致解中的 $O(1)$ 误差.
+一方面, 当狄利克雷条件 $\alpha$ 已经明确给出时, 
+使用不准确的 $\alpha$ 值来破坏解是没有意义的(不会发生). 
+另一方面, 如果我们没有关于狄利克雷条件 $\alpha$ 的确切信息, 
+我们对 $\alpha$ 的近似误差将在整个计算区域的内部以相同的阶数显示在解中.
+
+
+\subsection{其他边界条件}
+
+\hl{例 7.35} 考虑二阶边界值问题
+$$
+u''(x) = f(x) \text{in} (0, 1) \quad (7.38)
+$$
+带有混合边界条件
+$$
+u'(0) = \sigma, \quad u(1) = \beta. \quad (7.39)
+$$
+与例 7.10 中具有纯狄利克雷条件的边界值问题相比, 
+这个边界值问题的关键区别在于 $x = 0$ 处的 $u(x)$ 的值成为一个需要求解的未知数.
+
+第一种方法是使用单边表达式 (边界是约束)
+$$
+\frac{U_1 - U_0}{h} = \sigma \quad (7.40)
+$$
+得到
+$$
+A_EU_E = F_E \quad (7.41)
+$$
+
+其中
+$$
+A_E = \frac{1}{h^2} \begin{bmatrix}
+-h & h & 0 &  & & \\
+&1 & -2 & 1 &  & & \\
+& & \ddots & \ddots & \ddots & \\
+& &  & 1 & -2 & 1 \\
+&  &  &  & 0 & h^2 \\
+\end{bmatrix},
+$$
+$$
+U_E = \begin{bmatrix}
+U_0 \\
+U_1 \\
+U_2 \\
+\vdots \\
+U_{m-1} \\
+U_m \\
+U_{m+1}
+\end{bmatrix},
+$$
+$$
+F_E = \begin{bmatrix}
+\sigma \\
+f(x_1) \\
+f(x_2) \\
+\vdots \\
+f(x_{m-1}) \\
+f(x_m) \\
+\beta
+\end{bmatrix}.
+$$
+
+在 $x_0 = 0$ 处的截断误差为
+\begin{eqnarray*}
+\tau_0 
+&=& \frac{1}{h^2} \left(hu(x_1) - hu(x_0)\right) - \sigma\\
+&=& u'(x_0) + \frac{1}{2}hu''(x_0) + O(h^2) - \sigma\\
+&=& \frac{1}{2}hu''(x_0) + O(h^2)
+\end{eqnarray*}
+这只有一阶精度.
+
+第二种方法是通过在域中增加一个虚拟单元 $x_{-1} = -h$, 并使用中心差分来获得
+$$
+\frac{U_1 - U_{-1}}{2h} = \sigma \quad (7.42)
+$$
+这对于 LTE 是二阶精度的. 我们没有任何关于 $U_{-1}$ 的信息, 因此我们希望通过
+$$
+\frac{1}{h^2}(U_{-1} - 2U_0 + U_1) = f(x_0) \quad (7.43)
+$$
+来消除它. 结合 (7.42) 和 (7.43) 可得
+$$
+\frac{1}{h}(-U_0 + U_1) = \sigma + \frac{h}{2}f(x_0) \quad (7.44)
+$$
+得到的矩阵与第一种方法中的矩阵相同 (见7.41), 只是 $F_E$ 
+的第一个分量有一个额外的项 $h^2 f(x_0)$.
+
+第三种方法是使用 $U_0$, $U_1$ 和 $U_2$ 来逼近 $u'(0)$,
+我们可以得到一个二阶有限差分公式, 参见例 6.38,
+$$
+-\frac{1}{h^2}\left(\frac{3}{2}U_0 - 2U_1 + \frac{1}{2}U_2\right) 
+= \sigma + O(h^2) \quad (7.45)
+$$
+这导致线性系统
+$$
+A_F \, U_E = F_E \quad (7.46)
+$$
+其中
+$$
+A_F = \frac{1}{h^2}
+\begin{bmatrix}
+-\frac{3}{2}h & 2h & -\frac{1}{2}h &\\
+1 & -2 & 1 & &\\
+  & \ddots & \ddots & \ddots& \\
+&&1 & -2 & 1 \\
+&&&0 & h^2
+\end{bmatrix}
+$$
+
+在实现方面, 虚拟单元方法是首选. 实际上, 在将虚拟单元纳入数据结构后, 
+我们可以将离散拉普拉斯算子的计算与边界条件的处理分离开来, 这使得方便地切换到另一个离散算子. 
+
+\hl{习题 7.36} 证明 $B_E = A_E^{-1}$ 的第一列的所有元素都是 $O(1)$.
+
+习题 7.36 其实是关于 Neumann 边界值问题的扰动响应. 首先, Neumann条件意味着边界处函数 
+$u$ 的值也是一个需要求解的未知数. 其次, 我们不能期望我们的数值解完全满足这个 Neumann 条件, 
+因此对这个 Neumann 条件的近似是不可避免的. 在例 7.35 的第一种方法中, 
+Neumann条件的离散化导致在近似 $\sigma$ 时产生了 $O(h)$ 的误差, 
+而通过习题 7.36, $b_0$ 包含了 $O(1)$ 的元素, 导致了在 Neumann 边界附近的一阶解误差. 
+边界条件的扰动导致解中同阶的误差, 这与之前总结的狄利克雷边界值问题非常相似. 
+这两种条件之间的一个关键区别是, 狄利克雷条件使我们可以通过简单地使用给定的边界条件来消除扰动, 
+而 Neumann 条件则不行: 即使使用了精确的 Neumann 条件, 
+由于近似 Neumann 条件引起的扰动是不可避免的, 因此在解中仍然存在误差. 
+
+\hl{例 7.37} 考虑二阶边界值问题
+$$
+u''(x) = f(x) \text{in} (0, 1), \quad (7.47)
+$$
+带有纯 Neumann 边界条件
+$$
+u'(0) = \sigma_0, \quad u'(1) = \sigma_1. \quad (7.48)
+$$
+为了确保解的存在, 必须满足如下关于 $f(x)$, $\sigma_0$, 和 $\sigma_1$ 的兼容条件:
+$$
+\int_{0}^{1} f(x) \, dx = \int_{0}^{1} u''(x) \, dx 
+= u_0(1) - u_0(0) = \sigma_1 - \sigma_0. \quad (7.49)
+$$
+事实上, 如果 (7.49) 成立, 那么存在无穷多个解: 
+如果 $v$ 是 (7.47) 的一个解, 那么 $v + \mathbb{R}$ 也是一个解.
+
+使用与例 7.35 类似的过程, 我们可以将 (7.47) 和 (7.48) 离散化为
+$$
+A_F \, U_E = F_F, \quad (7.50)
+$$
+其中
+$$
+A_F = \frac{1}{h^2}
+\begin{bmatrix}
+-h & h & 0 &  &  \\
+1 & -2 & 1 &  &  \\
+ & \ddots & \ddots & \ddots & \\
+&&1 & -2 & 1 \\
+&&0&h & -h
+\end{bmatrix}, \quad (7.51)
+$$
+$$
+F_F = \begin{bmatrix}
+\sigma_0 + \frac{h}{2}f(x_0) \\
+f(x_1) \\
+f(x_2) \\
+\vdots \\
+f(x_{m-1}) \\
+f(x_m) \\
+-\sigma_1 + \frac{h}{2}f(x_{m+1})
+\end{bmatrix}.
+$$
+
+\hl{引理 7.38} 矩阵 $AF$ 在 (7.51) 中满足 (零空间)
+$$
+\mathrm{dim} \mathscr{N}(A_F) = 1. \quad (7.52)
+$$
+
+\begin{proof}
+显然, $e = (1, 1, \ldots, 1)^T$ 在 $A_F$ 的零空间中. 
+\end{proof}
+(矩阵是奇异的.)
+
+\hl{定理 7.39}(可解条件) 线性系统 (7.50) 有解当且仅当
+$$
+\frac{h}{2}f(x_0) 
++ h\sum_{i = 1}^{m} f(x_i) 
++ \frac{h}{2}f(x_{m + 1}) = \sigma_1 - \sigma_0. \quad (7.53)
+$$
+
+\begin{proof}
+线性代数基本定理 (定理 B.89) 表明
+$$
+  \mathbb{R}^{m + 2} = \mathscr{R}(A_F) \oplus \mathscr{N}(A_F^T) \quad (7.54)
+  $$
+以及 $\mathscr{N}(A_F^T)$ 的维度等于 $\mathscr{N}(A_F)$ 的维度. 
+引理 7.38 进一步得出 $\mathscr{N}(A_F^T)$ 的维度为 1. 
+很容易验证 $\mathscr{N}(A_F^T)$ 为 $\mathrm{span}(1, h, h, \ldots, h, 1)^T$.
+  
+对于充分性, 上述方程和 (7.53) 意味着 $F_F$ 与 $\mathscr{N}(A_F^T)$ 正交, 
+因此 (7.54) 表明 $F_F \in \mathscr{R}(A_F)$. 
+因此 (7.50) 必须有解. 至于必要性, (7.50) 的存在解意味着 
+$F_F \in \mathscr{R}(A_F)$, 这与上述两个方程共同意味着 (7.53).     
+\end{proof}
+
+条件 (7.53) 取决于对 $u''(x)$ 的离散化的细节. 为了使 (7.47) 和 (7.48) 适定, 
+我们可以施加一个额外的条件
+$$
+\int_{0}^{1} u(x) \, dx = 0.
+$$
+对 (7.50) 施加上述条件的离散版本, 可以使计算得到的解变得唯一.
+\bibliography{crazyfish.bib}
 \end{document}
