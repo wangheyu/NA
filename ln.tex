@@ -5902,5 +5902,427 @@ $$
 \int_{0}^{1} u(x) \, dx = 0.
 $$
 对 (7.50) 施加上述条件的离散版本, 可以使计算得到的解变得唯一.
+
+\subsection{二维边界值问题}
+
+\hl{例7.40} (单位正方形内泊松方程的有限差分法)
+
+考虑二维边界值问题
+$$
+-\frac{\partial^2 u(x, y)}{\partial x^2} 
+- \frac{\partial^2 u(x, y)}{\partial y^2} = f(x, y) \quad (7.55)
+$$
+在区域 $\Omega = (0, 1)^2$ 上, 其中 
+$$
+\left.u(x, y)\right|\partial \Omega = 0. (7.56)
+$$
+可以使用均匀的笛卡尔网格来剖分区域, 
+$$
+x_i = ih, y_j = jh, i, j = 0, 1, · · · , m, m + 1, (7.57)
+$$
+其中 
+$$
+h = \Delta x = \Delta y = \frac{1}{m + 1}
+$$ 
+是均匀网格尺寸.
+
+分别逼近 $\frac{\partial^2 u}{\partial x^2}$ 和 
+$\frac{\partial^2 u}{\partial y^2}$, 我们有,
+$\forall i, j = 1, 2, · · · , m$, 
+$$
+-\frac{U_{i-1,j} - 2U_{i,j} + U_{i+1,j}}{h^2} 
+- \frac{U_{i,j-1} - 2U_{i,j} + U_{i,j+1}}{h^2} = f_{i,j}.
+(7.58)
+$$
+这些 $m \times m$ 个方程组成一个单一的系统 
+$$
+A_{2D}U = F. (7.59)
+$$
+
+\hl{练习 7.41} 展示在例 7.40 中的有限差分法的局部截断误差 $\tau$ 为
+$$
+\tau_{i, j} = -\frac{1}{12}h^2 \left( \frac{\partial^4 u}{\partial x^4} 
++ \frac{\partial^4 u}{\partial y^4} \right)(x_i,y_j) + O(h^4). \quad (7.60)
+$$
+
+与一维情况不同的关键区别在于, 在二维情况下, 未知数的排序有多种自然选择. 即如何编号是个问题.
+
+\hl{例 7.42} 对于 $m = 3$, 并按照上面所示的排序, 我们有
+$$ 
+A_{2D} = \frac{1}{h^2}
+\begin{bmatrix}
+T & -I & 0 \\
+-I & T & -I \\
+0 & -I & T \\
+\end{bmatrix}
+$$
+其中
+$$ 
+T = \begin{bmatrix}
++4 & -1 & 0 \\
+-1 & +4 & -1 \\
+0 & -1 & +4 \\
+\end{bmatrix}
+$$
+$U$ 通过将列叠加在一起得到. (这里手搓一个...)
+
+\hl{引理 7.43} 令 $E = U - \hat{U}$ 表示线性系统 (7.59) 的全局误差. 
+那么局部截断误差 (7.60) 满足
+$$ 
+A_{2D}E = -\tau. \quad (7.62) 
+$$
+
+证明与引理 7.18 的证明相同.
+
+我们对 $A_{2D}$ 不满意, 因为
+\begin{itemize}
+  \item $A_{2D}$ 与一维二阶离散拉普拉斯算子 $A$ 的联系不清晰, 
+  \item 对更多空间维度的泛化更加困难,
+  \item 难以分析例 7.40 中有限差分法的稳定性和收敛性.
+\end{itemize}
+
+这些困难可以通过将 $A_{2D}$ 与一维二阶离散拉普拉斯算子 $A$ 相关联, 
+并重复利用 $A$ 的分析来克服. 第7.6.1节包含了足够的材料, 
+可以用 $A$ 的术语来表达 $A_{2D}$, 
+而在第 7.6.2 节和第 7.6.3 节中, 我们分别展示了例 7.40 中有限差分法在 
+$2$-范数和最大-范数下的二阶收敛性. 
+这两节采用的工具是不同的: 前者是全局的, 而后者是局部的. 
+此外, 第 7.6.3 节中的最大值原理在第 7.6.4 节中被推广到不规则的区域. 
+
+\subsubsection{克罗内克积}
+
+\hl{定义 7.44} 两个矩阵 $A \in \mathbb{C}^{m\times n}$ 
+和 $B \in \mathbb{C}^{p \times q}$ 的克罗内克积是另一个矩阵 
+$A \otimes B \in \mathbb{C}^{mp \times nq}$, 表示为
+$$ 
+A \otimes  B := \begin{bmatrix}
+a_{11}B & a_{12}B & \cdots & a_{1n}B \\
+a_{21}B & a_{22}B & \cdots & a_{2n}B \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1}B & a_{m2}B & \cdots & a_{mn}B
+\end{bmatrix}, \quad (7.63) 
+$$
+其中 $a_{ij}$ 是矩阵 $A$ 的第 $(i, j)$ 元素.
+
+\hl{例 7.45}
+$$
+\begin{pmatrix}
+1 & 2 \\
+3 & 4
+\end{pmatrix}
+\otimes
+\begin{pmatrix}
+0 & 5 \\
+6 & 7
+\end{pmatrix}
+=
+\begin{pmatrix}
+0 & 5 & 0 & 10 \\
+6 & 7 & 12 & 14 \\
+0 & 15 & 0 & 20 \\
+18 & 21 & 24 & 28
+\end{pmatrix}
+$$
+
+\hl{定义 7.46} 对于 $X \in \mathbb{C}^{m \times n}$, 
+$\mathrm{vec}(X)$ 被定义为一个大小为 $m \times n$ 的列向量, 由 $X$ 
+的列从左到右依次叠加而成.
+
+在 MATLAB 中, 获得矩阵 $A$ 和 $B$ 的克罗内克积的命令是 \verb|kron(A, B)|; 
+$\mathrm{vec}(X)$ 的对应命令是 \verb|X(:)|. 
+要恢复这个过程, 可以使用 \verb|reshape| 命令.
+
+\hl{引理 7.47} 对于任意的 $A \in \mathbb{C}^{m \times m}$, 
+$B \in \mathbb{C}^{n \times n}$ 和 
+$X \in \mathbb{C}^{m \times n}$, 满足
+$$
+\mathrm{vec}(AX) = (I_n \otimes A)\mathrm{vec}(X), \quad (7.64) 
+$$
+$$
+\mathrm{vec}(XB) = (B^T \otimes I_m)\mathrm{vec}(X). \quad (7.65) 
+$$
+
+证明. 我们有
+\begin{eqnarray*}
+\mathrm{vec}(AX) &=& \mathrm{vec}([AX_1, AX_2, \ldots, AX_n]) \\
+&=&
+\begin{bmatrix}
+AX_1 \\
+AX_2 \\
+\vdots \\
+AX_n
+\end{bmatrix} \\
+&=&
+\begin{bmatrix}
+A &&&\\
+ & A&&\\
+ & & \ddots&\\
+ & & & A
+\end{bmatrix} 
+\begin{bmatrix}
+X_1 \\
+X_2 \\
+\vdots \\
+X_n
+\end{bmatrix}\\
+&=& (I_n \otimes A)
+\begin{bmatrix}
+X_1 \\
+X_2 \\
+\vdots \\
+X_n
+\end{bmatrix}
+\end{eqnarray*}
+令 $Y = XB$, 则
+$$
+Y_j = Xb_j \Rightarrow y_{kj} = \sum_{i = 1}^{n} x_{ki}b_{ij} \quad (7.66) 
+$$
+令 $C = B^T \otimes I_m$, 则 $C$ 的 $(i, j)$ 子块是
+$$
+ C_{ij} = b_{ji}I_m \quad (7.67) 
+$$
+令 $D = C\mathrm{vec}(X)$, 则 $D$ 的第 $j$ 个块是
+$$
+D_j = \sum_{i = 1}^{n} C_{ji}X_i 
+= \sum_{i=1}^{n} b_{ij} I_m X_i = \sum_{i=1}^{n} b_{ij}X_i \quad (7.68) 
+$$
+于是 $D$ 的 $(k, j)$ 元是
+$$
+d(k,j) = \sum_{i = 1}^{n} b_{ij}x_{ki} 
+= \sum_{i=1}^{n} x_{ki}b_{ij} \quad (7.69) 
+$$
+结合 (7.66) 和 (7.69) 推出 (7.65).
+
+\subsubsection{二范数下的收敛性}
+
+\hl{引理 7.48} 线性系统 (7.59) 等价于
+$$
+A U^{m \times m} + U^{m \times m}A 
+= F^{m \times m} \quad (7.70) 
+$$
+这里 $U^{m \times m}$ 的 $(i, j)$ 元素是在 $(i, j)$ 网格点处计算得到的解, 
+$F^{m \times m}$ 的 $(i, j)$ 元素是 $f(ih, jh)$, 
+而 $A$ 是 (7.13) 中的一维离散拉普拉斯算子. 
+(把二维网格拉直了...)
+
+证明. 直接计算得到
+$$
+\begin{cases}
+(AU^{m \times m})_{ij} = \frac{1}{h^2}(-U_{i-1,j} + 2U_{ij} - U_{i+1,j}), \\
+(U^{m \times m}A)_{ij} = \frac{1}{h^2}(-U_{i,j-1} + 2U_{ij} - U_{i,j+1}),
+\end{cases} \quad (7.71)
+$$
+由于齐次狄利克雷条件, 得到 
+$$
+AU^{m \times m} + U^{m \times m}A = F^{m \times m}.
+$$
+
+\hl{引理 7.49} 在 (7.13) 中的一维离散拉普拉斯算子 $A$ 满足
+$$
+\mathrm{vec}(AU^{m \times m} + U^{m \times m}A) 
+= (I_m \otimes A + A \otimes I_m)\mathrm{vec}(U^{m \times m}). 
+$$
+
+证明. 根据引理 7.47, 我们有
+$$ 
+\mathrm{vec}(AU^{m \times m}) = (I_m \otimes A)\mathrm{vec}(U^{m \times m}), 
+$$
+以及
+$$ 
+\text{vec}(U^{m \times m}A) = (A^T \otimes I_m)\mathrm{vec}(U^{m \times m}) 
+= (A \otimes I_m)\mathrm{vec}(U^{m \times m}), 
+$$
+其中第二个等式是根据 $A$ 的对称性得到的. 将这两个方程相加即得到所需的结果.
+
+\hl{定理 7.50} 利用矩阵排序, 线性系统 (7.59) 可以表示为
+$$
+A_{2D} = I_m \otimes A + A \otimes I_m, 
+\quad U = \mathrm{vec}(U^{m \times m}), 
+\quad F = \mathrm{vec}(F^{m \times m}). 
+$$
+
+这可以通过引理 7.48 和引理 7.49 得出. 
+
+\hl{定义 7.51} 与一维离散拉普拉斯算子 (7.13) 类似, $n$ 维空间中的离散拉普拉斯算子定义为
+$$
+A_{nD} = \sum_{j = 0}^{n - 1} \underset{j}{(I_m \otimes \cdots \otimes I_m)}
+\otimes A \otimes \underset{n-j-1}{ 
+(I_m \otimes \cdots \otimes I_m)} 
+$$
+
+\hl{例 7.52} 对于 $n = 3$, 我们有
+$$
+A_{3D} = A \otimes I_m \otimes I_m + I_m \otimes A \otimes I_m + I_m \otimes I_m \otimes A. 
+$$
+
+\hl{定理 7.53} 矩阵 $A_{2D}$ 的特征对是
+$$
+\lambda_{ij} = \lambda_i + \lambda_j, 
+\quad W_{ij} = \text{vec}(w_iw_j^T), \quad (7.73) 
+$$
+其中 $i, j = 1, 2, \cdots, m$, 而 $(\lambda_i, w_i)$ 是引理 7.25 
+中矩阵 $A$ 的一个特征对.
+
+证明. 根据引理 7.25, 我们有
+\begin{eqnarray*}
+A w_i w_j^T + w_i w_j^T A 
+&=& \lambda_i w_i w_j^T + w_i w_j^T A^T \\ 
+&=& \lambda_i w_i w_j^T + w_i (A w_j)^T \\
+&=& \lambda_i w_i w_j^T + \lambda_j w_i w_j^T \\ 
+&=& (\lambda_i + \lambda_j) w_i w_j^T. 
+\end{eqnarray*}
+接着, 根据定理 7.50 和引理 7.49, 我们有
+\begin{eqnarray*}
+A^{2D} \mathrm{vec} (w_i w_j^T) 
+&=& (I_m \otimes A + A \otimes I_m) \mathrm{vec} (w_i w_j^T) \\
+&=& \mathrm{vec} (A(w_i w_j^T + (w_i w_j^T)A)) \\ 
+&=& (\lambda_i + \lambda_j) \mathrm{vec} (w_i w_j^T),
+\end{eqnarray*}
+因此 $\lambda_i + \lambda_j$ 是 $A_{2D}$ 的特征值, 
+对应的特征向量是 $W_{ij}$.
+剩下的是要证明上述特征对是 $A_{2D}$ 的所有特征对. 
+这确实成立, 因为特征向量集合 $\{W_{ij}\}$ 是正交的:
+\begin{eqnarray*}
+W_{ij}^T W_{kl} 
+&=& \mathrm{vec} (w_i w_j^T)^T \mathrm{vec} (w_k w_l^T)\\ 
+&=& \mathrm{Trace} \left( (w_i w_j)^T w_k w_l^T \right)\\ 
+&=& \mathrm{Trace} \left( w_j (w_i^T w_k) w_l^T \right)\\ 
+&=& \begin{cases} 0, & \text{if } i \neq k; \\ 
+  \frac{m + 1}{2} w_l^T w_j, & \text{if } i = k \end{cases}\\ 
+&=& \begin{cases} 0, & \text{if } i \neq k \text{ or } l = j; \\ 
+  \frac{(m+1)^2}{4}  & \text{otherwise} \end{cases} 
+\end{eqnarray*}
+其中第四和第五个等式来自练习 7.26.
+
+\hl{定理7.54} 例 7.40 中的有限差分法在 $2$-范数下是二阶收敛的.
+
+证明. 我们有 $\|A_{2D}\|_2 = \rho(A_{2D})$, 因为 $A_{2D}$ 是对称的.
+接着, 定理 7.53 给出
+\begin{eqnarray*}
+\lim_{h \to 0} \|A^{-1}_{2D}\|_2 
+= \lim_{h \to 0} \frac{1}{\min |\lambda_{ij}|} 
+= \lim_{h \to 0} \frac{h^2}{8 \sin^2 (\pi h/2)} = \frac{1}{2\pi^2} = O(1).
+\end{eqnarray*}
+根据定义 7.21, 该方法是稳定的. 证明由 (7.60), 定义 7.19, 定理 7.22 和 引理 7.43 完成.
+
+(7.60), $\tau = O(h^2)$.
+
+定义 7.19, $tau_h \to 0$.
+
+定理 7.22, 一致和稳定得到收敛.
+
+引理 7.43, 总误差是 $\tau$.
+
+\subsubsection{离散最大值原理下的最大模收敛}
+
+\hl{定理7.55} 例 7.40 中的有限差分法在最大范数下是二阶收敛的.
+
+证明. 设 $X_I$ 是通过从 $(7.57)$ 中的 $X$ 中去除满足 $i = 0$, $m+1$ 
+或 $j = 0$, $m+1$ 的网格点而得到的网格 (内部网格). 
+定义一个线性映射 
+$$
+\hat{A}_{2D} : \{X \rightarrow \mathbb{R}\} 
+\rightarrow \{X_I \rightarrow \mathbb{R}\},  ???
+$$
+应该是
+$$
+\hat{A}_{2D} : X_I \rightarrow \mathbb{R},  
+$$
+
+$$
+\hat{A}_{2D} U_{i,j} := (\hat{A}_{2D} U)_{i,j} 
+= \frac{1}{h^2} (4U_{i,j} - U_{i+1,j} - U_{i-1,j} - U_{i,j+1} - U_{i,j-1}).
+(7.74)
+$$
+
+(7.74) 中的 $\hat{A}_{2D}$ 矩阵与例7.40中的 $A_{2D}$ 矩阵不同.
+定义一个比较函数
+$$
+\phi : \mathbb{R}^2 \rightarrow \mathbb{R}, 
+\phi(x, y) := (x - 1/2)^2 + (y - 1/2)^2 (7.75),
+$$
+并写 
+$\phi_{i,j} := \phi(ih, jh)$. 
+由 (7.74) 和 (7.75) 可得 
+$$
+\hat{A}_{2D}\phi_{i,j} = -4. (7.76)
+$$
+令 $E, \tau : X \rightarrow \mathbb{R}$ 是解误差和局部截断误差, 
+而 
+$$
+\tau_m := \max_{i, j} |\tau_{i, j}|. 
+$$
+定义一个格函数
+$$
+\psi_{i,j} := E_{i,j} + \frac14 \tau_m \phi_{i,j}, (7.77)
+$$ 
+则由
+$$
+\hat{A}_{2D} E_{i,j} = -\tau_{i,j} 
+$$
+和 (7.76) 可得
+$$
+\hat{A}_{2D} \psi_{i,j} = -\tau_{i,j} - \tau_m \leq 0.
+$$
+由 (7.74) 得 
+$$
+\hat{A}_{2D} \psi_{i,j} \leq 0
+$$
+表明 $\psi_{i,j}$ 不大于其邻居 $\psi_{i+1,j}$, 
+$\psi_{i-1,j}$, $\psi_{i,j+1}$ 和 $\psi_{i,j-1}$ 
+中的至少一个. 因此, $\psi$ 的最大值必定出现在边界点, 
+即 $i = 0$, $m + 1$ 或 $j = 0$, $m + 1$ 的点. 
+因此, 存在某个常数 $C > 0$, 
+使得 
+$$
+E_{i,j} \leq \psi_{i,j} \leq (1/8) \tau_m < C h^2.
+$$
+最后一步是由 (7.77) 和 $\tau_m \phi_{i,j} \geq 0$ 推出的, 
+第二步是由 $E_{i,j}$ 在所有边界点为零以及 $\phi$ 的最大值在域的角上取到 $1/2$ 
+的事实推出的, 最后一步是由 (7.60) 得出的. 
+通过类似的论证, 格函数
+$$
+\chi_{i,j} := -E_{i,j} + \frac14 \tau_m \phi_{i,j} (7.78)
+$$
+满足 $\hat{A}_{2D} \chi_{i,j} \leq 0$ 
+对所有的网格点成立, 因此
+$$
+-E_{i,j} \leq \chi_{i,j} \leq \frac18 \tau_m < Ch^2.
+$$
+综上所述, 我们有对于所有的网格点 $i,j$, 
+$$
+|E_{i,j}| = O(h^2).
+$$
+
+由于 $\hat{A}_{2D}$ 的矩阵不是 $A_{2D}$, 
+因此 
+$$
+\hat{A}_{2D} E_{i,j} = -\tau_{i,j}
+$$
+的等式并不是由引理 7.18 得出的. 相反, 我们可以通过引理 7.18 证明中类似的论证来证明它: 
+$$
+\hat{A}_{2D} E_{i,j} = \hat{A}_{2D}(U_{i,j} - u_{i,j}) 
+= f_{i,j} - \hat{A}_{2D} u_{i,j} = -\tau_{i,j}, 
+$$
+其中第二个等式是根据 $U_{i,j}$ 的定义得出的, 最后一个等式是根据 (7.55) 和定义 7.15 得出的.
+
+定理 7.55 证明的关键步骤包括
+
+(a) 定义一个连续的比较函数 $\phi$, 使得在整个定义域上, $\phi(x, y)$ 
+为非负且 $\hat{A}_{2D} \phi_{i,j}$ 为负.
+
+(b) 利用 $\phi$ 构建一个网格函数 $\psi_{i,j}$, 
+将解误差 $E_{i,j}$ 与最大范数的局部截断误差 $\tau_m$ 联系起来.
+
+(c) 证明作用于 $\psi_{i,j}$ 的离散算子从未为正. 
+
+(d) 推导出 $\psi$ 的最大值总是出现在定义域的边界.
+
+(e) 利用 $E_{i,j}$ 在边界上为零, 故用 $\tau_m$ 限制 $E_{i,j}$.
+
+(f) 从 $\tau_m$ 的上界得到 $E_{i,j}$ 的上界.
+
+这些步骤是通用的, 我们在引理7.57中总结了(a)-(d), 在定理7.59中总结了(a)-(f).
+
 \bibliography{crazyfish.bib}
 \end{document}
