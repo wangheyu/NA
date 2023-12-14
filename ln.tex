@@ -6324,5 +6324,247 @@ $$
 
 这些步骤是通用的, 我们在引理7.57中总结了(a)-(d), 在定理7.59中总结了(a)-(f).
 
+\hl{记号 4} 考虑在域 $\Omega$ 上离散化一个边值问题 (BVP). 
+用 $X_{\Omega}$ 表示方程离散化点的集合, 其中 BVP 被离散化, 
+且未知函数 $u$ 的值在这里被寻求. 
+令 $X_{\partial\Omega} \subset \partial\Omega$ 为边界点的集合, 
+使得每个点 $Q \in X_{\partial\Omega}$ 满足以下条件:
+\begin{itemize}
+  \item BVP 在 $Q$ 点未被离散化, 
+  \item $u(Q)$ 由狄氏条件给出,
+  \item $Q$ 点的这个狄氏条件参与了在某个 $P \in X_{\Omega}$ 的 BVP 的离散化.
+\end{itemize}
+
+且不失一般性. 我们还可以假设 $X = X_{\Omega} \cup X_{\partial\Omega}$. 
+
+这里不太严格地, 我们可以认为 $X_{\Omega}$ 和 $X_{\partial\Omega}$ 
+分别是区域内部和边界上的计算点.
+
+\hl{例 7.56} 在记号 4 中, 一个边界点必须在域边界 $\partial \Omega$ 上, 
+但一个方程离散化点 $P$ 也可能属于 $\partial \Omega$: 
+如果我们对 $P$ 有一个 Neumann 条件, 那么可能仍需要知道 $P$ 处未知量的值, 
+一般来说, 对应于问题域直接离散化的网格 $X$ 可能包含某些既不属于 $X_{\Omega}$ 
+也不属于 $X_{\partial \Omega}$ 的点, 例如, 
+方形域 $[0, 1]^2$ 的四个角. 
+在记号 4 中, 我们已假设 $X = X_{\Omega} \cup X_{\partial \Omega}$, 
+以排除这些异常点, 使得此后的分析可以相对简单. 
+
+\hl{引理 7.57} (离散最大原理). 假设线性 BVP 的有限差分离散化得到对于所有 
+$P \in X_{\Omega}$, 我们有 
+$$
+L_hU_P - f_P + g_P = 0, \quad (7.79)
+$$
+其中 $f_P$ 对应于 (7.3) 的右侧, $g_P$ 对应于所有其他边界数据 (除了 Dirichlet 条件),
+并且 $L_h$ 和 $X_{\Omega}$ 满足:
+
+\begin{itemize}
+  \item (DMP-1) 对于每一个方程离散化点 $P \in X_{\Omega}$, $L_h$ 的形式如下
+  $$
+  L_h U_P = c_PU_P - \sum_{Q \in Q_P}c_QU_Q, \quad (7.80)
+  $$
+  其中 $Q_P \subset X_{\Omega} \cup X_{\partial\Omega}$, 
+  $c_P > 0$ 且每个 $c_Q > 0$. 集合 $\{P\} \cup Q_P$ 在 (7.80) 
+  中被称为 $P$-模版 或者在 $P$ 处的 $L_h$ 的模版;
+  \item (DMP-2) 对于所有 $P \in X_{\Omega}$, 
+  满足 $c_P \ge \sum_{Q \in Q_P} c_Q$;
+  \item (DMP-3) $X_{\Omega}$ 是连通的, 也就是说, 
+  对于所有 $P_0, P_m \in X_{\Omega}$, 
+  存在 $P_1, P_2, \cdots, P_{m-1}$ 
+  使得对于所有的 $r = 1, 2, \cdots , m$, $P_r$ 在 $P_{r - 1}$-模版中存在;
+  \item (DMP-4) 至少有一个方程 (7.80) 涉及到由 Dirichlet 条件给出的边界值 $U_Q$.
+\end{itemize}
+
+那么对于任何网格函数 
+$$
+\psi : X \rightarrow \mathbb{R}
+$$ 
+满足
+$$
+\begin{cases}
+\max_{P \in X}\psi_P \geq 0, \\
+\forall P \in X_{\Omega}, \quad L_h\psi_P \leq 0,
+\end{cases}
+\quad (7.82)
+$$
+我们有
+$$
+\max_{P \in X_{\Omega}}\psi_P 
+\leq \max_{Q \in X_{\partial\Omega}}\psi_Q. \quad (7.83)
+$$
+
+证明, 假设
+$$
+M_{\Omega} := \max_{Q \in X_{\Omega}}\psi_Q > M_{\partial\Omega} 
+:= \max_{Q \in X_{\partial\Omega}}\psi_Q
+$$
+并设 $P$ 为 $\psi$ 达到 $M_{\Omega}$ 的点. 
+那么
+$$
+(*): M_{\Omega} 
+= \psi_P \leq \frac{1}{c_P}\sum_{Q \in Q_P}c_Q\psi_Q 
+\leq \frac{1}{c_P}\sum_{Q \in Q_P}c_QM_{\Omega} \leq M_{\Omega},
+$$
+其中第一个不等式由 (7.82) 和 (7.80) 得出, 第二个不等式由 $M_{\Omega}$ 的定义得出, 
+第三个不等式由 (DMP-2) 和 $M_{\Omega} \geq 0$ 得出. 
+为了使 (*) 中的第二个 ``$\leq$'' 为 ``$=$'', 
+我们必须对每个 $Q$ 有 $\psi_Q = \psi_P$. 
+根据 (DMP-3), $\psi$ 在所有的方程离散化点上取相同的值 $M_{\Omega}$. 
+然后 (DMP-4) 暗示 $M_{\Omega} = M_{\partial\Omega}$, 
+这与起点 $M_{\Omega} > M_{\partial\Omega}$ 相矛盾.   
+
+在例 7.40 的情况下, 线性映射 $L_h$ 对应的不是 $A_{2D}$, 
+而是 (7.74) 中的 $\hat{A}_{2D}$. 
+这就是为什么 Dirichlet 条件被排除在 $g_P$ 外的原因.
+
+证明引理 7.57 的相同思路将再次出现在定理 11.37 的证明中.
+
+\hl{例 7.58} 假设在 (DMP-3) 中定义的连通性概念为
+$$
+\forall P_0, P_m \in X_{\Omega}, 
+\exists P_1, P_2, \cdots , P_{m-1}
+$$ 
+使得 $\forall r = 1, 2, \cdots, m$,
+$U_{P_r}$ 和 $U_{P_{r-1}}$ 都出现在某个等式 (7.79) 中. (7.84)
+
+然后引理 7.57 的结论 (7.83) 将不成立. 以下是一个反例. 
+
+设 $L_h$ 为
+\begin{eqnarray*}
+L_h\psi_{P_1} &=& 3\psi_{P_1} - \psi_{P_2} - \psi_{P_3} - \psi_{P_4}, \\
+L_h\psi_{P_2} &=& 3\psi_{P_2} - \psi_{P_1} - \psi_{P_3} - \psi_{P_4},\\
+L_h\psi_{P_3} &=& 3\psi_{P_3} - \psi_{P_1} - \psi_{P_2} - \psi_{P_4}, \\
+L_h\psi_{P_4} &=& 3\psi_{P_4} - \psi_{P_1} - \psi_{P_2} - \psi_{P_3}, \\
+L_h\psi_{O} &=& 4\psi_{O} - \psi_{P_1} - \psi_{P_2} - \psi_{P_3} - \psi_{P_4},
+\end{eqnarray*}
+以及在 $Q_i$ 处 $L_h$ 的表达式类似于在 O 处的 $L_h$, 
+使得 (DMP-1,2,4) 成立. (7.84) 也成立. 以下的网格函数 $\psi$ 的分布,
+$$
+\psi_x =
+\begin{cases}
+10, & \text{if } x = P_1, P_2, P_3, P_4; \\
+1, & \text{otherwise},
+\end{cases}
+$$
+满足 (7.82), 但结论 (7.83) 不成立. 
+本例的关键点在于, 为了在解决椭圆方程的上下文中称两点 $P_0$ 和 $P_m$ 为连通的, 
+必须同时存在从 $P_0$ 到 $P_m$ 的路径和从 $P_m$ 到 $P_0$ 的路径. 
+(7.84) 中连通性的定义是不满意的, 因为它没有捕获路径的方向. 
+相比之下, (7.81) 捕获了路径连通性对路径方向的依赖. 
+
+事实上, 离散最大原理不仅适用于泊松方程, 而且适用于任何离散化为形式 (7.79) 的线性椭圆方程. 
+引理 7.57 的重要性在于, 它导致了定理 7.59, 
+这是一个从有限差分离散化的局部属性得到的解错误的全局界限. 
+因此, 它补充了第 7.6.2 节中的方法. 
+
+\hl{定理 7.59} 假设边值问题的有限差分离散化满足引理 7.57 中的条件 (DMP-1,2,3,4). 
+然后有限差分方法 (7.79) 的解误差 $E_P := U_P - u(P)$ 的上界为
+$$
+\forall P \in X, |E_P | \leq T_{\text{max}} 
+\max_{Q\in X_{\partial\Omega}}\phi(Q), \quad (7.85)
+$$
+其中 
+$$
+T_{\text{max}} = \max_{P \in X_{\Omega}}|T_P|,
+$$
+$T_P$ 是 $P$ 处的局部截断误差, 而 
+$$
+\phi : X \rightarrow \mathbb{R}
+$$ 
+是满足
+$$
+\forall P \in X_{\Omega}, L_h\phi_P \leq -1. \quad (7.86)
+$$
+的一个非负网格函数.
+
+证明. 引理 7.18 表明 $L_hE_P = -T_P$. 定义
+$$
+\psi_P := E_P + T_{\text{max}}\phi_P
+$$
+我们从 (7.86) 知道
+$$
+L_h\psi_P \leq -T_P - T_{\text{max}} \leq 0.
+$$
+此外, 我们有 $\max_{P \in X} \psi_P \geq 0$, 
+因为 $\phi_P \geq 0$ 且
+$$
+(*) : \forall Q \in X_{\partial\Omega}, E_Q = 0,
+$$
+参见注释 4. 那么我们有
+$$
+E_P \leq \max_{P \in X}(E_P + T_{\text{max}}\phi_P) 
+\leq \max_{Q\in X_{\partial\Omega}}(E_Q + T_{\text{max}}\phi_Q) 
+= T_{\text{max}} \max_{Q\in X_{\partial\Omega}}(\phi_Q), 
+$$
+其中第一步得出 $T_{\text{max}}\phi_P \geq 0$, 
+第二步来自引理 7.57, 第三步来自 (*). 
+重复上述论证, 用 $\psi_P = -E_P + T_{\text{max}}\phi_P$, 我们有
+$$
+-E_P \leq T_{\text{max}} \max_{Q\in X_{\partial\Omega}}(\phi_Q).
+$$
+
+在例 7.35 中, 第一种和第二种方法对应的离散拉普拉斯满足 (DMP-1,2), 
+而第三种方法的不满足. 因此, 我们可以使用引理 7.57 (或定理 7.59) 
+来推导这两种方法的一阶和二阶收敛性. 
+数值实验的结果显示, 例 7.35 中的第三种方法也具有二阶收敛性; 
+这表明离散最大原理不是收敛性的必要条件, 尽管定理 7.59 保证了充分性.
+
+\subsubsection{在不规则域上的收敛性}
+
+\hl{例 7.60} (2D 不规则域上 Poisson 方程的有限差分方法). 考虑以下边界值问题
+$$
+-\frac{\partial^2}{\partial x^2}u(x, y) 
+-\frac{\partial^2}{\partial y^2}u(x, y) = f(x, y) \quad (7.87)
+$$
+在一个带有 Dirichlet 条件的 2D 不规则域 $\Omega$ 中.
+
+如果能够应用标准的 5点模板, 那么我们就说方程离散化点是规则的; 否则, 它就是不规则的. 
+对于不规则点, 我们修改例 7.40 中的有限差分离散化, 
+以包括局部几何信息和 Dirichlet 条件. 例如, 在上图中, 离散算子变为
+$$
+L_hU_P :=
+\frac{(1 + \theta)U_P - U_A - \theta U_W}{\frac{1}{2}\theta(1 + \theta)h^2}
++
+\frac{(1 + \alpha)U_P - U_B - \alpha U_S}{\frac{1}{2}\alpha(1 + \alpha)h^2}
+\quad
+(7.88)
+$$
+在结果的线性系统 $L_hU_P - f_P = 0$ 中, $L_hU_P$ 的形式与在规则方程离散化点的 (7.58) 
+中的形式是不同的. 因此, 对这个线性系统进行全局分析是困难的. 
+
+\hl{习题 7.61} 证明在例 7.60 中, 
+不规则方程离散化点上的局部截断误差 (LTE) 为 O(h), 
+而在规则方程离散化点上的 LTE 为 $O(h^2)$.
+
+直接应用定理 7.59 和练习 7.61, 
+我们可以得到例 7.60 中的有限差分方法在最大范数下的一阶收敛性. 
+幸运的是, 我们可以提炼离散最大原理以获得更好的收敛速率.
+
+\hl{定理 7.62} 假设在定理 7.59 的符号记号中, 方程离散化点的集合 
+$X_{\Omega}$可以被划分为
+$$
+X_{\Omega} = X_1 \cup X_2, X1 hat X2 = \emptyset,
+$$
+非负函数 $\phi : X \mapsto \mathbb{R}$ 满足
+$$
+\forall P \in X_1, L_h\phi_P \leq -C_1 < 0; \quad (7.89a)
+$$
+$$
+\forall P \in X_2, L_h\phi_P \leq -C_2 < 0, \quad (7.89b)
+$$
+以及 (7.79) 的 LTE 满足
+$$
+\forall P \in X_1, |TP| < T_1; \quad (7.90a)
+$$
+$$
+\forall P \in X_2, |TP| < T_2. \quad (7.90b)
+$$
+那么有限差分方法 (7.79) 的解误差 $EP := UP - u(P)$ 有界, 即
+$$
+\forall P \in X, |EP| \leq 
+\left(\max_{Q\in X_{\partial \Omega}}
+\phi(Q) \right)
+\max \left\{\frac{T_1}{C_1}, \frac{T_2}{C_2}\right\}.
+$$
+
 \bibliography{crazyfish.bib}
 \end{document}
