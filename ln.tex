@@ -6810,7 +6810,7 @@ $$
   p_i^T A p_j = 0, \label{cg::5.5} 
 \end{equation}
 对于所有的 $i \neq j$. 
-很容易证明满足这个性质的任何向量集也是线性独立的. 
+很容易证明满足这个性质的任何向量集也是线性无关的. 
 
 共轭性的重要性在于, 我们可以通过沿着共轭集合中的各个方向依次最小化 $\phi(\cdot)$, 
 在 $n$ 步内最小化 $\phi(\cdot)$. 
@@ -6902,6 +6902,321 @@ $x$-空间中的方向 $p_i$. 因此, 应用于 $\hat{\phi}$
 \begin{equation}
   r_{k + 1} = r_{k} + \alpha_k A p_{k} . \label{cg::5.10}.
 \end{equation}
+
+\hl{定理 2} (扩展子空间最小化). 让 $x_0 \in \mathbb{R}^n$ 为任何起始点, 
+并假设序列 $\{x_k\}$ 由共轭方向算法 (\ref{cg::5.6}), (\ref{cg::5.7}) 
+生成. 那么有
+\begin{equation}
+r_k^T p_i  = 0, \quad \text{for} \quad i = 0, 1,..., k - 1, 
+\label{cg::5.11}
+\end{equation}
+并且 $x_k$ 是函数 $\phi(x)= \frac{1}{2}x^T A x - b^T x$ 在集合
+\begin{equation}
+  \left\{ x | x = x_0 + \text{span}\{p_0, p_1,\cdots, p_{k - 1}\}\right\}
+  \label{cg::5.12}
+\end{equation}
+上的最小值.
+
+证明. 我们首先证明, 如果一个点 $\tilde{x}$在集合 (\ref{cg::5.12}) 
+上最小化函数 $\phi$, 当且仅当 $r(\tilde{x})^T p_i  = 0$ 
+对于每一个 $i = 0, 1,\cdots, k - 1$. 
+让我们定义 
+$$
+h(\sigma) =  \phi(x_0 + \sigma_0 p_0 + \cdots + \sigma_{k-1} p_{k-1}),
+$$
+其中 $\sigma = (\sigma_0, \sigma_1,\cdots,\sigma_{k - 1})^T$. 
+由于 $h(\sigma)$ 是一个严格的凸二次函数, 它有一个唯一的最小值 $\sigma^*$, 
+满足
+\begin{equation*}
+\frac{\partial h(\sigma^*)}{\partial \sigma_i} = 0, 
+\quad \text{for} \quad i = 0, 1,..., k - 1.
+\end{equation*}
+
+通过链式法则, 该方程式意味着
+\begin{equation*}
+\nabla \phi(x_0 + \sigma_0^* p_0 + \cdots 
++ \sigma_{k-1}^* p_{k-1})^T p_i = 0, \quad \text{for} 
+\quad i = 0, 1,\cdots, k - 1.
+\end{equation*}
+回忆定义 (\ref{cg::5.3}), 在集合 (\ref{cg::5.12}) 上最小值点 
+$$
+\tilde{x} = x_0 + \sigma_0^* p_0 + \sigma_1^* p_2 
++ \cdots + \sigma_{k-1}^* p_{k-1}, 
+$$
+我们有 $r(\tilde{x})^T p_i  = 0$, 正如所声称的那样.
+
+现在, 我们使用归纳法来证明 $x_k$ 满足 (\ref{cg::5.11}). 
+对于 $k = 1$ 的情况, 我们有
+$$
+x_1 = x_0 + \alpha_0 p_0
+$$ 
+在 $p_0$ 上最小化 $\phi$, 我们有 $r_1^T p_0 = 0$. 
+让我们现在做归纳假设, 即 $r_{k - 1}^T p_i = 0$ 
+对于 $i = 0, 1,\cdots, k - 2$. 
+由 (\ref{cg::5.10}), 我们有
+\begin{equation*}
+r_k = r_{k - 1} + \alpha_{k - 1}A p_{k - 1},
+\end{equation*}
+所以
+\begin{equation*}
+p_{k-1}^T r_k = p_{k-1}^T r_{k-1} 
++ \alpha_{k-1} p_{k-1}^T A p_{k-1} = 0,
+\end{equation*}
+由 $\alpha_{k - 1}$ 的定义 (\ref{cg::5.7}). 
+同时, 对于其他向量 $p_i$, $i = 0, 1, \cdots, k - 2$, 我们有
+\begin{equation*}
+p_i^T r_k = p_i^T r_{k - 1} + \alpha_{k - 1} p_i^T A p_{k - 1} = 0,
+\end{equation*}
+其中 $p_i^T r_{k - 1} = 0$ 因为归纳假设, $p_i^T A p_{k-1} = 0$ 
+因为向量 $p_i$ 的共轭. 我们已经证明了 
+$r_k^T p_i = 0$, 对于 $i = 0, 1,\cdots, k - 1$, 所以证明是完整的. 
+
+当前残差 $r_k$ 正交于所有以前的搜索方向, 如公式 (\ref{cg::5.11}) 所表述, 
+这是一个将广泛使用的特性. 
+
+到目前为止的讨论是通用的, 因为它适用于基于任何一种共轭方向集 
+$\{p_0, p_1,\cdots, p_{n - 1}\}$ 
+的共轭方向方法 (\ref{cg::5.6}), (\ref{cg::5.7}). 
+有许多方法可以选择共轭方向的集合. 例如, 矩阵 $A$ 的特征向量 
+$v_1, v_2,\cdots,v_n$ 是相互正交的, 也是相对于 $A$ 的共轭的, 
+因此这些向量可以作为向量集 ${p_0, p_1,..., p_{n - 1}}$. 
+当然, 这样做并不合理, 因为求全部特征对比解方程组本身更加昂贵. 
+另一种方法是修改 Gram-Schmidt 正交化过程, 
+生成一组共轭方向而不是一组正交方向. 这种修改易于产生, 
+因为共轭性和正交性的性质在空间中是密切相关的. 
+但是实际上, 我们可以做的更好.
+
+\subsubsection*{共轭梯度法的基本属性}
+
+共轭梯度法是一种共轭方向法, 具有非常特殊的性质: 在生成其共轭向量集的过程中, 
+它只需使用前一向量 $p_{k - 1}$ 就可以计算出新的向量 $p_k$. 
+它不需要知道所有先前的元素 $p_0, p_1,..., p_{k-2}$ 的共轭集; 
+$p_k$ 会自动与这些向量共轭. 这个显著的性质意味着该方法需要的存储和计算量很小.
+
+在共轭梯度方法中, 每个方向 $p_k$ 被选择为负残差 $-r_k$
+(由公式(\ref{cg::5.3}), 这是函数 $\phi$ 的最陡下降方向) 
+和前一方向 $p_{k - 1}$ 的线性组合. 我们写为
+\begin{equation}
+p_k = -r_k + \beta_k p_{k-1}, \label{cg::5.13}
+\end{equation}
+其中标量 $\beta_k$ 需要通过 $p_{k-1}$ 和 $p_k$ 必须相对于 
+$A$ 是共轭的条件来确定. 在 (\ref{cg::5.13}) 两边同乘以 
+$p_{k-1}^T A$ 并施加条件 
+$$
+p_{k-1}^T Ap_k = 0,
+$$
+我们发现
+\begin{equation}  
+\beta_k = \frac{r_k^T Ap_{k-1}}{p_{k-1}^T Ap_{k-1}}
+\label{cg::14F}
+\end{equation}
+我们选择初始点 $x_0$ 处的最陡下降方向作为第一个搜索方向 $p_0$. 
+如同一般的共轭方向方法, 我们沿每个搜索方向进行连续的一维最小化. 
+因此我们已经定义了一个完整的算法, 我们将其正式地表达如下:
+
+\hl{算法} 1 (CG-初级版本)
+
+\begin{itemize}
+  \item 给定 $x_0$;
+  \item 设定 $r_0 \leftarrow Ax_0 - b$, 
+  $p_0 \leftarrow -r_0$, $k \leftarrow 0$;
+  \item \verb|while| $r_k \neq 0$:
+  \begin{enumerate}
+  \item 计算步长 
+  $$
+  \alpha_k \leftarrow - \frac{r_k^T p_k}{p_k^T A p_k};
+  $$
+  \item 更新解
+  $$ 
+  x_{k + 1} \leftarrow x_k + \alpha_k p_k; 
+  $$
+  \item 计算新的残差
+  $$
+  r_{k + 1} \leftarrow A x_{k + 1} - b;
+  $$
+  \item 计算新的共轭方向的系数
+  $$
+  \beta_{k + 1} \leftarrow \frac{r_{k + 1}^T A p_k}{p_k^T A p_k};
+  $$
+  \item 计算新的共轭方向
+  $$
+  p_{k+1} \leftarrow -r_{k + 1} + \beta_{k + 1} p_k;
+  $$
+  \item 更新迭代次数 $k \leftarrow k + 1$;
+  \end{enumerate}
+\end{itemize}
+
+此版本适用于研究共轭梯度方法的基本性质, 但我们稍后会提供更高效的版本. 
+首先. 我们证明方向 $p_0, p_1, ..., p_{n-1}$ 确实是共轭的, 
+由定理 1 可知这意味着在 $n$ 步后终止. 
+下面的定理确立了这个性质以及另外两个重要的性质. 首先, 残差 $r_i$ 是两两正交的. 
+其次, 每个搜索方向 $p_k$ 和残差 $r_k$ 都包含在 $r_0$ 的 $k$ 阶 
+Krylov 子空间中, 定义如下
+\begin{equation}
+\mathscr{K} (r_0; k) \triangleq \operatorname{span} 
+\{r_0, A r_0, \ldots, A^{k} r_0\}.
+\label{cg::5.15}  
+\end{equation}
+
+\hl{定理 3}
+假设由共轭梯度法生成的第 $k$ 次迭代不是解 $x^*$. 则下面四个性质成立:
+\begin{equation}
+  r_k^T r_i = 0, \quad \text{for} \quad i = 0, 1, \cdots, k - 1, 
+  \label{cg::5.16}
+\end{equation}
+\begin{equation}
+  \operatorname{span}\{r_0, r_1, \cdots, r_k \} 
+  = \operatorname{span}\{r_0, A r_0, \cdots, A^k r_0 \}, 
+  \label{cg::5.17}
+\end{equation}
+\begin{equation}
+  \operatorname{span}\{p_0, p_1, \cdots, p_k \} 
+  = \operatorname{span}\{r_0, A r_0, \cdots, A^k r_0 \}, 
+  \label{cg::5.18}
+\end{equation}
+\begin{equation}
+  p_k^T A p_i = 0, \quad \text{for} \quad i = 0, 1, \cdots, k - 1. 
+  \label{cg::5.19}
+\end{equation}
+因此, 序列 $\{x_k\}$ 最多在 $n$ 步之内收敛到 $x^*$.
+
+证明. 通过归纳法来证明. 对于 $k = 0$, 表达式 (\ref{cg::5.17}) 
+和 (\ref{cg::5.18}) 显然成立, 而对于 $k = 1$, 由于构造的原因, 
+式 (\ref{cg::5.19}) 成立. 现在假设这三个表达式对于某个 $k$ 是成立的, 
+我们将证明他们对于 $k + 1$ 仍然成立.
+
+为了证明 (\ref{cg::5.17}), 我们首先展示左侧的集合包含在右侧的集合中. 
+由于归纳假设, 我们由 (\ref{cg::5.17}) 和 (\ref{cg::5.18}) 得出
+$$
+r_k \in \operatorname{span}\{r_0, A r_0, \ldots, A^k r_0\}, 
+\quad p_k \in \operatorname{span}\{r_0, A r_0, \ldots, A^k r_0\},
+$$
+同时通过将这些表达式的第二个乘以 $A$, 我们得到
+\begin{equation}
+A p_k \in \operatorname{span}\{A r_0, \ldots, A^{k+1} r_0\}. 
+\label{cg::5.20}
+\end{equation}
+通过应用 (\ref{cg::5.10}), 我们发现
+$$
+r_{k+1} \in \operatorname{span}\{r_0, A r_0, \ldots, A^{k+1} r_0\}.
+$$
+通过将这个表达式与 (\ref{cg::5.17}) 的归纳假设相结合, 我们得出
+$$
+\operatorname{span}\{r_0, r_1, \ldots, r_k, r_{k+1}\} 
+\subset \operatorname{span}\{r_0, A r_0, \ldots, A^{k+1} r_0\}.
+$$
+为了证明反向包含关系也成立，我们用 (\ref{cg::5.18}) 的归纳假设来推断出
+$$
+A^{k+1} r_0 = A(A^{k} r_0) 
+\in \operatorname{span}\{A p_0, A p_1, \ldots, A p_k\}.
+$$
+由于根据 (\ref{cg::5.10}) 我们有 
+$$
+A p_i = \frac{(r_{i+1} - r_i)}{\alpha_i}
+$$ 
+对于 $i = 0, 1, \cdots, k$ 成立, 所以我们得出
+$$
+A^{k+1} r_0 \in \operatorname{span}\{r_0, r_1, \cdots, r_{k + 1}\}.
+$$
+通过将这个表达式与 (\ref{cg::5.17}) 的归纳假设结合起来, 我们发现
+$$
+\operatorname{span}\{r_0, A r_0, \cdots, A^{k+1} r_0\} 
+\subset \operatorname{span}\{r_0, r_1, \cdots, r_k, r_{k+1}\}.
+$$
+因此, 当 $k$ 被替换为 $k+1$ 时, 关系 (\ref{cg::5.17}) 依然成立, 如所述.
+
+我们通过以下论证表明当 $k$ 被替换为 $k+1$ 时, (\ref{cg::5.18}) 仍然成立:
+\begin{align*}
+\operatorname{span}\{p_0, p_1, \cdots, p_k, p_{k+1}\} 
+& \subset \operatorname{span}\{p_0, p_1, \cdots, p_k, r_{k+1}\} 
+& \text{通过算法 1 (5)} \\
+& \subset \operatorname{span}\{r_0, A r_0, \cdots, A^k r_0, r_{k+1}\} 
+& \text{通过 (\ref{cg::5.18}) 的归纳假设} \\
+& \subset \operatorname{span}\{r_0, r_1, ..., r_k, r_{k+1}\} 
+& \text{通过 (\ref{cg::5.17}}) \\
+& \subset \operatorname{span}\{r_0, A r_0, ..., A^{k+1} r_0\} 
+& \text{通过 (\ref{cg::5.17})}, k + 1.
+\end{align*}
+
+接下来, 我们证明当 $k$ 被替换为 $k+1$ 时, 共轭条件 (\ref{cg::5.19}). 
+通过将算法 1 (5), 乘以 $A p_i$, $i = 0, 1, \cdots, k$, 我们得到
+\begin{equation}
+p_{k+1}^T A p_i = -r_{k+1}^T A p_i + \beta_{k+1} p_k^T A p_i. 
+\label{cg::5.21}  
+\end{equation}
+
+由 $\beta_k$ 的定义 (算法 1 的 4), 当 $i = k$ 时, 
+(\ref{cg::5.21}) 的右侧消失. 对于 $i \leq k - 1$, 我们需要收集一些观察. 
+首先注意到我们的 (\ref{cg::5.19}) 的归纳假设意味着方向 
+$p_0, p_1, \cdots, p_k$ 是共轭的, 所以我们可以应用定理 2,
+我们可以得出
+\begin{equation}
+r_{k+1}^T p_i = 0, \quad \text{for} \quad i = 0, 1, \cdots, k. 
+\label{cg::5.22}
+\end{equation}
+其次, 通过重复应用 (\ref{cg::5.18}), 
+我们发现对于 $i = 0, 1, \cdots, k - 1$, 下列包含关系成立:
+\begin{equation}
+  \begin{array}{ll}
+A p_i & \in A \operatorname{span}\{r_0, A r_0, \cdots, A^i r_0\} \\
+& \subset \operatorname{span}\{A r_0, A^2 r_0, \cdots, A^{i+1} r_0\} \\
+& \subset \operatorname{span}\{p_0, p_1, \cdots, p_{i+1}\}. 
+  \end{array}
+\label{cg::5.23}
+\end{equation}
+通过结合 (\ref{cg::5.22}) 和 (\ref{cg::5.23}), 我们推导出
+$$
+r_{k+1}^T A p_i = 0, \quad \text{for} \quad i = 0, 1, \cdots, k - 1,
+$$
+所以 (\ref{cg::5.21}) 的右侧的第一个项对于 
+$i = 0, 1, \cdots, k - 1$ 消失. 
+由于 (\ref{cg::5.19}) 的归纳假设, 第二个项也消失, 我们可以得出
+$$
+p_{k+1}^T A p_i = 0, \quad i = 0, 1, ..., k. 
+$$
+因此. 归纳法对于 (5.19) 也是有效的.
+
+由此可见, 共轭梯度法生成的方向集确实是共轭方向集, 
+因此根据定理 5.1, 我们知道该算法在最多 $n$ 次迭代中终止.
+
+最后, 我们通过一个非归纳的论证来证明 (\ref{cg::5.16}). 
+由于方向集是共轭的, 我们从 (\ref{cg::5.11}) 得知, 
+对于所有的 $i = 0, 1, \cdots, k - 1$ 和任意的 
+$k = 1, 2, \cdots, n - 1$, 都有 $r_k^T p_i = 0$. 
+通过重新排列 (算法 1 (5)), 我们发现
+$$
+p_i = -r_i + \beta_i p_{i-1},
+$$
+因此对于所有的 $i = 1, \cdots, k - 1$, 
+都有 $r_i \in \operatorname{span}\{p_i, p_{i-1}\}$. 
+我们得出对于所有的 $i = 1, \cdots, k - 1$, 
+都有 $r_k^T r_i = 0$. 为了完成证明, 我们注意到由于在算法 1 中对 
+$p_0$ 的定义以及 (\ref{cg::5.11}), 
+我们有 $r_k^T r_0 = -r_k^T p_0 = 0$.
+
+这个定理的证明依赖于第一个方向 $p_0$ 是最陡下降方向 $-r_0$ 这一事实; 
+实际上, 对于 $p_0$ 的其他选择, 这个结果并不成立. 由于梯度 $r_k$ 是相互正交的, 
+因此 ``共轭梯度法'' 实际上是一个误称. 是搜索方向, 而不是梯度, 相对于 $A$ 是共轭的.
+
+\subsubsection*{一个实用的共轭梯度法形式}
+
+通过使用定理 2 和 3 的结果, 我们可以推导出一个稍微更经济的共轭梯度法形式. 
+首先, 我们可以用 (算法 1 (5))和 (\ref{cg::5.11}) 
+来替换 (算法 1 (1)) 中的 $\alpha_k$:
+$$
+\alpha_k = \frac{r_k^T r_k}{p_k^T A p_k}.
+$$
+其次, 我们从 (\ref{cg::5.10}) 中得到 
+$$
+\alpha_k A p_k = r_{k+1} - r_k,
+$$ 
+因此通过再次应用 (算法 1 (5)) 和 (\ref{cg::5.11}) 
+我们可以简化 $\beta_{k+1}$ 的公式为:
+$$
+\beta_{k+1} = \frac{r_{k+1}^T r_{k+1}}{r_k^T r_k}.
+$$
+通过使用这些公式以及 (\ref{cg::5.10}), 我们得到了共轭梯度方法的标准形式.
+
 
 
 % 设 $\htx $ 是椭球面 $\htH (\htx )=c$ 上的一点，则 $\htH (\htx )$ 在点 $\htx $ 的梯度是
