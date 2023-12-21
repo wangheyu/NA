@@ -7217,414 +7217,375 @@ $$
 $$
 通过使用这些公式以及 (\ref{cg::5.10}), 我们得到了共轭梯度方法的标准形式.
 
+\hl{算法} 2 (CG)
 
+\begin{itemize}
+  \item 给定 $x_0$;
+  \item 设定 $r_0 \leftarrow Ax_0 - b$, 
+  $p_0 \leftarrow -r_0$, $k \leftarrow 0$;
+  \item \verb|while| $r_k \neq 0$:
+  \begin{enumerate}
+  \item 计算步长 
+  $$
+  \alpha_k \leftarrow - \frac{r_k^T r_k}{p_k^T A p_k};
+  $$
+  \item 更新解
+  $$ 
+  x_{k + 1} \leftarrow x_k + \alpha_k p_k; 
+  $$
+  \item 计算新的残差
+  $$
+  r_{k + 1} \leftarrow r_{k} + \alpha_k A p_{k};
+  $$
+  \item 计算新的共轭方向的系数
+  $$
+  \beta_{k + 1} \leftarrow \frac{r_{k + 1}^T r_{k + 1}}{r_k^T r_k};
+  $$
+  \item 计算新的共轭方向
+  $$
+  p_{k+1} \leftarrow -r_{k + 1} + \beta_{k + 1} p_k;
+  $$
+  \item 更新迭代次数 $k \leftarrow k + 1$;
+  \end{enumerate}
+\end{itemize}
 
-% 设 $\htx $ 是椭球面 $\htH (\htx )=c$ 上的一点，则 $\htH (\htx )$ 在点 $\htx $ 的梯度是
-% $$ \nabla \htH (\htx )=-2\htr   $$
-% 即 $\htH (\htx )=c$ 在 $\htx $ 的梯度方向是 $\htx $ 的剩余向量 $\htr  $ 的负方向.~
+在算法 2 的任何给定点, 我们只需要知道向量 $x$, $r$ 和 $p$ 的最后两次迭代的值. 
+因此, 此算法的实现将覆盖这些向量的旧值以节省存储空间. 
+在每一步中需要执行的主要计算任务是计算矩阵向量积 $Ap_k$, 
+计算内积 $p_k^T(Ap_k)$ 和 $r_{k+1}^Tr_{k+1}$, 以及计算三个向量的和. 
+内积和向量和运算可以在 $n$ 个浮点运算的小倍数中执行, 
+而矩阵向量积的计算成本当然取决于问题. 只有在大问题上, 我们才推荐使用CG方法; 
+否则, 应使用高斯消元法或其他方法. 
 
-% 下面将说明从任意初始向量 $\htx ^{(0)}$ 出发，可以逐次利用剩余向量
-% $\{\htr  ^{(i)}\}$ 来 构造一组 $\htA $ 共轭正交的向量和近似解向量
-% $\{\htx ^{(i)}\}$ .~因为 $\htr  ^{(i)}$ 相应于 $\htH (\htx )$ 在 $\htx =\htx ^{(i)}$
-% 的梯度，所以 $\{\htp   ^{(i)}\}$ 也称为共轭梯度.~ 因而利用 $\{\htp   ^{(i)}\}$
-% 来求解线性方程组 的方法就称为共轭梯度法.~
+\subsubsection*{收敛速率}
 
-% 记 $\htx ^{(0)}$ 是初始向量，作剩余向量
-%  $$ \htr  ^{(0)}=b-\htA \htx ^{(0)} $$
-% 取
-%  $$\htp   ^{(0)}=\htr  ^{(0)}$$
-% 我们有了 $\htx ^{(0)}$ 和 $\htp   ^{(0)}$ .~然后取
-%  $$ \htx ^{(1)}=\htx ^{(0)}+\alpha_0\htp   ^{(0)} $$
-% 其中 $\alpha_0$ 是这样选取的：令
-%  $$ \htH (\htx ^{(0)}+\alpha_0\htp   ^{(0)})=\min_{\alpha\in R}\htH (\htx ^{(0)}+\alpha \htp   ^{(0)}) $$
-% 由
-% $$ \frac{{\rm d} \htH (\htx ^{(0)}+\alpha \htp   ^{(0)})}{{\rm d} \alpha}=0 $$
-% 得
-% $$ \alpha_0=\frac{(\htr  ^{(0)},\htp   ^{(0)})}{(\htp   ^{(0)},\htA \htp   ^{(0)})} $$
-% 接着，我们计算
-%  $$ \htr  ^{(1)}=\htb-\htA \htx ^{(1)} $$
-% 取
-%  $$ \htp   ^{(1)}=\htr  ^{(1)}+\beta_{0}\htp   ^{(0)} $$
-% 选取 $\beta_{0}$,使得 $ (\htp   ^{(k)},\htA \htp   ^{(k-1)})=0 $，得
-%  $$ \beta_{0}=-\frac{(\htr  ^{(1)},\htA \htp   ^{(0)})}{(\htp   ^{(0)},\htA \htp   ^{(0)})}$$
-% 这样，我们得到了 $\htx ^{(1)}$ 和 $\htp   ^{(1)}$  .~
-% 下面我们推导一般的计算公式.~
+我们已经看到, 在精确算术中, 共轭梯度法最多在 $n$ 次迭代后将结束在解处. 
+更值得注意的是, 当 $A$ 的特征值的分布具有一些有利的特性时, 
+算法将在远少于 $n$ 次迭代中找到解决方案. 为了解释这个特性, 
+我们首先从一个稍微不同的角度来看待在定理 2 中证明的扩展子空间最小化性质, 
+并使用它来表明算法 2 在某种重要意义上是最优的.
 
-% 设已经得到了 $\htx ^{(k)}$ 和 $\htp   ^{(k)}$ ，我们要计算 $\htx ^{(k+1)}$ 和
-% $\htp   ^{(k+1)}$ .~ 取
-% \begin{equation}
-%  \htx ^{(k+1)}=\htx ^{(k)}+\alpha_k \htp   ^{(k)}
-%  \label{eq:a2311a}
-% \end{equation}
-% 其中 $\alpha_k$ 是这样选取的：令
-% \begin{equation}
-%  \htH (\htx ^{(k)}+\alpha_k \htp   ^{(k)})=\min_{\alpha\in R}\htH (\htx ^{(k)}+\alpha \htp   ^{(k)})
-%  \label{eq:a2312a}
-% \end{equation}
-% 由
-% \begin{equation}
-%  \frac{{\rm d} \htH (\htx ^{(k)}+\alpha \htp   ^{(k)})}{{\rm d} \alpha}=0
-%  \label{eq:a2313a}
-% \end{equation}
-% 得
-% \begin{equation}
-%  \alpha_k=\frac{(\htr  ^{(k)},\htp   ^{(k)})}{(\htp   ^{(k)},\htA \htp   ^{(k)})}
-%  \label{eq:a2314a}
-% \end{equation}
-% 然后计算
-% \begin{equation}
-%   \htr  ^{(k+1)}=\htb-\htA \htx ^{(k+1)}
-%  \label{eq:a2315a}
-% \end{equation}
-% 取
-% \begin{equation}
-%  \htp   ^{(k+1)}=\htr  ^{(k+1)}+\beta_{k}\htp   ^{(k)}
-%  \label{eq:a2316a}
-% \end{equation}
-% 我们是这样选取 $\beta_{k}$ 的：令
-% \begin{equation}
-%  (\htp   ^{(k+1)},\htA \htp   ^{(k)})=0
-%  \label{eq:a2317a}
-% \end{equation}
-% 得
-% \begin{equation}
-%  \beta_{k}=-\frac{(\htr  ^{(k+1)},\htA \htp   ^{(k)})}{(\htp   ^{(k)},\htA \htp   ^{(k)})}
-%  \label{eq:a2318a}
-% \end{equation}
-% 这样，我们得到了 $\htx ^{(k+1)}$ 和 $\htp   ^{(k+1)}$  .~
+从公式 (算法 2 (2)) 和 (\ref{cg::5.18}) 我们可以得到
+\begin{equation}
+x_{k+1} = x_0 + \alpha_0p_0 + \cdots + \alpha_kp_k 
+= x_0 + \gamma_0r_0 + \gamma_1Ar_0 + \cdots + \gamma_kA^kr_0, 
+\label{cg::5.25}
+\end{equation}
+其中 $\gamma_i$ 为一些常数. 我们现在定义 $P_k^*(\cdot)$ 为一个有 
+$\gamma_0, \gamma_1, \cdots, \gamma_k$ 作为系数的 $k$ 阶多项式. 
+像任何多项式一样, $P_k^*$ 可以接受一个标量或一个方阵作为它的未知量. 
+对于矩阵参数 $A$, 我们有
+$$
+P_k^*(A) = \gamma_0I + \gamma_1A + \cdots + \gamma_kA^k,
+$$
+这使得我们可以如下表示公式 (\ref{cg::5.25}):
+\begin{equation}
+  x_{k+1} = x_0 + P_k^*(A)r_0. \label{cg::5.26}
+\end{equation}
+我们现在将展示在所有可能的方法中, 
+当其在第一k步受到公式 (\ref{cg::5.15}) 给出的 Krylov 子空间
+$K(r_0; k)$ 的限制时, 算法 2 在 $k$ 步后最好地最小化到解的距离, 
+当这个距离通过加权范数测量 $\| \cdot \|_A$ 定义为
+\begin{equation}
+\|z\|_A^2 = z^TAz. 
+\label{cg::5.27}
+\end{equation}
+(可以证明当 $A$ 对称正定时这确实是一种范数. )
+使用这个范数和公式 (\ref{cg::5.2}) 中的 $\phi$ 的定义, 
+以及 $x^*$ 最小化 $\phi$ 的事实, 很容易证明
+\begin{equation}
+  \frac{1}{2}\|x - x^*\|_A^2 = \frac{1}{2}(x - x^*)^T A(x - x^*) = \phi(x) - \phi(x^*).
+  \label{cg::5.28}
+\end{equation}
 
-% 综合上面的分析，可以得到共轭梯度法的计算公式：取初始向量 $\htx ^{(0)}$ ， 按如下公式递推计算：\\
-% \hspace*{2cm}  $\htr  ^{(0)}=\htp   ^{(0)}=\htb-\htA \htx ^{(0)}$ \\
-% \hspace*{1.5cm}  对 ~ $k=0,1,\cdots,n,$ \\
-% \hspace*{2.5cm} 若 $ ||\htr  ^{(k)}||=0$ , $\htx ^{(k)}$ 已经是线性方程组的解 ，停止计算.\\
-% \hspace*{2.5cm} 否则\\
-% \hspace*{3.5cm}  $\alpha_k=\frac{(\htr  ^{(k)},\htp   ^{(k)})}{(\htp   ^{(k)},\htA \htp   ^{(k)})}$ \\
-% \hspace*{3.5cm}  $\htx ^{(k+1)}=\htx^{(k)}+\alpha_k \htp   ^{(k)}$ \\
-% \hspace*{3.5cm}  $\htr  ^{(k+1)}=b-\htA x^{(k+1)}$ \\
-% \hspace*{3.5cm}  $\beta_{k}=-\frac{(\htr  ^{(k+1)},\htA \htp   ^{(k)})}{(\htp   ^{(k)},\htA \htp   ^{(k)})}$ \\
-% \hspace*{3.5cm}  $\htp   ^{(k+1)}=\htr  ^{(k+1)}+\beta_{k}\htp   ^{(k)}$
+定理 2 声明 $x_{k + 1}$ 在集合 $x_0 + span\{p_0, p_1, \ldots, p_k\}$ 中最小化 $\phi$, 
+因此 $\|x - x^*\|_A^2$, 它由公式 (\ref{cg::5.18}) 表示为
+$$
+x_0 + span\{r_0, Ar_0, \ldots, A^kr_0\}.
+$$
+由公式 (\ref{cg::5.26}) 可知, 多项式 $P_k^*$ 解决了以下问题, 
+其中最小值在所有可能的 $k$ 阶多项式的空间中取得:
+\begin{equation}
+  \min_{P_k}\|x_0 + P_k(A)r_0 - x^*\|_A. \label{cg::5.29}
+\end{equation}
+在本节的余下部分, 我们将反复利用这个最优性质.
+因为
+$$
+r_0 = Ax_0 - b = Ax_0 - Ax^* = A(x_0 - x^*),
+$$
+我们得到
+\begin{equation}
+x_{k+1} - x^* = x_0 + P_k^*(A)r_0 - x^* = [I + P_k^*(A)A](x_0 - x^*). 
+\label{cg::5.30}
+\end{equation}
 
-% 共轭梯度法有下列性质:
-% {\dl \label{dl.cg01a} 设$\{
-% \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(k)} \}$ 和$\{
-% \htp   ^{(0)},\htp   ^{(1)},\cdots,\htp   ^{(k)} \}$
-% 是由共轭梯度法产生的向量序列，并且$||\htr  ^{(k)}||>0$ ，则有
-% \begin{equation}
-%  {\rm span}\{ \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(k)} \}={\rm span}\{ \htp   ^{(0)},\htp   ^{(1)},\cdots,\htp   ^{(k)} \}
-%  \label{eq:a2321a}
-% \end{equation}
-% }
+设 
+$$
+0 < \lambda_1 \leq \lambda_2 \leq \ldots \leq \lambda_n
+$$
+为 $A$ 的特征值, 设
+$$
+v_1, v_2, \ldots, v_n
+$$
+为相应的标准化特征向量, 使得
+$$
+A = \sum_{i=1}^{n} \lambda_iv_iv_i^T.
+$$
+因为特征向量跨越了整个空间 $\mathbb{R}^n$, 我们可以写为
+\begin{equation}
+  x_0 - x^* = \sum_{i=1}^{n} \xi_iv_i,
+  \label{cg::5.31}
+\end{equation}
+其中 $\xi_i$ 为一些系数. 很容易证明 $A$ 的任何特征向量对于任何多项式
+$P_k$ 也是 $P_k(A)$ 的特征向量. 
+对于我们特殊的矩阵 $A$ 和它的特征值 $\lambda_i$ 和特征向量 $v_i$, 我们有
+$$
+P_k(A)v_i = P_k(\lambda_i)v_i, \quad i = 1, 2, \ldots, n.
+$$
 
-% {\zm} 由共轭梯度法的计算公式：
-% \begin{equation}
-% \left \{
-% \begin{array}{l}
-%  \htp   ^{(0)}=\htr  ^{(0)} \\
-%  \htp   ^{(i)}=\htr  ^{(i)}+\beta_{i-1}\htp   ^{(i-1)} \\
-%  i=1,2,\cdots,k
-% \end{array}
-%  \right .
-%  \label{eq:a2322a}
-% \end{equation}
-% 得
-% \begin{equation}
-% \left \{
-% \begin{array}{l}
-%  \htr  ^{(0)}=\htp   ^{(0)} \\
-%  \htr  ^{(i)}=\htp   ^{(i)}-\beta_{i-1}\htp   ^{(i-1)} \\
-%  i=1,2,\cdots,k
-% \end{array}
-%  \right .
-%  \label{eq:a2323a}
-% \end{equation}
-% 上式可以写成：
-% \begin{eqnarray}
-% [\htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(k)}]&=&[\htp   ^{(0)},\htp   ^{(1)},\cdots,\htp   ^{(k)}]
-% \left [
-% \begin{array}{ccccccc}
-%  1 & \beta_{0} \\
-%    & 1 & \beta_{1} \\
-%        & & \ddots & \ddots & \\
-%    &   & &        &  1 & \beta_{k-1} \\
-%     &  & &        &    &       1
-% \end{array}
-%  \right ]\nonumber\\
-%  & \stackrel{\bigtriangleup}{=}&[\htp   ^{(0)},\htp   ^{(1)},\cdots,\htp   ^{(k)}]\htH\label{eq:a2324a}
-% \end{eqnarray}
-% 由于变换矩阵 $\htH $ 可逆，所以 (\ref{eq:a2321a}) 式成立.~ \qed
-% % --------------------------
-% { \dl \label{dl.cg02a} 设$\{ \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(k)} \}$
-% 和$\{ \htp   ^{(0)},\htp   ^{(1)},\cdots,\htp   ^{(k)} \}$
-% 是由共轭梯度法产生的向量序列，并且$||\htr  ^{(k)}||>0$ ，则有
-% \begin{equation}
-% \left \{
-% \begin{array}{l}
-%  (\htr  ^{(i)},\htr  ^{(j)})=0 \\
-%  0\le i,j \le k,~~i\ne j
-% \end{array}
-%  \right .
-%  \label{eq:a2331a}
-% \end{equation}
-% 和
-% \begin{equation}
-% \left \{
-% \begin{array}{l}
-%  (\htp   ^{(i)},\htA \htp   ^{(j)})=0 \\
-%  0\le i,j \le k,~~i\ne j
-% \end{array}
-%  \right .
-%  \label{eq:a2332a}
-% \end{equation}
-% 由此可知，共轭梯度法最多在 $n$ 步得到方程的精确解.~}
+将公式 (\ref{cg::5.31}) 代入公式 (\ref{cg::5.30}) 我们得到
+$$
+x_{k+1} - x^* = \sum_{i=1}^{n} [1 + \lambda_i P^*_k (\lambda_i)] \xi_i v_i.
+$$
+使用公式 
+$$
+\|z\|^2_A = z^T Az = \sum_{i=1}^{n} \lambda_i (v_i^T z)^2
+$$
+我们有
+\begin{equation}
+\|x_{k+1} - x^*\|^2_A 
+= \sum_{i=1}^{n} \lambda_i [1 + \lambda_i P^*_k (\lambda_i)]^2 \xi_i^2. \label{cg::5.32}
+\end{equation}
+因为由共轭梯度法生成的多项式 $P^*_k$ 相对于此范数是最优的, 我们有
+$$
+\|x_{k+1} - x^*\|^2_A 
+= \min_{P_k} \sum_{i=1}^{n} \lambda_i [1 + \lambda_i P_k (\lambda_i)]^2 \xi_i^2.
+$$
+通过从这个表达式中提取最大的项 $[1 + \lambda_i P_k (\lambda_i)]^2$, 我们得到
+\begin{equation}
+  \begin{array}{rcl}
+\|x_{k+1} - x^*\|^2_A &\leq& 
+\min_{P_k} \max_{1 \leq i \leq n} 
+[1 + \lambda_i P_k (\lambda_i)]^2 \left(\sum_{j=1}^{n} \lambda_j \xi_j^2\right) \\
+&=& \min_{P_k} \max_{1 \leq i \leq n} [1 + \lambda_i P_k (\lambda_i)]^2 \|x_0 - x^*\|^2_A,
+\label{cg::5.33}
+  \end{array}
+\end{equation}
+其中我们使用了事实
+$$
+\|x_0 - x^*\|^2_A = \sum_{j=1}^{n} \lambda_j \xi_j^2.
+$$
 
-% {\zm} 用数学归纳法证明.~ 当 $k=1$ 时，(\ref{eq:a2331a}) 和 (\ref{eq:a2332a}) 式显然成立.~ \\
-% 设 $k=i$ 时，(\ref{eq:a2331a}) 和 (\ref{eq:a2332a}) 式成立，
-% 下面证明当 $k=i+1$ 和 $||\htr  ^{(i+1)}||>0$ 时 (\ref{eq:a2331a}) 和
-% (\ref{eq:a2332a}) 式也成立.~我们只需证明：
-% \begin{equation}
-% \left \{
-% \begin{array}{l}
-%  (\htr  ^{(i+1)},\htr  ^{(j)})=0 \\
-%  0\le j \le i
-% \end{array}
-%  \right .
-%  \label{eq:a2333a}
-% \end{equation}
-% 和
-% \begin{equation}
-% \left \{
-% \begin{array}{l}
-%  (\htp   ^{(i+1)},\htA \htp   ^{(j)})=0 \\
-%  0\le j \le i
-% \end{array}
-%  \right .
-%  \label{eq:a2334a}
-% \end{equation}
-% 当 $j=i$ 时，由共轭梯度法直接得到.~ \\
-% 当 $j<i$ 时，由(\ref{eq:a2311a})式，
-% \begin{equation}
-%  \htr  ^{(i+1)}=\htb-\htA \htx ^{(i+1)}=\htb-\htA (\htx ^{(i)}+\alpha_{i}\htp   ^{(i)})=\htr  ^{(i)}-\alpha_{i}\htA \htp   ^{(i)}
-%  \label{eq:a2335a}
-% \end{equation}
-% 得~(\ref{eq:a2333a})式成立.~\\
-% 又由(\ref{eq:a2316a})式
-% \begin{equation}
-%  \htp   ^{(i+1)}=\htr  ^{(i+1)}+\beta_{i}\htp   ^{(i)}
-%  \label{eq:a2336a}
-% \end{equation}
-% 得
-% \begin{equation}
-% \begin{array}{l}
-%  (\htp   ^{(i+1)},\htA \htp   ^{(j)})=(\htr  ^{(i+1)}+\beta_{i}\htp   ^{(i)},\htA \htp   ^{(j)})
-%  =(\htr  ^{(i+1)},\htA \htp   ^{(j)})+\beta_{i}(\htp   ^{(i)},\htA \htp   ^{(j)}) \\
-%  =(\htr  ^{(i+1)},\htA \htp   ^{(j)})  =(\htr  ^{(i+1)},\frac{1}{\alpha_{j}}(\htr  ^{(j)}-\htr  ^{(j+1)}))=0
-% \end{array}
-%  \label{eq:a2337a}
-% \end{equation}
-% 所以(\ref{eq:a2334a})式成立.~ 由数学归纳法知，(\ref{eq:a2331a}) 和 (\ref{eq:a2332a}) 式也成立.~
-% 由于非零的正交向量组中的向量数不可能超过$n$个，所以共轭梯度法最多在
-% $n$ 步得到方程的精确解.~ \qed
-% % -------------------------------
-% {\dl \label{dl.cg03a} 设$\{ \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(k)} \}$是由共轭梯度法产生的向量序列， 并且$||\htr  ^{(k)}||>0$ ，则有
-% \begin{equation}
-%  {\rm span}\{ \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(k)} \} ={\rm span}\{ \htr  ^{(0)},\htA \htr  ^{(0)},\cdots,\htA ^k\htr  ^{(0)} \}
-%  \label{eq:a2341a}
-% \end{equation}
-% }
+表达式 (\ref{cg::5.33}) 允许我们通过估计非负标量量
+\begin{equation}
+  \min_{P_k} \max_{1 \leq i \leq n} [1 + \lambda_i P_k (\lambda_i)]^2
+  \label{cg::5.34}
+\end{equation}
+来量化共轭梯度方法的收敛速率. 换句话说, 我们寻找一个使这个表达式尽可能小的多项式 $P_k$.
+在一些实际情况下, 我们可以显式地找到这个多项式, 
+并对共轭梯度方法的属性得出一些有趣的结论. 下面的结果就是一个例子.
 
-% {\zm} 用数学归纳法证明.~ 当 $k=0$ 时，(\ref{eq:a2341a}) 式显然成立.~ \\
-% 设 $k=i$ 时，(\ref{eq:a2341a}) 式成立，即
-% \begin{equation}
-%  {\rm span}\{ \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(k)} \} ={\rm span}\{ \htr  ^{(0)},\htA \htr  ^{(0)},\cdots,\htA ^k\htr  ^{(0)} \}
-%  \label{eq:a2342a}
-% \end{equation}
-% 下面证明当 $k=i+1$ 和 $||\htr  ^{(i+1)}||>0$ 时(\ref{eq:a2341a})
-% 式也成立.~由(\ref{eq:a2335a})式，得
-% \begin{equation}
-%  \htr  ^{(i+1)}=\htr  ^{(i)}-\alpha_{i}\htA \htp   ^{(i)}
-%  \label{eq:a2343a}
-% \end{equation}
-% 从归纳法假设和定理 \ref{dl.cg01a} 知:
-% $$ \htr  ^{(i)},\htp   ^{(i)} \in {\rm span}\{ \htr  ^{(0)},\htA \htr  ^{(0)},\cdots,\htA ^i\htr  ^{(0)} \} $$
-% 所以
-% $$ \htr  ^{(i+1)} \in {\rm span}\{ \htr  ^{(0)},\htA \htr  ^{(0)},\cdots,\htA ^{i+1}\htr  ^{(0)} \} $$
-% 由定理 \ref{dl.cg02a} 知:向量组 $\{ \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(i+1)}
-% \} $ 线性无关，所以
-% \begin{equation}
-%  {\rm span}\{ \htr  ^{(0)},\htr  ^{(1)},\cdots,\htr  ^{(i+1)} \} ={\rm span}\{ \htr  ^{(0)},\htA \htr  ^{(0)},\cdots,\htA ^{i+1}\htr  ^{(0)} \}
-%  \label{eq:a2344a}
-% \end{equation}
-% 由归纳法知，公式(\ref{eq:a2341a})成立.~\qed
+\hl{定理 4}
+如果 $A$ 只有 $r$ 个不同的特征值, 那么 CG 迭代将在最多 $r$ 次迭代中达到解.
 
-% 我们记
-% \begin{equation}
-% \mathcal{K}(\htA ,\htr  ,k) ={\rm span}\{ \htr  ,\htA \htr  ,\cdots,\htA ^{k-1}\htr   \}
-%  \label{eq:a2345a}
-% \end{equation}
-% 称 $\mathcal{K}(\htA ,\htr  ,k)$ 为\textbf{ $ {\rm Krylov}$ 子空间}.~
+证明. 假设特征值 $\lambda_1$, $\lambda_2$, $\cdots$, $\lambda_n$ 
+取 $r$ 个不同的值 $\tau_1$ < $\tau_2$ <...< $\tau_r$. 
+我们定义一个多项式 $Q_r(\lambda)$ 为
+$$
+Q_r(\lambda) = \frac{(-1)^r}{\tau_1\tau_2\ldots\tau_r} 
+(\lambda - \tau_1)(\lambda - \tau_2)\ldots(\lambda - \tau_r),
+$$
+并注意到对于 $i = 1, 2,\cdots, n$, 
+$Q_r(\lambda_i) = 0$, 而且 $Q_r(0) = 1$. 
+从后者观察我们推断 $Q_r(\lambda) - 1$ 是一个在 $\lambda = 0$ 有根的 $r$ 次多项式, 
+所以通过多项式除法, 定义的函数
+$$
+\bar{P}_{r-1} (\lambda) = \frac{Q_r(\lambda) - 1}{\lambda}
+$$
+是一个 $r - 1$ 次多项式. 将 $k = r - 1$ 代入 (\ref{cg::5.34}) 
+我们得到
+$$
+\begin{array}{rcl}
+0 &\leq& \min_{P_{r-1}} \max_{1 \leq i \leq n} [1 + \lambda_i P_{r-1} (\lambda_i)]^2 \\
+&\leq& \max_{1 \leq i \leq n} [1 + \lambda_i \bar{P}_{r-1} (\lambda_i)]^2 \\
+&=& \max_{1 \leq i \leq n} Q_r^2 (\lambda_i) = 0. 
+\end{array}
+$$
+因此, 对于值 $k = r - 1$, 常数在 (\ref{cg::5.34})中为零, 
+所以我们通过代入 (\ref{cg::5.33}) 得到 $\|x_r - x^*\|_A^2 = 0$, 因此 $x_r = x^*$, 
+正如我们所声称的.
 
-% 尽管共轭梯度法是一种解线性方程组的直接法，我们还可以把共轭梯度法作为迭代法使用.~ 迭代误差由下列定理给出，证明参见
-% \cite{xgz}.~
+通过类似的推理, Luenberger 提出了以下估计, 该估计为 CG 方法的行为提供了一个有用的特性描述.
 
-% {\dl 记 $\htx ^{(k)}$ 是共轭梯度法第 $k$ 步得到的近似解，则有
-% \begin{equation}
-%  ||\htx ^{(k)}-\htx ^*||_\htA =\min \{||\htx -\htx ^*||_\htA  ~\big{|}~ \htx \in \htx ^{(0)}+\mathcal{K}(\htA ,\htr  ^{(0)},k)\}
-%  \label{eq:a2346a}
-% \end{equation}
-% 从而，我们有
-% \begin{equation}
-%  ||\htx ^{(k)}-\htx ^*||_\htA
-%  \le 2{\big (}\frac{\sqrt{\lambda_{\max}}-\sqrt{\lambda_{\min}}}{\sqrt{\lambda_{\max}}+\sqrt{\lambda_{\min}}}{\big )}^k||\htx ^{(0)}-\htx ^*||_\htA
-%  \label{eq:a2347a}
-% \end{equation}
-% 其中 $\lambda_{\max}$ 和 $\lambda_{\min}$ 分别是 $\htA $
-% 的最大和最小特征值.~}
+\hl{定理 5}
+如果 $A$ 有特征值 
+$$
+\lambda_1 \leq \lambda_2 \leq \ldots \leq \lambda_n,
+$$
+我们有
+\begin{equation}
+\|x_{k+1} - x^*\|^2_A 
+\leq \left(\frac{\lambda_{n-k} - \lambda_1}{\lambda_{n-k} + \lambda_1}\right)^2\|x_0 - x^*\|^2_A.
+\label{cg::5.35}
+\end{equation}
 
-% 由此可见，把共轭梯度法作为迭代法使用，它的收敛性是相当好的.~
+在不给出证明的细节的情况下, 我们描述了如何从 (\ref{cg::5.33}) 得到这个结果. 
+选择一个多项式 $\bar{P}_{k}$ 的次数为 $k$, 使得多项式 
+$$
+Q_{k+1}(\lambda) = 1 + \lambda \bar{P}_{k} (\lambda)
+$$ 
+在 $k$ 个最大的特征值 
+$\lambda_n$, $\lambda_{n-1}$, $\cdots$, $\lambda_{n-k+1}$, 
+以及在 $\lambda_1$ 和 $\lambda_{n-k}$ 之间的中点处有根. 
+可以证明, $Q_{k+1}$ 在剩余的特征值 $\lambda_1$, $\lambda_2$, $\cdots$, $\lambda_{n-k}$ 
+上取得的最大值正好是 
+$$
+\frac{\lambda_{n-k} - \lambda_1}{\lambda_{n-k} + \lambda_1}.
+$$
 
+现在我们将说明如何使用定理 5 来预测 CG 方法在特定问题上的行为. 
+假设 $A$ 的特征值包括 $m$ 个大值, 剩余的 $n - m$ 个较小的特征值围绕 $1$ 聚集. 
+如果我们定义 $\delta = \lambda_{n-m} - \lambda_1$, 
+定理 5 告诉我们, 经过 $m + 1$ 步共轭梯度算法后, 我们有
+$$
+\|x_{m+1} - x^*\|_A \approx \|x_0 - x^*\|_A.
+$$
+对于小的 $\delta$ 值, 我们得出结论, CG 迭代将在只有 $m + 1$ 
+步之后提供一个好的解的估计.
 
-% \vspace{30pt}
-% %===============================================================================================
-% %\newpage
-% \centerline{\zihao{4}\heiti 习\ \ \ 题}
-% \addcontentsline{toc}{section}{习题}
-% \markright{ 习题}
+更准确地说, 如果特征值出现在 $r$ 个不同的簇中, 
+那么 CG 迭代将在大约 $r$ 步内大致解决问题, 
+这通常是正确的. 这个结果可以通过构造一个多项式 
+$\bar{P}_{r-1}$ 来证明, 使得 
+$(1+\lambda\bar{P}_{r-1}(\lambda))$ 
+在每个簇内有零点. 这个多项式可能在特征值 
+$\lambda_i$, $i = 1, 2, \cdots, n$ 处不为零, 
+但在这些点上的值将很小, 因此在 $k \geq r - 1$ 时, 公式 (\ref{cg::5.34}) 
+中定义的常数将很小. 
 
-% \vspace{3pt}
+另一个更近似的 CG 的收敛表达式是基于矩阵 $A$ 的欧几里得条件数, 定义为
+$$
+\kappa(A) = \|A\|_2 \|A^{-1}\|_2 = \lambda_n/\lambda_1.
+$$
+可以证明
+\begin{equation}
+\|x_k - x^*\|_A 
+\leq 2 \left( \frac{\sqrt{\kappa(A)} - 1}{\sqrt{\kappa(A)} + 1} \right) ^k \|x_0 - x^*\|_A.
+ \label{cg::5.36}
+\end{equation}
 
-% \xt 确定一个 $3\times 3$ 的 Gauss 变换矩阵 $\htL $ ， 使得
-%   $$ \htL  \left [ \begin{array}{l}
-%   1  \\  2  \\  3
-%   \end{array} \right ]
-%    = \left [
-%   \begin{array}{l}
-%   1 \\  3  \\  5
-%   \end{array} \right ] . $$
+这个界限经常会过高估计误差, 但在我们关于 $A$ 只有极值特征值 $\lambda_1$ 
+和 $\lambda_n$ 的估计的情况下, 这个界限可能很有用. 
 
-% \xt  设 $\htA $ 是对称正定矩阵 .~假设经过一步 Gauss 消去之后， $\htA $ 具有如下形式
-%    $$ \left [ \begin{array}{cc}
-%              a_{11} & a_{1}^{\rm T}  \\
-%              0  &  \htA _2
-%      \end{array} \right ] ,$$  \\
-% \hspace*{2.5\ccwd}证明: $\htA _2$ 仍是对称正定矩阵.~
+\subsubsection*{预处理}
+我们可以通过转换线性系统来加速共轭梯度法, 以改善矩阵 $A$ 的特征值分布. 
+这个过程的关键, 也就是预处理, 是通过一个非奇异矩阵 $C$, 将变量从 $x$ 变换到 $\hat{x}$, 
+即, 
+\begin{equation}
+  \hat{x} = C x. 
+  \label{cg::5.37}
+\end{equation}
+由 (\ref{cg::5.2}) 定义的二次项 $\phi$ 将相应地转换为 
+\begin{equation}
+  \hat{\phi}(\hat{x}) = \frac{1}{2}\hat{x}^T (C^{-T} AC^{-1} )\hat{x} - (C^{-T}b)^T \hat{x}
+  \label{cg::5.38}
+\end{equation}
+如果我们使用算法 2 来最小化 $\hat{\phi}$, 或者等价地, 来解线性系统 
+$$
+(C^{-T} AC^{-1} )\hat{x} = C^{-T} b,
+$$
 
-% \xt  设 $\htA $ 是严格对角占优矩阵 .~假设经过一步 Gauss 消去之后， $\htA $ 具有如下形式
-%    $$ \left [ \begin{array}{cc}
-%              a_{11} & a_{1}^{\rm T}  \\
-%              0  &  \htA _2
-%      \end{array} \right ], $$  \\
-% \hspace*{2.5\ccwd}证明: $\htA _2$ 仍是严格对角占优矩阵.~
+那么, 收敛速率将依赖于矩阵 $C^{-T} AC^{-1}$ 的特征值, 
+而不是 $A$ 的特征值. 因此, 我们的目标是选择 $C$, 
+使得 $C^{-T} AC^{-1}$ 的特征值对于上述的收敛理论更有利. 
+例如, 我们可以试图选择 $C$, 使得 $C^{-T} AC^{-1}$ 
+的条件数远小于 $A$ 的原始条件数, 这样 (\ref{cg::5.36}) 中的常数就会更小. 
+我们也可以试图选择 $C$, 使得 $C^{-T} AC^{-1}$ 的特征值聚集, 
+这样根据上一节的讨论, 可以确保找到一个好的近似解所需要的迭代次数不会比簇的数量多很多.
 
-% \xt 设矩阵 $\htA \in \textbf{\textit{R}}^{n\times n}$ 非奇异， 并且对 $\htA $ 做了 \htL \htU  分解，即
-% $\htA =\htL \htU $ .~
-% 现在要求 $\htA ^{-1}$\\
-% \hspace*{2.5\ccwd}中的一个元素 $(\htA ^{-1})_{pq}$ .~
-% 请设计一个计算量为 $O(n^2)$ 的算法，计算 $(\htA ^{-1})_{pq}$ .~
+并不需要显式地执行转换 (\ref{cg::5.37}). 相反, 我们可以将算法 2 
+应用于问题 (\ref{cg::5.38}), 用变量 $\hat{x}$ 表示, 
+然后反转转换以用 $x$ 表示所有的等式. 这个推导过程导致了算法 3 (预处理共轭梯度法), 我们现在来定义它. 
+事实上, 算法 3 并没有显式地使用矩阵 $C$, 而是使用了矩阵 $M = C^{T}C$, 确保这是一个对称正定矩阵.
 
+\hl{算法} 3 (预处理CG)
 
-% \xt 设
-%   $$ \htA = \left [ \begin{array}{cccc}
-%              16 & 4 & 8 & 4  \\
-%              4  & 10 & 8 & 4 \\
-%              8  & 8  & 12 & 10 \\
-%              4  & 4  & 10 & 12
-%      \end{array} \right ]   ~,~
-%    \htb  = \left [ \begin{array}{c}
-%              32 \\ 26 \\ 38 \\ 30
-%      \end{array} \right ] $$
-% \hspace*{2.5\ccwd}首先求出 $\htA $ 的 Cholesky 分解 $\htA =\htL \htL ^{\rm T}$ , 然后求出方程组 $\htA \htx =\htb $ 的解.~
+\begin{itemize}
+  \item 给定 $x_0$, 预处理器 $M$;
+  \item 设定 $r_0 \leftarrow Ax_0 - b$; 
+  \item 求解 $My_0 = r_0$ 得到 $y_0$;
+  \item $p_0 \leftarrow -y_0$, $k \leftarrow 0$;
+  \item \verb|while| $r_k \neq 0$:
+  \begin{enumerate}
+  \item 计算步长 
+  $$
+  \alpha_k \leftarrow - \frac{r_k^T y_k}{p_k^T A p_k};
+  $$
+  \item 更新解
+  $$ 
+  x_{k + 1} \leftarrow x_k + \alpha_k p_k; 
+  $$
+  \item 计算新的残差
+  $$
+  r_{k + 1} \leftarrow r_{k} + \alpha_k A p_{k};
+  $$
+  \item 求解 
+  $My_{k + 1} = r_{k + 1}$ 得到 $y_{k + 1}$;
+  \item 计算新的共轭方向的系数
+  $$
+  \beta_{k + 1} \leftarrow \frac{r_{k + 1}^T y_{k + 1}}{r_k^T y_k};
+  $$
+  \item 计算新的共轭方向
+  $$
+  p_{k+1} \leftarrow -y_{k + 1} + \beta_{k + 1} p_k;
+  $$
+  \item 更新迭代次数 $k \leftarrow k + 1$;
+  \end{enumerate}
+\end{itemize}
 
-% \xt 在方程组~ $\htA \htx =\htb $ 中， 已知
-%   $$ \htA = \left [ \begin{array}{cc}
-%              1     & 0.99  \\
-%              0.99  & 0.98
-%      \end{array} \right ]   ~,~
-%    \htb  = \left [ \begin{array}{c}
-%              1 \\ 1
-%      \end{array} \right ]   ~,~
-% \mbox{ 精确解~}
-%   \htx ^* = \left [ \begin{array}{c}
-%              100 \\ -100
-%      \end{array} \right ]. $$
-% \hspace*{2.5\ccwd} (1) 计算条件数~ $\mbox{cond}_\infty(\htA )$ .~\\
-% \hspace*{2.5\ccwd} (2) 取~
-%      $ \htx ^{(1)} = \left [ \begin{array}{c}
-%              1 \\ 0
-%        \end{array} \right ] $  ~,~
-%      计算它的剩余向量~ $\htr^{(1)}=\htb -\htA \htx ^{(1)}$ .~\\
-% \hspace*{2.5\ccwd} (3) 取~
-%      $ \htx ^{(2)} = \left [ \begin{array}{c}
-%              100.5 \\ -99.5
-%        \end{array} \right ] $  ~,~
-%      计算它的剩余向量~ $\htr^{(2)}=\htb -\htA \htx ^{(2)}$ .~\\
-% \hspace*{2.5\ccwd}本题的计算结果说明了什么问题?
+如果在算法 3 中设置 $M = I$, 我们就能恢复到标准的 CG 方法, 
+也就是算法 2. 算法 2 的性质以有趣的方式推广到这种情况. 特别是, 连续残差的正交性质 (\ref{cg::5.16})
+变成
+\begin{equation}
+  r_i^TM^{-1}r_j = 0, i \neq j.
+  \label{cg::5.40}
+\end{equation}
+在计算工作量上, 预处理的 CG 方法和未预处理的 CG 方法的主要差别在于需要求解形如 $M*y = r$ 的系统.
+(暗示这一步不能工作量太大.)
 
-% \xt \parbox[t]{12.5cm}{设矩阵 $\htA \in \mathbb{R}^{n\times n}$ 非奇异， $\htx ,\htb \in \mathbb{R}^n$ , $\htx ,\htb \ne 0 $ ， 满足~ $\htA \htx =\htb $ ，
-% 而~ $\htx +\delta{\htx }$ 满足~ $(\htA +\textbf{G})(\htx +\delta{\htx })=\htb $ ， 并且有~ $||\htA ^{-1}||\cdot ||\textbf{G}||<1$ .~
-% 证明:
-% $$ \frac{||\delta{\htx }||}{||\htx ||} \le
-% \frac{\mbox{cond}(\htA )\frac{||\textbf{G}||}{||\htA ||}}{1-\mbox{cond}(\htA )\frac{||\textbf{G}||}{||\htA ||}}.~$$
-% }
+\subsubsection*{实用预处理器}
 
-% \xt  设线性方程组 $\htA \htx =\htb $ 的系数矩阵为
-%   $$ \htA _1= \left [ \begin{array}{ccc}
-%              2 & -1 & 1  \\
-%              1  & 1 & 1  \\
-%              1  & 1  & -2
-%      \end{array} \right ]   ~,~
-%    \htA _2= \left [ \begin{array}{ccc}
-%              1 & 2 & -2  \\
-%              1  & 1 & 1  \\
-%              2  & 2  & 1
-%      \end{array} \right ]. $$
-% \hspace*{2.5\ccwd}证明: 对于$\htA _1$来说， Jacobi 迭代不收敛，而G-S迭代收敛；对于$\htA _2$来说， Jacobi \\
-% \hspace*{2.5\ccwd}迭代收敛，而 G-S 迭代不收敛.~
+没有哪一种预处理策略对所有可想象的矩阵类型都是 ``最佳'' 的: 在各种目标之间的权衡 —— $M$ 的有效性, 
+$M$ 的低成本计算和存储, 解决 $My = r$ 的低成本 —— 根据问题的不同而变化.
 
-% \xt  设 $\htB \in \mathbb{R}^{n\times n}$ 满足 $\rho(\htB )=0$ .~证明对任意的 $\htx ^{(0)},\textbf{g} \in \mathbb{R}^n$ ，迭代格式
-% $$ \htx ^{(k+1)}=\htB \htx ^{(k)}+\textbf{g} ~,~ k=0,1,\cdots $$
-% \hspace*{2\ccwd}再多迭代 $n$ 次就可以得到线性方程组 $\htx =\htB \htx +\textbf{g}$ 的精确解.~
+对于特定类型的矩阵, 特别是那些来自偏微分方程 (PDEs) 离散化的矩阵, 
+已经设计了良好的预处理策略. 通常, 预处理器被定义成使得 $My = r$ 相当于原始系统 $Ax = b$ 的一个简化版本. 
+在 PDE 的情况下, $My = r$ 可能代表了比 $Ax = b$ 更粗糙的离散化, 这是对底层连续问题的表示. 
+就像优化和数值分析的许多其他领域一样, 关于问题的结构和起源的知识 (在这种情况下, 知道系统 $Ax = b$ 是一个 PDE 的有限维表示) 
+是设计有效解决问题技术的关键.
 
+一个 PDE 的表述是设计解决问题的有效技术的关键. 也已经提出了通用的预处理器, 
+但是它们的成功程度在问题和问题之间有很大的差异. 这种类型最重要的策略包括对称的连续过松弛 (SSOR), 
+不完全 Cholesky 和带状预处理器. 在一般情况下, 不完全 Cholesky 可能是最有效的. 
+基本的想法很简单: 我们遵循 Cholesky 的过程, 但我们计算的不是满足 $A = L L^T$ 的精确 Cholesky 因子$L$, 
+而是计算一个比 $L$ 稀疏的近似因子 $\tilde{L}$. 
+(通常, 我们要求 $\tilde{L}$ 不比原矩阵 $A$ 的下三角稠密, 或者不比下三角稠密多.)
+然后我们有 
+$$
+A \approx \tilde{L}^T \tilde{L},
+$$
+通过选择 $C = \tilde{L}^T$, 我们得到 $M = \tilde{L} \tilde{L}^T$ 和
+$$
+C^{-T}AC^{-1} = \tilde{L}^{-1} A \tilde{L}^{-T} \approx I,
+$$
+所以 $C^{-T} A C^{-1}$ 的特征值分布是有利的. 我们不直接计算 $M$, 
+而是存储因子 $\tilde{L}$ 并通过用 $\tilde{L}$ 进行两次三角替代来解决 $My=r$ 的系统. 
+因为 $\tilde{L}$ 的稀疏程度和 $A$ 类似, 解决 $My=r$ 的成本和计算矩阵向量乘积 $Ap$ 的成本类似.
 
-% \xt 考虑线性方程组 $\htA \htx =\htb $ ， 其中
-%   $$ \htA = \left [ \begin{array}{ccc}
-%              1 & 0 & a  \\
-%              0  & 1 & 0  \\
-%              a  & 0  & 1
-%      \end{array} \right ] $$
-% \hspace*{2.5\ccwd}(1) 当 $a$ 为何值时， $\htA $ 是正定的 ? \\
-% \hspace*{2.5\ccwd}(2) 当 $a$ 为何值时， Jacobi 迭代收敛 ? \\
-% \hspace*{2.5\ccwd}(3) 当 $a$ 为何值时， G-S 迭代收敛 ?
-
-
-% \xt  对 Jacobi 方法引进迭代参数 $ \omega > 0 $ ，即
-% $$ \htx ^{(k+1)}=\htx ^{(k)}-\omega \htD^{-1}(\htA \htx ^{(k)}-\htb ) $$
-% \hspace*{3\ccwd}称为 \textbf{Jacobi 松弛法}(简称\textbf{ JOR 方法}).~
-% 证明: 当 $\htA \htx =\htb $ 的 Jacobi 方法收敛 \\
-% \hspace*{3\ccwd}时J，OR 方法对 $0<\omega\le 1$ 也收敛.~
-
-
-% \xt  设 $\htA $ 为对称正定矩阵，从方程组的近似解 $\hty ^{(0)}=\htx ^{(k)}$ 出发， 依次求 $\hty ^{(i)}$ 使得
-% $$ H(\hty ^{(i)})=\displaystyle \min_{t}H(\hty ^{(i-1)}+t\textbf{e}_i)  ~,~ i=1,2,\cdots,n $$
-% \hspace*{3\ccwd}其中向量函数 $H(\hty )$ 由 (\ref{eq:a23005a}) 式定义， $\textbf{e}_i$ 是 $n$ 阶单位矩阵的第 $i$ 列， 然后令 \\
-% \hspace*{3\ccwd}$\htx ^{(k+1)}=\hty ^{(n)} .$
-% 证明: 这样得到的迭代算法就是 G-S 迭代法.~
-
-% \xt  设 $\htA $ 是一个只有 $k$ 个互不相同的特征值的 $n\times n$ 实对称矩阵， $\htr$ 是任一 $n$ 维实\\
-% \hspace*{3\ccwd}向量.~
-% 证明: 子空间 $~ {\rm span} \{\htr,\htA \htr,\cdots,\htA ^{n-1}\htr \} ~$
-% 的维数至多是 $k$ .~
-
-
-% \xt  设 $\htA $ 是一个只有 $k$ 个互不相同的特征值的 $n\times n$ 实对称正定矩阵.~
-% 证明: 共轭\\
-% \hspace*{3\ccwd}梯度法至多 $k$ 步就可以得到方程组 $ \htA \htx =\htb  $ 的精确解.~
-
-
-% \xt  对于一般的线性方程组 $\htA \htx =\htb $ ， 可以化为正则化方程 $\htA ^{\rm T}\htA \htx =\htA ^{\rm T}\htb $ .~
-% 写出\\
-% \hspace*{3\ccwd}用轭梯度法求正则化方程的详细算法，
-% 要求在算法中不要出现计算 $\htA ^{\rm T}\htA $ 的情 \\
-% \hspace*{3\ccwd}形.~ 这里 $\htA \in \mathbb{R}^{n\times n}$ 是非奇异的.~
+不完全 Cholesky 方法中有几个可能的陷阱. 一个是结果矩阵可能不是 (足够的) 正定的, 
+在这种情况下, 可能需要增加对角线元素的值以确保可以找到 $\tilde{L}$ 的值. 
+由于我们对因子 $\tilde{L}$ 施加的稀疏条件, 可能会出现数值不稳定或不可解的情况, 
+可以通过在 $\tilde{L}$ 中允许额外的填充来解决这个困难, 但是更密的因子在计算和在每次迭代时的应用都会更昂贵.
 
 \subsection{一般收敛性分析}
 
