@@ -7620,7 +7620,269 @@ $$
 $$
 BS = SA.
 $$
-根据推论 B.59, 我们可以将 $A$ 视为线性算子 $B$ 的矩阵，基为 S。为了简化，我们希望将 A 或 B 转换为对角矩阵。
-但是，我们从定理 B.111 得知，并非所有的正方形矩阵都可以对角化。幸运的是，每个正方形矩阵都有一个 Jordan 基。
+根据推论 B.59, 我们可以将 $A$ 视为线性算子 $B$ 的矩阵, 
+基为 $S$. 为了简化, 我们希望将 $A$ 或 $B$ 转换为对角矩阵.
+但是, 我们从定理 B.111 得知, 非所有的正方形矩阵都可以对角化. 
+幸运的是, 每个正方形矩阵都有一个 Jordan 基. 
+
+\hl{定理 8.19} (Jordan标准形)
+每个矩阵 
+$$
+A \in \mathbb{C}^{n \times n}
+$$
+都有一个相似变换
+$$
+A = RJR^{-1}, \quad (8.18) 
+$$
+其中 $R$ 是可逆的, $J$ 是一个块对角矩阵, 
+形式如 (B.52), 每个 $J(\lambda_i, k_i)$ 
+是阶数为 $k_i$ 的Jordan块, 
+$$
+\sum_{i = 1}^{s} k_i = n,
+$$
+且每个 $k_i$ 不大于 $\lambda_i$ 的指标. 
+设 $m_a$ 和 $m_g$ 分别表示矩阵 $A$ 的一个特征值 $\lambda$ 的代数重数和几何重数. 
+那么 $\lambda$ 在 $m_g$ 个块中出现, 这些块的阶数之和是 $m_a$. (定义啊)
+
+\subsubsection{矩阵幂}
+
+\hl{定理 8.20} 设 $A$ 是一个有限大小的方阵. 序列 $(A^n)$, $n \in \mathbb{N}$ 
+收敛到零 (按照定义 E.26 的意义), 当且仅当 $A$ 的谱半径 $\rho(A) < 1$.
+
+\hl{引理 8.21} 设 $A$ 是一个有限大小的方阵. 
+如果 $\rho(A) < 1$, 那么 $I - A$ 是非奇异的.
+
+\hl{定理 8.23} 设 $A$ 是一个有限大小的方阵. 
+级数 
+$$
+\sum_{k = 0}^{\infty} A^k
+$$ 
+收敛当且仅当 $\rho(A) < 1$. 此外, 
+$$
+\sum_{k = 0}^{\infty} A^k = (I - A)^{-1}. \quad (8.19) 
+$$
+
+证明. 在有限维范数空间中, 柯西序列等价于收敛序列. 
+如果 
+$$
+\sum_{k = 0}^{\infty} A^k
+$$ 
+收敛, 那么序列 
+$$
+\left(\sum_{k = 0}^{n} A^k\right)_{n \in \mathbb{N}^+}
+$$ 
+是柯西的, 
+并且 
+$$
+\lim_{n \to \infty} \|A^n\| = 0.
+$$
+然后定理 8.20 给出 $\rho(A) < 1$. 
+
+反过来, $\rho(A) < 1$ 和引理 8.21 表明 $I - A$ 是可逆的. 
+等式
+$$ 
+I - A^{k + 1} = (I - A)(I + A + \ldots + A^k) 
+$$
+(因式分解)显示
+$$
+(I - A)^{-1} \lim_{n \to \infty} (I - A^{n+1}) 
+= \lim_{n \to \infty} \sum_{k=0}^{n} A^k. 
+$$
+(两边同乘以 $(I - A)^{-1}$) 再取极限, 然后定理 8.20 给出 (8.19).
+
+\subsubsection{谱半径}
+
+谱半径与矩阵范数之间有什么关系? 首先, 谱半径不是矩阵范数, 
+因为谱半径不满足三角不等式条件. 事实上, 对于
+$$
+A = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}, 
+\quad B = \begin{pmatrix} 0 & 0 \\ 1 & 0 \end{pmatrix}, 
+$$
+我们有 
+$$ 
+1 = \rho(A + B) > \rho(A) + \rho(B) = 0
+$$ 
+且 $\rho(A) = 0$ 但 $A \neq 0$. 
+其次, 对于埃尔米特矩阵 $H$, 我们有 $\|H\|_2 = \rho(H)$. 
+其实, 谱半径可以被视为矩阵幂范数的某种极限. 
+或者任何矩阵 $A$ 的谱半径是在 $A$ 上所有由向量诱导的范数的下确界.
+
+\hl{定理 8.24} (Gelfand公式). 
+对于任何矩阵范数, 我们有
+$$ 
+\lim_{n \to \infty} \left\| A^n \right\|^{1/n} = \rho(A). \quad (8.20) 
+$$
+
+证明. $\forall \varepsilon > 0$. 对于 
+$$
+A_b = \frac{1}{\rho(A) + \varepsilon}A,
+$$
+定理 8.20 给出
+\begin{eqnarray*}
+\rho(A_b) < 1 &\Rightarrow& \lim_{n \to \infty} A^n_b = 0 \\
+&\Rightarrow& \exists N_b \in \mathbb{N} \text{ s.t. } 
+\forall m > N_b, \|A^m_b\| < 1 \\
+&\Rightarrow& \exists N_b \in \mathbb{N} \text{ s.t. } \forall m > N_b, 
+\|A^m\|^{1/m} < \rho(A) + \varepsilon. 
+\end{eqnarray*}
+同样地, 对于 
+$$
+A_u = \frac{1}{\rho(A) - \varepsilon}A,
+$$
+我们有
+\begin{eqnarray*}
+\rho(A_u) > 1 &\Rightarrow& 
+\exists N_u \in \mathbb{N} \text{ s.t. } \forall m > N_u, \|A^m_u\| > 1 \\
+&\Rightarrow& \exists N_u \in \mathbb{N} \text{ s.t. } \forall m > N_u, 
+\|A^m\|^{1/m} > \rho(A) - \varepsilon. 
+\end{eqnarray*}
+总结起来, 设 $N = \max(N_b, N_u)$, 我们有
+$$
+\forall \varepsilon > 0, 
+\exists N \in \mathbb{N} \text{ s.t. } \forall m > N, 
+\left| \|A^m\|^{1/m} - \rho(A) \right| < \varepsilon, 
+$$
+这按照定义 C.4 等价于 (8.20).
+
+\hl{引理 8.25} 对于任何方阵 $A$ 和任何由向量范数诱导的矩阵范数 $\|\cdot\|$, 
+我们有
+$$ 
+\rho(A) \leq \|A\|. \quad (8.21) 
+$$
+
+证明. 对于每个特征值 $\lambda$, 
+存在一个相对于给定向量范数归一化的特征向量 $x_0$. 
+根据定义 7.23, 
+我们有
+$$
+\|A\| = \sup_{\|x\| = 1} \|Ax\| \geq \|Ax_0\| = |\lambda|\|x_0\| = |\lambda|. 
+$$
+(任何特征值, 包括谱半径.)
+
+\hl{定理 8.26} 方阵 $A$ 的谱半径是所有由向量诱导的矩阵范数的下确界, 
+即对于任何 $\varepsilon > 0$, 存在某个由向量诱导的矩阵范数 $\|\cdot\|$ 
+满足 
+$$
+\|A\| \in [\rho(A), \rho(A) + \varepsilon].
+$$
+(略大一点就有范数了.)
+
+\subsubsection{一般收敛性判据}
+
+\hl{定理 8.27} (8.2)中的不动点迭代收敛当且仅当谱半径 $\rho(T) < 1$.
+
+证明. 精确解 $x$ 满足
+$$ 
+x = Tx + c. 
+$$
+从上式中减去 (8.2) 并且我们有
+$$ 
+e^{(k)} = x - x^{(k)} 
+= T(x - x^{(k-1)}) = \cdots = T^k(x - x^{(0)}) = T^k e^{(0)}. 
+$$
+如果 $\rho(T) < 1$, 定理 8.20 表明 
+$$
+\lim_{k \to \infty} T^k = 0
+$$ 
+因此 
+$$
+\lim_{k \to \infty} e^{(k)} = 0.
+$$
+反过来, 如果 
+$$
+\lim_{k \to \infty} e^{(k)} = 0,
+$$
+我们有 
+$$
+\lim_{k \to \infty} \|T^k\| = 0
+$$ 
+并且定义 E.26 表明 
+$$
+\lim_{k \to \infty} T^k = 0.
+$$
+然后定理 8.20 表明 $\rho(T) < 1$.
+
+
+\hl{推论 8.28} 
+对于一个方阵 $T$, 如果存在某个由向量范数诱导的矩阵范数使得 
+$\|T\| < 1$, 那么 (8.2) 中的不动点迭代对于任何初始猜测都会收敛. 
+此外, 第 $k$ 次迭代的误差范数满足
+$$
+\|e^{(k)}\| \leq \frac{\|T\|^k}{1 - \|T\|} \|x^{(1)} - x^{(0)}\|; \quad (8.22) 
+$$
+$$
+\|e^{(k)}\| \leq \frac{\|T\|}{1 - \|T\|} \|x^{(k)} - x^{(k-1)}\|; \quad (8.23) 
+$$
+其中 
+$$
+e^{(k)} := x - x^{(k)}.
+$$
+
+证明. 第一个结论直接来自定理 8.27 和引理 8.25. 公式 (8.23) 由以下推导得出:
+\begin{eqnarray*}
+\|x^{(k)} - x\| &=& \|T(x^{(k-1)} - x)\| \leq \|T\| \|x^{(k-1)} - x\| \\
+&\leq& \|T\| \|x^{(k-1)} - x^{(k)}\| + \|T\| \|x^{(k)} - x\| 
+\end{eqnarray*}
+(三角不等式)
+而公式 (8.22) 由以下推导得出:
+\begin{eqnarray*}
+&&  \|x^{(0)} - x\| \leq \|x^{(1)} - x^{(0)}\| + \|T\| \|x^{(0)} - x\| \\
+&\Rightarrow& \|x^{(0)} - x\| \leq \frac{1}{1-\|T\|} \|x^{(0)} - x^{(1)}\|; \\
+&&\|x^{(k)} - x\| \leq \|T\|^k \|x^{(0)} - x\| 
+\leq \frac{\|T\|^k}{1-\|T\|} \|x^{(0)} - x^{(1)}\|. 
+\end{eqnarray*}
+
+在实际应用中, 公式 (8.23) 通常比公式 (8.22) 更准确和方便. 
+然而, 如果 $\|T\|$ 接近于 $1$, 那么这两种估计都不够精确.
+
+\hl{推论 8.29} SOR 迭代的收敛当且仅当 $\omega \in (0, 2)$.
+
+证明. 引理 8.11 表明
+$$ 
+T_{\text{SOR}} = (I - \omega D^{-1}L)^{-1}[(1 - \omega)I + \omega D^{-1}U]. 
+$$
+由于 $\text{det}(I - \omega D^{-1}L) = 1$, 
+我们有
+$$ 
+|\text{det}(T_{\text{SOR}})| = |1 - \omega|^n 
+= |\lambda_1\lambda_2 \cdots \lambda_n|. 
+$$
+收敛性和定理 8.27 表明 $\rho(T_{\text{SOR}}) < 1$.
+即 $|1 - \omega| < 1$, 即
+$\omega \in (0, 2)$.
+
+\subsubsection{收敛率}
+
+\hl{定义 8.30} 在定义 8.1 中的不动点迭代在 $k$ 
+次迭代过程中的平均收敛因子是误差范数的平均缩减比率, 
+$$
+\psi_k(T) := \sup_{e^{(0)} \in \mathbb{R}^n \setminus \{0\}} 
+\left( \frac{\|e^{(k)}\|}{\|e^{(0)}\|} \right)^{\frac{1}{k}} \quad (8.24) 
+$$
+而不动点迭代的(一般)收敛因子是每次迭代在渐进范围内的误差范数缩减比率,
+$$ 
+\varphi(T) := \lim_{k \to +\infty} \psi_k(T). \quad (8.25) 
+$$
+不动点迭代的收敛速率是
+$$
+\tau(T) := -\ln \varphi(T). \quad (8.26) 
+$$
+
+定义 8.30 与定义 1.10 中的 $Q$-阶收敛是一致的. 
+然而, 对于线性系统的不动点迭代, 我们只期望线性或亚线性收敛, 如定义 1.11 所述.
+
+\hl{定理 8.31} 一般收敛因子是迭代矩阵的谱半径, 即
+$$ 
+\varphi(T) = \rho(T). \quad (8.27) 
+$$
+证明. 根据定义 8.30 我们有
+$$ 
+\varphi(T) = \lim_{k \to +\infty} 
+\left( \max_{e^{(0)} \in \mathbb{R}^n \setminus \{0\}} 
+\frac{\|T^k e^{(0)}\|}{\|e^{(0)}\|} \right)^{\frac{1}{k}} 
+= \lim_{k \to +\infty} \|T^k\|^{\frac{1}{k}} = \rho(T), 
+$$
+其中第二步是根据定义 7.23, 最后一步是根据定理 8.24.
+
 \bibliography{crazyfish.bib}
 \end{document}
