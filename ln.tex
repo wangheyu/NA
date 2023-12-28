@@ -17,6 +17,7 @@
 \usepackage{amssymb}
 \usepackage{mathrsfs}
 \usepackage{enumitem}  
+\usepackage{tikz}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -7883,6 +7884,517 @@ $$
 = \lim_{k \to +\infty} \|T^k\|^{\frac{1}{k}} = \rho(T), 
 $$
 其中第二步是根据定义 7.23, 最后一步是根据定理 8.24.
+
+
+\section{多重网格法, Multigrid Methods}
+
+最优复杂度是采用多网格方法求解由边界值问题 (BVPs) 离散化而得的线性系统的主要原因. 
+传统迭代方法的收敛速率取决于网格间距或问题大小. 相比之下, 多网格方法的收敛速率则不会. 
+设 $N = n^3$ 为在 3D 立方体中寻求泊松方程解的未知数总数. 
+为了解决由泊松方程的有限差分 (FD) 离散化得到的线性系统, 
+基于 Cholesky 分解的方法的最佳复杂度为 $O(N^2)$, 
+基于 Krylov 空间技术如共轭梯度法的方法的最佳复杂度为 $O(N^{1.17})$, 
+而基于几何多网格的方法则具有最优复杂度 $O(N)$.
+
+在本章中, 我们从 Briggs 等人 2000 年的书中收集了多网格方法的基本内容. 
+同时, 也推荐读者访问 www.mgnet.org 这个百科全书式的网站以获取更多信息. 
+
+\subsection{残量方程}
+
+\hl{定义9.1} 在解线性系统 $Ax = b$ 时, 近似解 $\tilde{x}$ 的误差为
+$$
+e(\tilde{x}) := x - \tilde{x} \qquad (9.1)
+$$
+而 $\tilde{x}$ 的残差为
+$$
+r(\tilde{x}) := b - A \tilde{x}. \qquad (9.2)
+$$
+
+定义 9.1 中的误差与第 7 章中的不同. 
+我们是否应该按照上一章来定义 
+$$
+e = \tilde{x} - x ?
+$$
+答案是否定的. 我们将 $Ax = b$ 转换为残差方程 $Ae = r$. 
+以上定义的优越性在于, 任意初始猜测 $x_0$ 的问题 $Ax = b$ 
+等价于初始猜测 $e_0 = 0$ 的问题 
+$$
+Ae = r_0 = b - Ax_0.
+$$
+事实上, 当我们使用定义 9.1 时, 前者问题有 $e = x - x_0$ 和 $r = b - Ax_0$, 
+而后者问题有 $e = x - x_0 - 0$ 和 $r = b - Ax_0$. 
+假设我们定义多网格方法的误差为 $e = \tilde{x} - x$ 和 $r = A\tilde{x} - b$, 
+那么前者问题将有 $e = x_0 - x$ 和 $r = Ax_0 - b$, 
+后者问题将有 $e = 0 - (x_0 - x) = x - x0$ 和 $r = b - Ax_0$. 
+这会在误差修正中引起混淆. (误差的方向是重要的.)
+
+\hl{引理9.2} 近似解 $\tilde{x}$ 的误差和残差满足残差方程
+$$ 
+Ae = r. \quad (9.3) 
+$$
+
+\hl{定义9.3} 矩阵 $A$ 的条件数定义为:
+$$
+\text{cond}(A) := \|A\|_2 \|A^{-1}\|_2. \quad (9.4) 
+$$
+
+根据例 4.66, 矩阵 $A$ 的条件数表明了残差如何衡量误差.
+
+
+\hl{定理 9.4} 近似解的相对误差由其相对残差界定.
+
+$$
+\frac{1}{\text{cond}(A)} \frac{\|r\|^2}{\|b\|^2} 
+\leq \frac{\|e\|^2}{\|x\|^2} 
+\leq \text{cond}(A) \frac{\|r\|^2}{\|b\|^2}. \quad (9.5)
+$$
+
+
+\subsection{模型问题}
+
+\hl{定义9.6} 我们讨论的多网格方法的模型问题是带有齐次边界条件的一维泊松方程:
+$$ 
+-\Delta u = f \quad \text{在} \quad \Omega := (0, 1); 
+$$
+$$ 
+u = 0 \quad \text{在} \quad \partial\Omega. \quad (9.6) 
+$$
+
+这里齐次 Dirichlet 条件并不会损失一般性, 
+因为从离散化带有任何其他边界条件的模型问题的线性系统, 
+总是可以转换为带有齐次 Dirichlet 条件的残差方程 (9.3).
+
+
+
+
+\hl{例 9.7} 作为例 7.10 的一个特例, 其中 $\alpha = 0, \beta = 0 $ 且 
+$m = n - 1$, 我们对 (9.6) 的离散化得到一个线性系统
+$$
+Au = f \quad (9.7) 
+$$
+其中单位区间 $\Omega$ 通过均匀网格大小 $h = \frac{1}{n}$ 
+被离散化为 $n$ 个单元, 单元边界位于 $x_j = jh = \frac{j}{n}$,
+对于 $j = 0, 1, \ldots, n$, 已知的 $f_j = f(x_j)$ 和未知数
+$u_j$ 位于内部节点 $x_j$, 其中 $j = 1, 2, \ldots, n - 1$.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    % Draw the interval
+    \draw (0,0) -- (5,0);
+    \foreach \x in {0,1,2,3,4,5} {
+        \draw (\x,0.1) -- (\x,-0.1) node[below] {$x_{\x}$};
+    }
+    \node[above] at (0,0.1) {$0$};
+    \node[above] at (5,0.1) {$1$};
+    \node[below] at (2.5,-0.5) {$n = 5$, $h = \frac{1}{n}$};
+\end{tikzpicture}
+\end{figure}
+
+矩阵 $A \in \mathbb{R}^{(n-1) \times (n-1)}$ 与 (7.13) 中的相同, 
+即一个由下面给出的 Toeplitz 矩阵:
+$$ 
+a_{ij} = \begin{cases} 
+\frac{2}{h^2} & \text{如果 } i = j; \\ 
+-\frac{1}{h^2} & \text{如果 } i - j = \pm1; \\ 
+0 & \text{其他情况}. 
+\end{cases} \quad (9.8) 
+$$
+
+根据引理 7.25, 矩阵 $A$ 的特征值和特征向量为
+
+$$
+\lambda_k(A) = \frac{4}{h^2} \sin^2\left(\frac{k\pi}{2n}\right) 
+= \frac{4}{h^2} \sin^2\left(\frac{kh\pi}{2}\right), \quad (9.9) 
+$$
+
+$$
+w_{k,j} = \sin\left(\frac{jk\pi}{n}\right) = \sin(x_{j}k\pi), \quad (9.10) 
+$$
+
+其中 $j, k = 1, 2, \ldots, n - 1$.
+
+根据例 7.16, 线性系统 (9.7) 的局部截断误差(LTE)是二阶的, 即:
+
+$$
+\forall j = 1 \ldots n-1, \quad (Au)_j - (-\Delta u)|_{x_j} = O(h^2). 
+$$
+
+(看一下迭代效果, python. )
+
+
+\subsection{算法构成}
+
+\subsubsection{$\Omega_h$ 上的 Fourier 模式}
+
+\hl{符号 7} $\Omega_h$ 表示将问题域 $\Omega$ 离散化为 $n$ 个区间的均匀网格. 
+我们有时也用这个符号, 指代相应的网格函数的向量空间 
+$$
+\{\Omega_h \rightarrow \mathbb{R}\}.
+$$
+
+
+\hl{定义 9.9} 正弦函数的波长是一个正弦周期的距离. 
+正弦函数的波数 $k$ 是单位长度内半个正弦波的数量.
+
+\hl{引理 9.10} 第 $k$ 个傅里叶模式(这里理解), 其第 $j$ 个组成部分为 
+$$
+w_{kj} = \sin(x_j k\pi),
+$$
+具有波长 $L = \frac{2}{k}$.
+
+\hl{练习9.11} 对于 $\Omega = (0, 1)$, 
+绘制图形以显示可以在 $\Omega_h$ 上表示的最大波数是 
+$n_{\text{max}} = \frac{1}{h}$. 
+如果我们要求傅里叶模式在边界点为 $0$, 情况会如何? 
+
+\hl{引理9.12} 对于 $k \in (n, 2n)$ 在 $\Omega_h$ 上, 
+傅里叶模式 $w_k$ 的第 $j$ 个分量为 $w_{k, j} = \sin(x_j k\pi)$, 
+实际上表示为模式 $w_{k'}$ 的加法逆元. 
+其中 $k' = 2n - k$.
+
+证明很简单, 可以验证 
+$$
+\sin(x_j k\pi) = -\sin(2j\pi - x_j k\pi) = -\sin(x_j (2n - k)\pi) = 
+-\sin(x_j k'\pi) = -w'_{k, j}
+$$
+
+\hl{例 9.13} 根据引理 9.12, 当 $k = \frac{3}{2n}$ 时, 
+模式被表示为 $k = \frac{1}{2n}$.
+
+\hl{练习 9.14} 为例 9.13中 $n = 6$ 的情况绘图.
+
+\hl{定义9.15} 在 $\Omega_h$ 上, 
+波数 $k \in [1, \frac{n}{2})$ 的傅里叶模式称为低频 (LF) 或平滑模式, 
+波数 $k \in [\frac{n}{2}, n)$ 的称为高频 (HF) 或振荡模式.
+
+
+\subsubsection{松弛}
+
+\hl{引理9.16} 对于线性系统 (9.7), 定义 8.9 中的加权 Jacobi 迭代矩阵为
+$$
+T_\omega = (1 - \omega)I + \omega D^{-1}(L + U) 
+= I - \frac{\omega h^2}{2} A, \quad (9.11) 
+$$
+其特征向量与 $A$ 相同, 对应的特征值为
+$$
+\lambda_k(T_\omega) 
+= 1 - 2\omega \sin^2\left(\frac{k\pi}{2n}\right), \quad (9.12) 
+$$
+其中 $k = 1, 2, \ldots, n - 1$.
+
+通过练习 9.17, Jacobi方法的谱半径 $\rho(T) = 1 - O(h^2)$, 
+这意味着当 $h \to 0$ 时, 收敛速度慢, 因为 $\rho(T) \to 1 $.
+
+加权 Jacobi 如何减弱不同模式? 令 $e^{(0)} = \sum k c_k w_k $, 
+那么
+$$
+e^{(k)} = T_\omega e^{(0)} = \sum k c_k \lambda_k(T_\omega) w_k. 
+$$
+没有一个 $\omega$ 值能有效减少误差的平滑组成部分:
+$$
+\lambda_1(T_\omega) 
+= 1 - 2\omega \sin^2\left(\frac{\pi}{2n}\right) \approx 1 
+- \frac{\omega\pi^2h^2}{2} . 
+$$
+接受了没有一个 $\omega$ 值能令人满意地减弱平滑组件后, 
+我们询问哪个 $\omega$ 值提供了振荡模式的最佳减弱.
+
+\hl{定义 9.19} 迭代方法的平滑因子 $\mu$ 是对 HF 模式的最大减弱因子,
+$$
+\mu := \min_{\omega \in (0,1]} \max_{k \in \left[\frac{n}{2}, n\right)} 
+|\lambda_k(T_\omega)|, \quad (9.13) 
+$$
+其中 $T_\omega$ 是迭代方法的迭代矩阵, 
+$\lambda_k(T_\omega)$ 是 $T_\omega$ 的第 $k$ 个特征值. 
+如果 $\mu$ 很小并且与网格大小无关, 就称迭代方法具有平滑属性.
+
+\hl{例 9.20} 加权 Jacobi 的平滑因子由优化问题 (9.13) 确定. 
+对于任何固定的 $k$, 函数 $\lambda_k(T_\omega)$ 在 $\omega$ 方面是单调递减的. 
+对于任何固定的 $\omega$, $\lambda_k(T_\omega)$ 也在 $k$ 方面是单调递减的. 
+特别地, 
+$$
+\lambda_k(T_0) \equiv 1
+$$ 
+并且 
+$$
+\lambda_k(T_1) = \cos\left(\frac{k\pi}{n}\right).
+$$
+为了最小化 
+$\omega \in [0, 1]$ 上的 
+$\max_{k \in \left[\frac{n}{2}, n\right)} |\lambda_k(T_\omega)| $, 
+我们必须有
+$$
+1 - \omega = \lambda_{\frac{n}{2}}(T_\omega) 
+= -\lambda_n(T_\omega) = -1 + 2\omega, 
+$$
+这意味着 $\omega = \frac{2}{3}$. 
+因此我们有 $|\lambda_k| \leq \mu = \frac{1}{3}$.
+
+尽管我们选择不在平滑因子的定义中包括 $\lambda_n$, 但它是从 (9.12) 中明确确定的. 
+因此 $\lambda_n$ 的存在及我们如何在 (9.13) 中定义 $\mu$ 是两个不同的问题. 
+
+\hl{练习 9.21} 编写程序复现 Briggs 等人 [2000] 书中的图 2.8, 
+验证常规 Jacobi 只对 $16 \leq k \leq 48$ 的模式有好的减弱效果. 
+相比之下, 对于 $\omega = \frac{2}{3}$, $16 \leq k < 64$ 的模式都会快速减弱.
+
+\subsubsection{限制与延长}
+
+\hl{引理 9.22} $\Omega_h$ 上的第 $k$ 个 LF 模式变成 $\Omega_{2h}$ 
+上的第 $k$ 个模式 (LF或HF):
+$$
+w^h_{k,2j} = w^{2h}_{k,j}. \quad (9.14) 
+$$
+$\Omega_h$ 上的 LF 模式 $k \in \left[\frac{n}{4}, \frac{n}{2}\right)$ 
+将成为 $\Omega_{2h}$ 上的 HF 模式.
+
+证明很简单, 可以验证
+$$
+w^h_{k,2j} = \sin\left(\frac{2jk\pi}{n}\right) 
+= \sin\left(\frac{jk\pi}{n/2}\right) = w^{2h}_{k,j}, \quad (9.15) 
+$$
+其中 $k \in [1, \frac{n}{2})$. 由于 $\Omega_{2h}$ 上 $k$ 的范围更小, 
+定义上 $k \in \left[\frac{n}{4}, \frac{n}{2}\right)$ 的模式是 HF, 
+因为 $\Omega_{2h}$ 上的最高波数是 $\frac{n}{2}$.
+
+\hl{定义9.23} 限制操作符 
+$$
+I^{2h}_h : \mathbb{R}^{n-1} \to \mathbb{R}^{\frac{n}{2}-1} 
+$$ 
+将细网格 $\Omega_h$ 上的一个向量映射到粗网格 $\Omega_{2h}$ 上的对应向量:
+$$
+I^{2h}_h v^h = v^{2h}. \quad (9.16) 
+$$
+
+限制操作符也可以定义为两个网格函数空间之间的线性映射, 
+$$
+I^{2h}_h : \mathbb{R}^{n-1} \to \mathbb{R} 
+\to \mathbb{R}^{\frac{n}{2}-1} \to \mathbb{R}.
+$$
+然而, 定义 9.23 中的符号更为方便.
+
+\hl{定义 9.24} 注射操作符是一种通过以下方式给出的限制操作符:
+$$
+v^{2h}_j = v^h_{2j}, \quad (9.17) 
+$$
+其中 $j = 1, 2, \ldots, \frac{n}{2} - 1$.
+
+\hl{定义 9.25} 全权重操作符是一种通过以下方式给出的限制操作符:
+$$
+v^{2h}_j = \frac{1}{4} \left( v^h_{2j-1} + 2v^h_{2j} 
++ v^h_{2j+1} \right), \quad (9.18) 
+$$
+其中 $j = 1, 2, \ldots, \frac{n}{2} - 1$.
+
+\hl{例9.26} 对于 $n = 8$, 全权重操作符为
+$$
+I^{2h}_h = \frac{1}{4} 
+\begin{bmatrix} 1 & 2 & 1&&&&  \\ &&1 & 2 & 1&& \\ &&&&1 & 2 & 1 
+\end{bmatrix}. \quad (9.19) 
+$$
+
+\hl{定义 9.27} 延长或插值操作符 
+$$
+I^h_{2h} : \mathbb{R}^{\frac{n}{2}-1} \to \mathbb{R}^{n-1}
+$$ 
+将粗网格 $\Omega_{2h}$ 上的一个向量映射到细网格 $\Omega_h$ 上的对应向量:
+$$
+I^h_{2h}v^{2h} = v^h. \quad (9.20) 
+$$
+
+\hl{定义9.28} 线性插值操作符是一种通过以下方式给出的延长操作符:
+$$
+v^h_{2j} = v^{2h}_j, 
+$$
+$$
+v^h_{2j+1} = \frac{1}{2} (v^{2h}_j + v^{2h}_{j+1}). \quad (9.21) 
+$$
+
+\hl{例 9.29} 对于 $n = 8$, 线性插值操作符为
+$$
+I^h_{2h} = \frac{1}{2} 
+\begin{bmatrix} 1 & &  \\ 2 & & \\ 1 & 1 & \\ &2& \\
+   &1&1\\
+  &&2\\
+&&1 \end{bmatrix}. \quad (9.22)
+$$
+
+Here is the translation into Chinese:
+
+\subsubsection{双网格修正}
+
+当 $\omega = \frac{2}{3}$ 时, 加权 Jacobi 能有效减弱 HF 模式. 
+根据引理 9.22, 细网格上的 LF 模式可能会在粗网格上成为HF模式. 
+这一事实在一系列逐渐粗化的网格上的多网格方法中被利用, 以消除大部分的 HF 模式: 
+细网格上的一半 LF 模式可能会成为粗网格上的 HF 模式.
+
+\hl{定义 9.30} 双网格修正方案
+$$
+v^h \leftarrow TG(v^h, f^h, \nu_1, \nu_2) \quad (9.23) 
+$$
+通过以下步骤解决 $Au = f$ 在 (9.7) 中的问题:
+
+(TG-1) 在 $\Omega_h$ 上对 $A^h u^h = f^h$ 进行 $\nu_1$ 次松弛, 
+初始猜测为 $v^h$, 
+$$
+v^h \leftarrow T^{\nu_1}_\omega v^h + c_1(f);
+$$
+
+(TG-2) 计算细网格残差 
+$$
+r^h = f^h - A^hv^h
+$$ 
+并将其限制到粗网格上 $r^{2h} = I^{2h}_h r^h$: 
+$$
+r^{2h} \leftarrow I^{2h}_h (f^h - Ahv^h);
+$$
+
+(TG-3) 在 $\Omega_{2h}$ 上解 $A^{2h}e^{2h} = r^{2h}$: 
+$$
+e^{2h} \leftarrow (A^{2h})^{-1}r^{2h};
+$$
+
+(TG-4) 将粗网格误差插值到细网格上 $e^h = I^h_{2h}e^{2h}$ 
+并修正细网格近似值:
+$$ 
+v^h \leftarrow v^h + I^h_{2h}e^{2h};
+$$
+
+(TG-5) 在 $\Omega_h$ 上对 $A^hu^h = f^h$ 进行 $\nu_2$ 次松弛, 
+初始猜测为 $v^h$:
+$$
+v^h \leftarrow T^{\nu_2}_\omega v^h + c_2(f).
+$$
+
+边界条件的类型被纳入矩阵 $A^h$, 而边界条件的值被纳入向量 
+$c_1(f)$. 在第三步中, 我们使用直接求解器, 如 LU 分解来解线性系统, 
+因为在递归版本的后期, 我们将粗化网格, 使其单元格数量变为一个小整数, 如 $4$ 或 $8$.
+
+\hl{引理 9.31} 对错误向量作用时, 双网格修正方案 (9.23) 的迭代矩阵为
+$$
+T_G = T^{\nu_2}_\omega \left( I - I^h_{2h}(A^{2h})^{-1}I^{2h}_h A^h \right) 
+T^{\nu_1}_\omega. \quad (9.24) 
+$$
+
+证明: 根据定义 9.30, 细网格上的残差为
+$$
+r^h(v^h) = f^h - A^h \left( T^{\nu_1}_\omega v^h + c(f) \right). 
+$$
+当 $\nu_2 = 0$ 时, 双网格修正方案将初始猜测替换为
+$$
+v^h \leftarrow T^{\nu_1}_\omega v^h 
++ c(f) + I^h_{2h}(A^{2h})^{-1}I^{2h}_h r^h(v^h) 
+$$
+这同样适用于精确解 $u^h$
+$$
+u^h \leftarrow T^{\nu_1}_\omega u^h 
++ c(f) + I^h_{2h}(A^{2h})^{-1}I^{2h}_h r^h(u^h). 
+$$
+两个方程相减得到
+$$
+e^h \leftarrow T^{\nu_1}_\omega e^h 
+- I^h_{2h}(A^{2h})^{-1}I^{2h}_h A^h T^{\nu_1}_\omega e^h. 
+$$
+类似的论证适用于步骤 (TG-5), 得到 (9.24).
+
+当没有平滑的时候(即 $\nu_1 = \nu_2 = 0$), 
+操作符 $T_G$ 可以被视为一个固定点迭代矩阵 $I - B^hA^h$, 
+其中 
+$$
+B^h = I^h_{2h}(A^{2h})^{-1}I^{2h}_h
+$$ 
+是 $A^h$ 的一个预处理器.
+
+\subsubsection{多网格循环}
+
+\hl{定义 9.32} V-循环方案
+$$
+v^h \leftarrow VC^h(v^h,f^h, \nu_1, \nu_2) \quad (9.25) 
+$$
+通过以下步骤解决 $Au = f$ 在(9.7)中的问题:
+
+(VC-1) 在 $A^h u^h = f^h$ 上进行 $\nu_1$ 次松弛, 初始猜测为 $v^h$.
+
+(VC-2) 如果 $\Omega_h$ 是最粗的网格, 转到 (VC-4), 否则
+$$
+f^{2h} \leftarrow I^{2h}_h(f^h - A^hv^h), 
+$$
+$$
+v^{2h} \leftarrow 0, 
+$$
+$$
+v^{2h} \leftarrow VC^{2h}(v^{2h},f^{2h}, \nu_1, \nu_2). 
+$$
+
+(VC-3) 插值误差回来并修正解:
+$$
+v^h \leftarrow v^h + I^h_{2h}v^{2h}. 
+$$
+
+(VC-4) 在 $A^h u^h = f^h$ 上进行 $\nu_2$ 次松弛, 初始猜测为 $v^h$.
+
+\hl{引理 9.33} 在一个每维有 $n = 2^m$ 个单元格的 
+$D$ 维域中 $(m \in \mathbb{N}^+)$ V-循环的存储成本为
+$$
+2n^D \left(1 + 2^{-D} + 2^{-2D} + \cdots + 2^{-mD}\right) 
+< \frac{2n^D}{1 - 2^{-D}}. \quad (9.26) 
+$$
+设 $WU$ 表示在最细网格上执行一次松弛扫描的计算成本. 忽略网格间传输后, 单个 V-循环的计算成本为
+$$
+2WU \left(1 + 2^{-D} + 2^{-2D} + \cdots + 2^{-mD}\right) 
+< \frac{2WU}{1 - 2^{-D}}. \quad (9.27) 
+$$
+
+证明. 在每个网格上, 都必须存储误差向量和残差向量, 这就是 (9.26) 中的 2 因子的理由; 
+(9.26) 的其余部分来自定义 9.32. 类似的论证得到(9.27).
+
+在最细的网格上, 我们需要 $2n^D$ 个存储位置. 对于 $D = 1$, 
+存储要求不到最细网格的两倍. 对于 $D \geq 2$, 
+存储比率被限制在 $\frac{4}{3}$. 
+
+有准确初始猜测的 V-循环解比有不准确初始猜测的解好得多. 
+为了改进 V-循环, 完整的多网格 
+V-循环使用多网格的思想构建一个准确的初始猜测来获取一个准确的初始猜测.
+
+\hl{定义 9.34} 完整多网格 V-循环
+$$
+v^h \leftarrow FMG^h(f^h, \nu_1, \nu_2) \quad (9.28) 
+$$
+通过以下步骤解决 $Au = f$ 在 (9.7) 中的问题:
+
+(FMG-1) 如果 $\Omega_h$ 是最粗的网格, 
+设置 $v^h \leftarrow 0$ 并转到 (FMG-3), 
+否则
+$$
+f^{2h} \leftarrow I^{2h}_h f^h, 
+$$
+$$
+v^{2h} \leftarrow FMG^{2h}(f^{2h}, \nu_1, \nu_2). 
+$$
+
+(FMG-2) 修正 $v^h \leftarrow I^h_{2h}v^{2h}$.
+
+(FMG-3) 以 $v^h$ 为初始猜测进行 V-循环:
+$$
+v^h \leftarrow VC^h(v^h,f^h, \nu_1, \nu_2). 
+$$
+
+FMG 从降到最粗网格 $\Omega_{8h}$ 开始, 
+解决方案通过 V-循环方案内的 (VC-1,4) 获得; 
+这由上图中的向下虚线段表示. 然后解决方案被延长到 $\Omega_{4h}$ 
+并作为 $\Omega_{4h}$ 上 V-循环的初始猜测. 
+这个 ``延长 + V-循环'' 过程递归重复: 
+在上图中延长由向上的虚线表示, 而 V-循环由实线表示. 
+因此, 输入最后一个 V-循环的初始猜测非常准确, 
+而构建这个准确初始猜测的计算成本被限制在一个 V-循环的成本内. 
+正是这种 V-循环的改进帮助多网格实现了 $O(n)$ 复杂度.
+(一次循环就够了)
+
+\hl{练习9.35} 显示对于 $\nu_1 = \nu_2 = 1$, 一个 FMG 循环的计算成本小于 
+$$
+\frac{2}{(1-2^{-D})^2} WU, D = 1, 2, 3
+$$ 
+的 FMG 循环计算成本给出尽可能紧的上界.
 
 \bibliography{crazyfish.bib}
 \end{document}
