@@ -2975,7 +2975,7 @@ $$
 $s''(x)$ 没有取到最大的 $[x_i, x_{i + 1}]$, 这个结论可以不成立.
 即并不能在每一段上都套用这个估计. 这一段上的 $f''$ 可能没有那么大. 
 
-\subsection{误差分析}
+\subsubsection{误差分析}
 
 上面的引理 3.11 已经铺平了最大误差估计的道路. 我们已经从数值实验中看到,
 样条函数应该具有一致收敛性, 定理 3.12 直接给出了样条函数的各阶导数的最优界. 
@@ -3128,17 +3128,23 @@ $\mathbb{S}_{1}^{0}$? 我们可以从约束的角度去理解. )
 
 定理 3.14 $\mathbb{S}_{n}^{n - 1}(t_1, t_2, \cdots, t_N)$ 是线性空间.
 
-\noindent \textbf{定理 3.14.} 样条集合 $S_{n}^{n-1}\left(t_{1}, t_{2},\cdots, t_{N}\right)$ 是一个线性空间，
+\noindent \textbf{定理 3.14.} 样条集合 $\mathbb{S}_{n}^{n-1}\left(t_{1}, t_{2},\cdots, t_{N}\right)$ 是一个线性空间，
 其维数为 $n + N - 1$.
 
 \begin{proof}
 根据 (3.2) 和定义 B.2 很容易验证 $S_{n}^{n - 1}\left(t_{1}, t_{2},\cdots, t_{N}\right)$ 的确是一个线性空间。
+注意这里只限制了样条节点，没有限定插值点的函数值。我们在这个基础上根据样条的定义来考虑数乘和加法。
 注意加法单位元是零函数，而不是数字零。一个 $n$ 次多项式由 $n+1$ 个系数确定。
 $N-1$ 个区间导致 $(N-1)(n+1)$ 个系数。在 $N-2$ 个区间结点上，平滑性条件要求相邻多项式的第 $0$ 阶, $1$ 阶, $\cdots$, $(n - 1)$ 阶导数匹配。
 因此，维数是 $(N - 1)(n + 1) - n(N - 2) = n + N - 1$.
 \end{proof}
 
-证明就是严格走线性空间定义的八条. 这里, 加法和数乘都是经典的加法和数乘.
+以 $\mathbb{S}_3^2$ 为例，自由度也就是维数确实是 $N + n - 1 = N + 2$, 代表了 $N$ 个函数值和两个边界条件。
+一般地，每个区间上一个 $n$ 次多项式有 $n + 1$ 个系数，$N - 1$ 个区间导致 $(N - 1)(n + 1)$ 个系数。减去连续性条件得到的 $n(N - 2)$ 个约束，
+最终得到 $n + N - 1$ 个自由度，这也就是维数。可以考虑一下 $\mathbb{S}_{n}^{n - 1}$ 样条需要几个边界条件？$n - 1$ 个。所以逐段线性样条需要几个边界条件？
+$n = 1 - 1 = 0$ 个。
+
+严格的证明就是线性空间定义的八条. 这里, 加法和数乘都是经典的加法和数乘.
 幺元就是数字 $1$. 但零元是定义在 $[a, b]$ 上的零函数. 
 而该空间的维数暂时不是那么明显, 因为我们一下子没有清晰地给出一组基. 
 但我们可以通过独立自由度来考虑(或者说, 要唯一确定一个该空间的向量, 
@@ -3157,7 +3163,7 @@ $$
 但光知道一个维数, 对我们意义不大, 因此接下去我们从根本上解决什么是
 $\mathbb{S}_{n, N}^{n - 1}$ 空间一组基的问题. 
 
-\subsection{截断指数函数}
+\subsubsection{截断指数函数}
 
 \noindent \textbf{定义 3.16.} 指数为 $n$ 的截断幂函数定义为
 \[
@@ -3168,15 +3174,17 @@ x_+^n = \left\{
 \end{array}\right.
 \]
 
+这是只有一半的指数函数，所以叫截断指数函数。
+
  \noindent \textbf{例 3.17.} 根据定义 3.16，我们有
  \[
  \int_{a}^{b} (t - x)_+^n \, dx = \int_{a}^{t} (t - x)^n \, dx  = \frac{(t - a)^{n+1}}{n+1} \quad \text{对于} \quad t \in [a, b].
  \]
-（$t$ 不可大于 $x$.）
+（$t$ 不可大于 $x$. 否则为零。）
 
-\noindent \textbf{备注 3.20.} 对于 $n \in \mathbb{N}^+$，$x_+^n \in C^{n-1}(-\infty, +\infty)$. 因此，$x_+^n \in S^{n-1}(-\infty, 0, +\infty)$.
+\noindent \textbf{备注 3.20.} 对于 $n \in \mathbb{N}^+$，$x_+^n \in C^{n-1}(-\infty, +\infty)$. 因此，$x_+^n \in \mathbb{S}^{n-1}_n(-\infty, 0, +\infty)$.
 
-（在 $(-\infty, 0)$ 和 $(0, \infty)$ 上 $n$ 阶连续，在 $0$ 点 $n - 1$ 阶连续, 这不是一个尖点。）
+（在 $(-\infty, 0)$ 和 $(0, \infty)$ 上 $n$ 阶连续，在 $0$ 点 $n - 1$ 阶连续, 注意这不是一个尖点。）
 
 \noindent \textbf{引理 3.18.} 以下是 $\mathbb{S}_{n}^{n-1}\left(t_{1},\ldots, t_{N}\right)$ 的一个基：
 \[
@@ -3184,17 +3192,36 @@ x_+^n = \left\{
 \]
 
 \begin{proof}
-对于所有 $i=2,3,\ldots, N-1$，$\left(x-t_{i}\right)_{+}^{n} \in S_{n, N}^{n-1}$。同时，对于所有 $i=0,1,\ldots, n$，$x^{i} \in S_{n, N}^{n-1}$。假设
+对于所有 $i=2, 3, \ldots, N - 1$, $\left(x - t_{i}\right)_{+}^{n} \in \mathbb{S}_{n, N}^{n-1}$. 
+同时，对于所有 $i=0, 1, \ldots, n$, $x^{i} \in \mathbb{S}_{n, N}^{n-1}$. （检查每一个都属于空间）。 假设
 \[
-\sum_{i=0}^{n} a_{i} x^{i} + \sum_{j=2}^{N-1} a_{n+j}\left(x-t_{j}\right)_{+}^{n} = 0(x). \tag{3.26}
+\sum_{i = 0}^{n} a_{i} x^{i} + \sum_{j = 2}^{N - 1} a_{n + j}\left(x - t_{j}\right)_{+}^{n} = 0(x). \tag{3.26}
 \]
-为了满足所有 $x < t_{2}$ 的 (3.26)，$a_{i}$ 必须对于每个 $i=0,1,\cdots, n$ 都是 0。为了满足所有 $x \in (t_{2}, t_{3})$ 的 (3.26)，$a_{n+2}$ 必须为 0。类似地，所有的 $a_{n+j}$ 必须为零。因此，根据定义 B.26，(3.25) 中的函数是线性独立的。通过定理 3.14、引理 B.42 以及 (3.25) 中有 $n+N-1$ 个函数的事实，证明完成。
+为了满足所有 $x < t_{2}$ 的 (3.26)，后一项全为零。但前面的 $a_{i}$ 必须对于每个 $i = 0, 1, \cdots, n$ 都是 $0$. 
+为了满足所有 $x \in (t_{2}, t_{3})$ 的 (3.26)，$a_{n + 2}$ 必须为 $0$. 类似地，所有的 $a_{n + j}$ 必须为零。因此，
+根据定义 B.26，(3.25) 中的函数是线性独立的。通过定理 3.14、引理 B.42 以及 (3.25) 中有 $n + N - 1$ 个函数的事实，证明完成。
 \end{proof}
+
+\noindent \textbf{推论 3.19.} 任何 $s \in \mathbb{S}_{n, N}^{n-1}$ 可以表示为
+\[
+  s(x) = \sum_{i= 0 }^{n} a_i (x - t_1)^i + \sum_{j = 2}^{N - 1} a_{n + j} (x - t_j)_+^n, \quad x \in [t_1, t_N].\tag{3.27}
+\]
+
+\begin{proof}
+根据引理 3.18，只需指出
+  \[
+  \text{span}\{1, x, \ldots, x^n\} = \text{span}\{1, (x - t_1), \ldots, (x - t_1)^n\}.
+\]  
+\end{proof} 
+
+\noindent \textbf{例 3.20.} 当 $n = 1$ 时，(3.27) 是线性样条插值。想象一根最初是直的塑料杆。
+将其一端放在 $(t_1, f_1)$ 并让它通过 $(t_2, f_2)$. 通常 $(t_3, f_3)$ 会偏离杆，但我们可以在 $(t_2, f_2)$ 处弯曲杆，
+使其通过 $(t_3, f_3)$。这个 ``弯曲'' 过程对应于在 (3.27) 中添加第一个截断幂函数。
 
 定义 3.16 给出的截断指数函数, 在正半轴包括 $0$ 是指数函数, 而负半轴则是零函数. 
 记做 $x_+^n$, $x \in \mathbb{R}$.
 
-请不要放过例子 3.17 这样的提示.
+%请不要放过例子 3.17 这样的提示.
 
 {\bf remark 3.19} 注意 $x_+^n$ 是直到 $n - 1$ 阶连续的, 因此 $x_+^n
 \in \mathbb{S}_{n}^{n - 1}(-\infty, 0, \infty)$. 或者说, 
@@ -3315,6 +3342,9 @@ $$
 但由于 $1, x, \cdots, x^n$ 部分的存在, 使得这组基函数和相对 $\mathbb{P}_n$ 
 空间的基函数 $1, x, \cdots, x^n$ 一样, 没有太大的可计算性. 我们希望有类似
 Lagrange 插值基函数或者 Newton 插值基函数那样方便计算的局部基函数形式. 
+也就是说，这里的基函数 $x - t_1$ 和 $(x - t_i)$ 都是全局的，他们在自己的区间起到了作用，
+但出了区间，就是在做无谓的计算，同时增加了形式的复杂性。我们希望有一种局部的基函数，也就是说，
+只要在一个区间起到基的作用就行了。
 
 {\bf remark 3.21}
 尽管我们已经找到一组 $\mathbb{S}_{n}^{n - 1}$, 但它有
@@ -3322,6 +3352,39 @@ Lagrange 插值基函数或者 Newton 插值基函数那样方便计算的局部
 很像 Lagrange 插值公式.
 
 这样就提出了类似差商的 hat 函数. 
+
+\subsubsection{B-样条的局部支撑}
+% 3.2.2 B-样条的局部支撑
+
+\noindent \textbf{备注 3.23.} hat 函数构成 $\mathbb{S}_{1, n}^0$ 的一个基。
+
+\noindent \textbf{定义 3.21.} 在 $t_i$ 处的 hat 函数是
+\[
+\hat{B}_i(x) = 
+\begin{cases} 
+\frac{x - t_{i-1}}{t_i - t_{i-1}} & x \in (t_{i-1}, t_i], \\
+\frac{t_{i+1} - x}{t_{i+1} - t_i} & x \in (t_i, t_{i+1}], \\
+0 & \text{其他情况}.
+\end{cases}
+\tag{3.28}
+\]
+
+\noindent \textbf{定理 3.22.} 帽函数构成 $\mathbb{S}_1^0$ 的一个基。
+
+\begin{proof}
+根据定义 3.21, 我们有
+\[
+  \hat{B}_i(t_j) = 
+  \begin{cases} 
+  1 & \text{如果 } i = j, \\
+  0 & \text{如果 } i \neq j.
+  \end{cases}
+  \tag{3.29}
+\]
+  
+假设 $\sum_{i = 1}^{N} c_i \hat{B}_i(x) = 0(x)$. 那么我们有 $c_i = 0$ 对于每个 $i = 1, 2, \ldots, N$ 通过设置 $x = t_j$ 并应用 (3.29)。
+因此，根据定义 B.26，这些 $N$ 个帽函数是线性独立的。证明由定理 3.14 和引理 B.42 完成。
+\end{proof} 
 
 我们来观察 $\mathbb{S}_1^0$ 的一组基:
 
@@ -3367,6 +3430,37 @@ $$
 
 例子 3.25 给出了 $B_i^2(x)$ 形式. (可以画一下.)
 
+\noindent \textbf{例 3.25.} 二次 B-样条 $B_{i}^{2}(x)=$
+\[
+\left\{
+\begin{array}{ll}
+\frac{\left(x-t_{i-1}\right)^{2}}{\left(t_{i+1}-t_{i-1}\right)\left(t_{i}-t_{i-1}\right)}, & x\in\left(t_{i-1}, t_{i}\right) \\
+\frac{\left(x-t_{i-1}\right)\left(t_{i+1}-x\right)}{\left(t_{i+1}-t_{i-1}\right)\left(t_{i+1}-t_{i}\right)}+\frac{\left(t_{i+2}-x\right)\left(x-t_{i}\right)}{\left(t_{i+2}-t_{i}\right)\left(t_{i+1}-t_{i}\right)}, & x\in\left(t_{i}, t_{i+1}\right) \\
+\frac{\left(t_{i+2}-x\right)^{2}}{\left(t_{i+2}-t_{i}\right)\left(t_{i+2}-t_{i+1}\right)}, & x\in\left(t_{i+1}, t_{i+2}\right) \\
+0, & \text{其他情况.}
+\end{array}
+\right.
+\tag{3.33}
+\]
+
+\noindent \textbf{定义 3.26.} 函数 $f: \mathbb{R}^{n} \rightarrow \mathbb{R}$ 的支撑集是
+\[
+\operatorname{supp}(f)=\operatorname{closure}\left\{x\in \mathbb{R}^{n}: f(x)\neq 0\right\}.
+\tag{3.34}
+\]
+
+\noindent \textbf{备注 3.25.} 参见定义 D.65，以获得在度量空间背景下集合闭包的精确描述。
+
+\noindent \textbf{引理 3.27（B-样条的支撑集.} 对于 $n\in \mathbb{N}^{+}$, $B_{i}^{n}$ 的支撑区间是 $\left[t_{i - 1}, t_{i + n}\right]$, 其中
+\[
+  \forall x\in\left(t_{i-1}, t_{i+n}\right), B_{i}^{n}(x)>0.
+\tag{3.35}
+\]
+
+\begin{proof}
+  这是一个通过 (3.31) 和 (3.30) 进行的简单归纳。
+\end{proof} 
+
 定义 3.26 函数的支撑. 这是一个函数到集合的映射. 这个概念在计算中非常重要. 
 它是函数定义域中取值非零部分.
 
@@ -3375,6 +3469,22 @@ $$
 条基函数的递推关系和我们讲义不一样, 它的支撑是 $[t_i, t_{i + n + 1}]$,
 跨越范围是一样的.
 
+\noindent \textbf{备注 3.26.} 引理 3.27 对于记忆递归定义 (3.30) 是有帮助的。
+$B_{i}^{n}(x)$ 的分数系数中的节点正是其支撑区间的端点；$B_{i+1}^{n}(x)$ 也是如此。
+这个引理也将是理解 B-样条算法的关键。
+
+\noindent \textbf{备注 3.27.} 作为 B-样条相对于截断幂函数的一个优势，它们具有局部支撑。
+当 $n$ 增加到 $n + 1$ 时，支撑区间会向右覆盖一个更多的节点，而左端点 $t_{i-1}$ 保持不变。
+另一个常见的约定是选择 $t_{i}$ 作为固定的左端点。
+
+\noindent \textbf{定义 3.28.} 设 $X$ 是一个向量空间。对于每个 $x\in X$，我们关联一个唯一的实数（或复数）$L(x)$。
+如果对于所有 $x, y\in X$ 和所有 $\alpha, \beta\in \mathbb{R}$（或 $\mathbb{C}$），我们有
+\[
+L(\alpha x + \beta y) = \alpha L(x) + \beta L(y),
+\tag{3.36}
+\]
+那么 $L$ 被称为 $X$ 上的线性泛函。
+
 {\bf \remark 3.25} B 样条基相比截断指数函数而言, 局部支撑 (支撑限制在
 一个局部) 是一个很大的优势. 而且这个局部支撑和 $t_i$ 节点位置有关, 这
 样当我们改变节点时, 对整个样条的改变就有可能控制在局部的基函数和相关系
@@ -3382,6 +3492,16 @@ $$
 
 定义 3.28 给出了一般向量空间意义上的线性泛函. 比如例子 3.29 中的 $L$
 可以是定义在连续函数空间上的泛函. 相比函数, 线性泛函就是从一个向量到一个数的映射. 
+
+\noindent \textbf{例 3.29.} $X=\mathcal{C}[a, b]$，那么 $X$ 的元素是 $[a, b]$ 上的连续函数。
+\[
+L(f)=\int_{a}^{b} f(x) \, dx, \quad L(f)=\int_{a}^{b} x^{2} f(x) \, dx
+\]
+都是 $X$ 上的线性泛函。
+
+\noindent \textbf{符号说明 3.} 我们已经使用了符号 $f[x_{0}, \ldots, x_{k}]$ 来表示 $f$ 的第 $k$ 阶差商，
+这与将 $f[x_{0}, \ldots, x_{k}]$ 视为泰勒展开的推广是一致的。在此之后，为了分析 B-样条，
+使用符号 $[x_{0}, \ldots, x_{k}]f$ 在语义上和语法上都是更好的，这与将差商的视为 $\mathcal{C}[x_{0}, x_{k}]$ 上的线性泛函是一致的。
 
 我们所熟悉的导数, 可以认为是可微函数空间, 到实数的一个线性泛函. 那么差商呢? 
 也可以认为是有界函数空间到实数的一个线性泛函, 这里差商的节点, 可以认为是参数. 
@@ -3405,6 +3525,38 @@ $$
 fg^{(n)} = \sum_{i = 0}^n {n \choose i} f^{(n - i)}g^{(i)}.
 $$
 
+
+\noindent \textbf{定理 3.30（莱布尼茨公式）.} 对于 $k \in \mathbb{N}$, 两个函数乘积的 $k$ 阶差商满足
+\[
+[x_0, \ldots, x_k] f g = \sum_{i=0}^k [x_0, \ldots, x_i] f \cdot [x_i, \ldots, x_k] g.
+\tag{3.37}
+\]
+
+\begin{proof}
+归纳基础 $k = 0$ 成立，因为 (3.37) 简化为 $[x_0] f g = f(x_0) g(x_0)$. 现在假设 (3.37) 成立。对于归纳步骤，我们有根据定理 2.17 得到
+\[
+  [x_0, \ldots, x_{k+1}] f g = \frac{[x_1, \ldots, x_{k+1}] f g - [x_0, \ldots, x_k] f g}{x_{k+1} - x_0}.
+\]
+  
+根据归纳假设，我们有
+\begin{align*}
+  [x_1, \ldots, x_{k+1}] f g &= \sum_{i=0}^k [x_1, \ldots, x_{i+1}] f \cdot [x_{i+1}, \ldots, x_{k+1}] g \\
+  &= S_1 + \sum_{i=0}^k [x_0, \ldots, x_i] f \cdot [x_{i+1}, \ldots, x_{k+1}] g, \text{ 其中} \\
+  S_1 &= \sum_{i=0}^k (x_{i+1} - x_0) \cdot [x_0, \ldots, x_{i+1}] f \cdot [x_{i+1}, \ldots, x_{k+1}] g \\
+  &= \sum_{i=1}^{k+1} (x_i - x_0) \cdot [x_0, \ldots, x_i] f \cdot [x_i, \ldots, x_{k+1}] g \\
+  [x_0, \ldots, x_k] f g &= \sum_{i=0}^k [x_0, \ldots, x_i] f \cdot [x_i, \ldots, x_k] g \\
+  &= -S_2 + \sum_{i=0}^k [x_0, \ldots, x_i] f \cdot [x_{i+1}, \ldots, x_{k+1}] g, \text{ 其中} \\
+  S_2 &= \sum_{i=0}^k [x_0, \ldots, x_i] f \cdot (x_{k+1} - x_i) \cdot [x_i, \ldots, x_{k+1}] g.
+\end{align*}
+  
+在上述推导中，我们应用了定理 2.17 从第 $k$ 阶差商过渡到第 $(k+1)$ 阶。然后
+  \begin{align*}
+  [x_0, \ldots, x_{k+1}] f g &= \frac{S_1 + S_2}{x_{k+1} - x_0} \\
+  &= \sum_{i=0}^{k+1} [x_0, \ldots, x_i] f \cdot [x_i, \ldots, x_{k+1}] g,
+  \end{align*}
+这完成了归纳证明。
+\end{proof}
+
 例子 3.31 给了 B 样条和截断指数函数之间的联系. 注意这里
 $$
 (t_{i + 1} - t_{i - 1})[t_{i - 1}, t_i, t_{i + 1}](t - x)_+
@@ -3416,15 +3568,120 @@ $$
 $$
 要善于运用记号整理和集中信息. 这个例子表明, 最后这个形式, 就是 $B_i^1$. 
 
+\noindent \textbf{备注 3.28.} 为了记忆，将定理 3.30 与莱布尼茨微分规则进行比较是有帮助的
+\[
+(fg)^{(n)} = \sum_{i=0}^{n} \binom{n}{i} f^{(n-i)} g^{(i)}.
+\]
+
+\noindent \textbf{例 3.31.} B-样条和截断幂函数之间存在关系，例如，
+\[
+(t_{i+1} - t_{i-1})[t_{i-1}, t_i, t_{i+1}](t - x)_+ = [t_i, t_{i+1}](t - x)_+ - [t_{i-1}, t_i](t - x)_+
+\]
+\[
+= \frac{(t_{i+1} - x)_+}{t_{i+1} - t_i} - \frac{(t_i - x)_+}{t_i - t_{i-1}} - \frac{(t_i - x)_+ - (t_{i-1} - x)_+}{t_i - t_{i-1}}
+\]
+\[
+= B_i^1 = 
+\begin{cases} 
+\frac{x - t_{i-1}}{t_i - t_{i-1}} & x \in (t_{i-1}, t_i], \\
+\frac{t_{i+1} - x}{t_{i+1} - t_i} & x \in (t_i, t_{i+1}], \\
+0 & \text{其他情况}.
+\end{cases}
+\]
+
 注意这个例子中, 差商是关于 $t$ 做的, $x$ 保持自变量的地位. 然后下面小图, 
 第一列分别是 $(t_{i - 1} - x)_+$, $(t_i - x)_+$ 和 $(t_{i + 1} -
 x)_+$;第二列是它们的差商, 第三列是 B 样条基 $B_i^1$. 我们可以清楚地看
 到(大雾),两次差商如何将全局支撑的基函数变成局部支撑. (参考 jupyter)
 
+重要的是，通过对截断幂函数应用差商，我们可以 ``治愈'' 它们非局部支撑的缺点。
+这个想法在下一个定理中得到了精确的表述。将上面的例子一般化：
+
+\noindent \textbf{定理 3.32（B-样条作为截断幂函数的差商）.} 对于任何 $n \in \mathbb{N}$, 我们有
+\[
+  B_i^n(x) = (t_{i+n} - t_{i-1}) \cdot [t_{i-1}, \ldots, t_{i+n}](t-x)_+^n.
+\tag{3.38}
+\]
+
+\begin{proof}
+对于 $n = 0$, (3.38) 简化为
+  \begin{align*}
+  B_i^0(x) &= (t_i - t_{i-1}) \cdot [t_{i-1}, t_i](t-x)_+^0 \\
+  &= (t_i - x)_+^0 - (t_{i-1} - x)_+^0 \\
+  &=
+  \begin{cases}
+  0 & \text{如果 } x \in (-\infty, t_{i-1}], \\
+  1 & \text{如果 } x \in (t_{i-1}, t_i], \\
+  0 & \text{如果 } x \in (t_i, +\infty),
+  \end{cases}
+  \end{align*}
+这与 (3.31) 相同。因此归纳基础成立。现在假设归纳假设 (3.38) 成立。
+  
+根据定义 3.16，$(t - x)_+^{n + 1} = (t - x)(t - x)_+^n$. 然后应用莱布尼茨公式（定理 3.30）其中 $f=(t - x)$ 和 $g=(t - x)_+^n$ 
+得到
+\begin{align*}
+  &[t_{i-1}, \ldots, t_{i+n}](t-x)_+^{n+1} \\
+  &= (t_{i-1} - x) \cdot [t_{i-1}, \ldots, t_{i+n}](t-x)_+^n \\
+  &\quad + [t_i, \ldots, t_{i+n}](t-x)_+^n.
+\end{align*}
+  
+定义 3.23 和归纳假设得到
+\[
+  B_{i}^{n+1}(x) = \beta(x) + \gamma(x),
+\]
+其中
+\begin{align*}
+  \beta(x) &= \frac{x - t_{i-1}}{t_{i+n} - t_{i-1}} B_{i}^{n}(x) \\
+  &= (x - t_{i-1}) \cdot [t_{i-1}, \ldots, t_{i+n}](t-x)_+^n \\
+  &= [t_{i}, \ldots, t_{i+n}](t-x)_+^n - [t_{i-1}, \ldots, t_{i+n}](t-x)_+^{n+1},
+\end{align*}
+最后一步遵循 (3.39)。类似地，
+\begin{align*}
+  \gamma(x) &= \frac{t_{i+n+1} - x}{t_{i+n+1} - t_{i}} B_{i+1}^{n}(x) \\
+  &= (t_{i+n+1} - x) \cdot [t_{i}, \ldots, t_{i+n+1}](t-x)_+^n \\
+  &= (t_{i+n+1} - t_{i}) \cdot [t_{i}, \ldots, t_{i+n+1}](t-x)_+^n \\
+  &\quad + (t_{i} - x) \cdot [t_{i}, \ldots, t_{i+n+1}](t-x)_+^n \\
+  &= [t_{i+1}, \ldots, t_{i+n+1}](t-x)_+^n - [t_{i}, \ldots, t_{i+n}](t-x)_+^n \\
+  &\quad + [t_{i}, \ldots, t_{i+n+1}](t-x)_+^{n+1} \\
+  &\quad - [t_{i+1}, \ldots, t_{i+n+1}](t-x)_+^n \\
+  &= [t_{i}, \ldots, t_{i+n+1}](t-x)_+^{n+1} - [t_{i}, \ldots, t_{i+n}](t-x)_+^n.
+\end{align*}
+\end{proof}
+
 定理 3.32 将这一事实一般化. 证明还是无脑上归纳法...
 
 公式 (3.38) 也可以用以定义 B 样条, 然后用一个定理来表示 (3.30) 这种 B
 样条的递推关系. 
+
+\subsubsection{积分和导数}
+% 3.2.3 积分和导数
+
+\noindent \textbf{推论 3.33（B-样条的积分）.} B-样条在其支撑集上的平均值仅取决于其阶数，
+\[
+\frac{1}{t_{i+n} - t_{i-1}} \int_{t_{i-1}}^{t_{i+n}} B_{i}^{n}(x) \, dx = \frac{1}{n+1}.
+\tag{3.40}
+\]
+
+\begin{proof}
+ (3.40) 的左边（LHS）是
+  \begin{align*}
+  &\frac{1}{t_{i+n} - t_{i-1}} \int_{t_{i-1}}^{t_{i+n}} B_{i}^{n}(x) \, dx \\
+  &= \int_{t_{i-1}}^{t_{i+n}} [t_{i-1}, \ldots, t_{i+n}](t-x)_+^n \, dx \\
+  &= [t_{i-1}, \ldots, t_{i+n}] \int_{t_{i-1}}^{t_{i+n}} (t-x)_+^n \, dx \\
+  &= [t_{i-1}, \ldots, t_{i+n}] \frac{(t - t_{i-1})^{n+1}}{n+1} \\
+  &= \frac{1}{n+1},
+  \end{align*}
+  其中第一步遵循定理 3.32，第二步来自积分和取分差的交换性，第三步来自 (3.24)，最后一步来自推论 2.22。
+\end{proof}
+
+\noindent \textbf{备注 3.30.} 实际上，定义 2.14 直接得出
+\[
+[t_{i-1}, \ldots, t_{i+n}](t - t_{i-1})^{n+1} = 1,
+\]
+因为插值 $\left(t - t_{i-1}\right)^{n+1}$ 在 $n+2$ 个点 $t_{i-1}, \ldots, t_{i+n}$ 上的多项式本身就是它，
+并且单项式 $t^{n+1}$ 的系数肯定是 $1$. 有时这种思维方式可以方便且强大；例如，(3.39) 可以用这种方式证明。
+
+\noindent \textbf{备注 3.31.} 在 $n=1$ 的情况下，推论 3.33 简单地说明三角形的面积仅取决于其底和高。
 
 引理 3.33 是个很有趣的结论, 样条基函数的积分, 只和它的阶数有关. 这个结
 论并不意外, 每一个样条基的支撑都是局部的, 因此它的积分都存在, 而且只和
@@ -3444,6 +3701,109 @@ $$
 
 因为而微积分是对称出现的, 所以定理 3.34 也是自然的. 这两个定理的证明请自己
 完成一遍. 可以检验你是否正确理解了全部的概念和记号.
+
+\noindent \textbf{定理 3.34（B-样条的导数）.} 对于 $n \geq 2$, 我们有，$\forall x \in \mathbb{R}$,
+\[
+\frac{d}{dx} B_{i}^{n}(x) = \frac{n B_{i}^{n-1}(x)}{t_{i+n-1} - t_{i-1}} - \frac{n B_{i+1}^{n-1}(x)}{t_{i+n} - t_{i}}.
+\tag{3.41}
+\]
+对于 $n=1$, (3.41) 对所有 $x$ 都成立，除了在三个节点 $t_{i-1}, t_{i}, t_{i+1}$ 处，$B_{i}^{1}$ 的导数是未定义的。（尖点啊）
+
+\begin{proof}
+我们首先证明 (3.41) 对所有 $x$ 除了在节点 $t_j$ 处成立。根据 (3.32)、(3.28) 和 (3.31)，我们有
+  \begin{align*}
+  \forall x \in \mathbb{R} \setminus &\{t_{i-1}, t_i, t_{i+1}\}, \\
+  \frac{d}{dx} B_i^1(x) &= \frac{1}{t_i - t_{i-1}} B_i^0(x) - \frac{1}{t_{i+1} - t_i} B_{i+1}^0(x).
+  \end{align*}
+  因此归纳基础成立。现在假设 (3.41) 对 $\forall x \in \mathbb{R} \setminus \{t_{i-1}, \ldots, t_{i+n}\}$ 成立。对 (3.30) 求导，应用归纳假设 (3.41)，我们有
+  \[
+  \frac{d}{dx} B_i^{n+1}(x) = \frac{B_i^n(x)}{t_{i+n} - t_{i-1}} - \frac{B_{i+1}^n(x)}{t_{i+n+1} - t_i} + n C(x),
+  \tag{3.42}
+  \]
+  其中 $C(x)$ 是
+  \begin{align*}
+  &\frac{x - t_{i-1}}{t_{i+n} - t_{i-1}} \left[ \frac{B_i^{n-1}(x)}{t_{i+n-1} - t_{i-1}} - \frac{B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} \right] \\
+  +& \frac{t_{i+n+1} - x}{t_{i+n+1} - t_i} \left[ \frac{B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} - \frac{B_{i+2}^{n-1}(x)}{t_{i+n+1} - t_{i+1}} \right] \\
+  =& \frac{1}{t_{i+n} - t_{i-1}} \left[ \frac{(x - t_{i-1}) B_i^{n-1}(x)}{t_{i+n-1} - t_{i-1}} + \frac{(t_{i+n} - x) B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} \right] \\
+  -& \frac{1}{t_{i+n+1} - t_i} \left[ \frac{(x - t_i) B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} + \frac{(t_{i+n+1} - x) B_{i+2}^{n-1}(x)}{t_{i+n+1} - t_{i+1}} \right] \\
+  =& \frac{B_i^n(x)}{t_{i+n} - t_{i-1}} - \frac{B_{i+1}^n(x)}{t_{i+n+1} - t_i},
+  \end{align*}
+  最后一步遵循 (3.30)。然后 (3.42) 可以写为
+  \[
+  \frac{d}{dx} B_i^{n+1}(x) = \frac{(n+1) B_i^n(x)}{t_{i+n} - t_{i-1}} - \frac{(n+1) B_{i+1}^n(x)}{t_{i+n+1} - t_i},
+  \]
+  这完成了 (3.41) 的归纳证明，除了在节点处。由于 $B_i^1 = \hat{B}_i$ 是连续的，通过 (3.30) 的简单归纳表明 $B_i^n$ 对所有 $n \geq 1$ 是连续的。
+  因此，(3.41) 的右边对所有 $n \geq 2$ 是连续的。因此，如果 $n \geq 2$，$\frac{d}{dx} B_i^n(x)$ 对所有 $x \in \mathbb{R}$ 存在。这完成了证明。
+\end{proof}
+
+\noindent \textbf{备注 3.32.} 另外，定理 3.34 可以从定理 3.32 推导出来，如下所示，
+
+\begin{align*}
+\frac{d}{dx} B_i^n(x) &= (t_{i+n} - t_{i-1}) \cdot [t_{i-1}, \ldots, t_{i+n}] \frac{d}{dx} (t-x)_+^n \\
+&= \left([t_i, \ldots, t_{i+n}] - [t_{i-1}, \ldots, t_{i+n-1}]\right) \left(-n(t-x)_+^{n-1}\right) \\
+&= n[t_{i-1}, \ldots, t_{i+n-1}](t-x)_+^{n-1} - n[t_i, \ldots, t_{i+n}](t-x)_+^{n-1} \\
+&= \frac{n B_i^{n-1}(x)}{t_{i+n-1} - t_{i-1}} - \frac{n B_{i+1}^{n-1}(x)}{t_{i+n} - t_i},
+\end{align*}
+其中第二行遵循定理 2.17。
+
+而推论 3.33 也可以部分从定理 3.34 推导出来，如下所示，
+\begin{align*}
+&\int_{t_{i-1}}^{t_{i+n}} \frac{d}{dx} B_{i}^{n}(x) = 0 \\
+\Rightarrow &\frac{\int_{t_{i-1}}^{t_{i+n}} B_{i}^{n-1}(x) \, dx}{t_{i+n-1} - t_{i-1}} = \frac{\int_{t_{i-1}}^{t_{i+n}} B_{i+1}^{n-1}(x) \, dx}{t_{i+n} - t_{i}}. \\
+\Rightarrow &\frac{\int_{t_{i-1}}^{t_{i+n-1}} B_{i}^{n-1}(x) \, dx}{t_{i+n-1} - t_{i-1}} = \frac{\int_{t_{i}}^{t_{i+n}} B_{i+1}^{n-1}(x) \, dx}{t_{i+n} - t_{i}}. \\
+\Rightarrow &\frac{\int_{t_{i-1}}^{t_{i+n}} B_{i}^{n}(x) \, dx}{t_{i+n} - t_{i-1}} = \frac{\int_{t_{i}}^{t_{i+n+1}} B_{i+1}^{n}(x) \, dx}{t_{i+n+1} - t_{i}},
+\end{align*}
+其中第一行遵循基本微积分定理和引理 3.27，第二行来自定理 3.34，第三行来自引理 3.27，最后一行通过将 $n$ 替换为 $n+1$ 得到。
+
+\noindent \textbf{推论 3.35（B-样条的光滑性）.} $B_{i}^{n} \in \mathbb{S}_{n}^{n-1}$.
+
+\begin{proof}
+对于 $n = 1$, 归纳基础 $B_{i}^{1}(x) \in \mathbb{S}_{1}^{0}$ 成立是因为 (3.32)。证明的其余部分遵循 (3.30) 和定理 3.34 通过简单的归纳。
+\end{proof} 
+
+\subsubsection{Marsden 恒等式}
+% 3.2.4 Marsden's 恒等式
+
+\noindent \textbf{定理 3.36（Marsden's identity）.} 对于任何 $n \in \mathbb{N}$, 
+\[
+(t-x)^n = \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n-1}) B_i^n(x), \tag{3.43}
+\]
+其中乘积 $(t - t_i) \cdot s(t - t_{i + n - 1})$ 被定义为 $n = 0$ 时为 $1$.
+
+\begin{proof}
+对于 $n = 0$, (3.43) 遵循定义 3.23。现在假设 (3.43) 成立。线性函数 $f(t)=t - x$ 的线性插值是函数本身，
+\[
+  t-x = \frac{-t_{i+n}}{t_{i-1}-t_{i+n}}(t_{i-1}-x) + \frac{t-t_{i-1}}{t_{i+n}-t_{i-1}}(t_{i+n}-x). \tag{3.44}
+\]
+因此对于归纳步骤我们有
+\begin{align*}
+  &(t-x)^{n+1} = (t-x) \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n-1}) B_i^n(x) \\
+  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) \frac{t_{i-1}-x}{t_{i-1}-t_{i+n}} B_i^n(x) \\
+  &+ \sum_{i=-\infty}^{+\infty} (t-t_{i-1}) \cdot s(t-t_{i+n-1}) \frac{t_{i+n}-x}{t_{i+n}-t_{i-1}} B_i^n(x) \\
+  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) \frac{x-t_{i-1}}{t_{i+n}-t_{i-1}} B_i^n(x) \\
+  &+ \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) \frac{t_{i+n+1}-x}{t_{i+n+1}-t_i} B_{i+1}^n(x) \\
+  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) B_i^{n+1}(x),
+\end{align*}
+其中第一步遵循归纳假设，第二步来自 (3.44)，第三步通过在第二个求和中将 $i$ 替换为 $i+1$, 最后一步来自 (3.30)。    
+\end{proof}
+
+\noindent \textbf{推论 3.37（截断幂函数作为B-样条的线性组合）.} 对于任何 $j \in \mathbb{Z}$ 和 $n \in \mathbb{N}$,
+\[
+(t_j - x)_+^n = \sum_{i=-\infty}^{j-n} (t_j - t_i) \cdots (t_j - t_{i+n-1}) B_i^n(x). \tag{3.45}
+\]
+
+\begin{proof}
+我们需要证明右边是 $(t_j - x)^n$ 如果 $x \leq t_j$ 否则为 $0$. 设 $t=t_j$ 在 (3.43) 中我们有
+\[
+  (t_j - x)^n = \sum_{i=-\infty}^{+\infty} (t_j - t_i) \cdots (t_j - t_{i+n-1}) B_i^n(x).
+\]
+对于每个 $i = j - n + 1, \ldots, j$，和中的相应项无论 $x$ 是什么都是零；对于每个 $i \geq j + 1$, 引理 3.27 意味着 $B_i^n(x) = 0$ 对于所有 $x \leq t_j$. 
+因此
+\[
+  x \leq t_j \Longrightarrow \sum_{i=-\infty}^{j-n} (t_j - t_i) \cdots (t_j - t_{i+n-1}) B_i^n(x) = (t_j - x)^n.
+\]
+否则 $x > t_j$, 那么引理 3.27 意味着 $B_i^n(x) = 0$ 对于每个 $i \leq j - n$. 这完成了证明。
+\end{proof}
 
 引理 3.35. $B_i^n \in \mathbb{S}_n^{n - 1}$. 即这样定义的样条 (3.28)
 是符合样条节点处的连续性要求的. 无脑归纳...
