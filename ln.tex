@@ -3766,9 +3766,9 @@ $$
 
 \noindent \textbf{定理 3.36（Marsden's identity）.} 对于任何 $n \in \mathbb{N}$, 
 \[
-(t-x)^n = \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n-1}) B_i^n(x), \tag{3.43}
+(t-x)^n = \sum_{i=-\infty}^{+\infty} (t-t_i) \cdots(t-t_{i+n-1}) B_i^n(x), \tag{3.43}
 \]
-其中乘积 $(t - t_i) \cdot s(t - t_{i + n - 1})$ 被定义为 $n = 0$ 时为 $1$.
+其中乘积 $(t - t_i) \cdots(t - t_{i + n - 1})$ 被定义为 $n = 0$ 时为 $1$.
 
 \begin{proof}
 对于 $n = 0$, (3.43) 遵循定义 3.23。现在假设 (3.43) 成立。线性函数 $f(t)=t - x$ 的线性插值是函数本身，
@@ -3777,12 +3777,12 @@ $$
 \]
 因此对于归纳步骤我们有
 \begin{align*}
-  &(t-x)^{n+1} = (t-x) \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n-1}) B_i^n(x) \\
-  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) \frac{t_{i-1}-x}{t_{i-1}-t_{i+n}} B_i^n(x) \\
-  &+ \sum_{i=-\infty}^{+\infty} (t-t_{i-1}) \cdot s(t-t_{i+n-1}) \frac{t_{i+n}-x}{t_{i+n}-t_{i-1}} B_i^n(x) \\
-  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) \frac{x-t_{i-1}}{t_{i+n}-t_{i-1}} B_i^n(x) \\
-  &+ \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) \frac{t_{i+n+1}-x}{t_{i+n+1}-t_i} B_{i+1}^n(x) \\
-  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdot s(t-t_{i+n}) B_i^{n+1}(x),
+  &(t-x)^{n+1} = (t-x) \sum_{i=-\infty}^{+\infty} (t-t_i) \cdots(t-t_{i+n-1}) B_i^n(x) \\
+  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdots(t-t_{i+n}) \frac{t_{i-1}-x}{t_{i-1}-t_{i+n}} B_i^n(x) \\
+  &+ \sum_{i=-\infty}^{+\infty} (t-t_{i-1}) \cdots(t-t_{i+n-1}) \frac{t_{i+n}-x}{t_{i+n}-t_{i-1}} B_i^n(x) \\
+  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdots(t-t_{i+n}) \frac{x-t_{i-1}}{t_{i+n}-t_{i-1}} B_i^n(x) \\
+  &+ \sum_{i=-\infty}^{+\infty} (t-t_i) \cdots(t-t_{i+n}) \frac{t_{i+n+1}-x}{t_{i+n+1}-t_i} B_{i+1}^n(x) \\
+  =& \sum_{i=-\infty}^{+\infty} (t-t_i) \cdots(t-t_{i+n}) B_i^{n+1}(x),
 \end{align*}
 其中第一步遵循归纳假设，第二步来自 (3.44)，第三步通过在第二个求和中将 $i$ 替换为 $i+1$, 最后一步来自 (3.30)。    
 \end{proof}
@@ -3813,6 +3813,68 @@ $$
 意思是, 型值点撒到哪里, 样条就可以支撑到哪里. 于是一个自然的推论 3.37
 说明, 对于截断指数函数, 样条点撒一半就行了. 注意这个求和是负无穷求到正无穷.
 
+\subsubsection{对称多项式}
+
+% 3.2.5 对称多项式
+
+\noindent \textbf{定义 3.38.} $n$ 个变量中次数为 $k$ 的基本对称多项式是 $n$ 
+个变量中选出的 $k$ 个不同变量的所有乘积的和，
+
+\[
+\sigma_k(x_1, \ldots, x_n) 
+= \sum_{1 \leq i_1 < \cdots < i_k \leq n} 
+x_{i_1} x_{i_2} \cdots x_{i_k}. \tag{3.46}
+\]
+
+特别地，$\sigma_0(x_1, \ldots, x_n) = 1$ 且
+
+\[
+\forall k > n, \quad \sigma_k(x_1, \ldots, x_n) = 0.
+\]
+
+如果去掉不同性条件，我们有 $n$ 个变量中次数为 $k$ 的完全对称多项式，
+
+\[
+\tau_k(x_1, \ldots, x_n) 
+= \sum_{1 \leq i_1 \leq \cdots \leq i_k \leq n} x_{i_1} x_{i_2} \cdots x_{i_k}. 
+\tag{3.47}
+\]
+
+\noindent \textbf{例 3.39.} 
+$$
+\sigma_2(x_1, x_2, x_3) = x_1 x_2 + x_1 x_3 + x_2 x_3.
+$$ 
+相比之下，
+$$
+\tau_2(x_1, x_2, x_3) = \sigma_2(x_1, x_2, x_3) + x_1^2 + x_2^2 + x_3^2.
+$$
+
+\noindent \textbf{引理 3.40.} 对于 $k \leq n$, 基本对称多项式满足一个递归关系，
+
+\begin{align*}
+&\sigma_{k+1}(x_1, \ldots, x_n, x_{n+1}) \\
+=& \sigma_{k+1}(x_1, \ldots, x_n) + x_{n+1} \sigma_k(x_1, \ldots, x_n). 
+\tag{3.48}
+\end{align*}
+
+\begin{proof}
+$\sigma_{k+1}(x_{1}, \ldots, x_{n}, x_{n+1})$ 中的项可以分成两组：
+(a) 包含因子 $x_{n+1}$ 的项和 (b) 不包含的项。根据 (3.46) 中的对称性，
+组 (a) 必须是 
+$$
+x_{n+1} \sigma_{k}(x_{1}, \ldots, x_{n})
+$$ 
+而组 (b) 必须是 
+$$
+\sigma_{k+1}(x_{1}, \ldots, x_{n}).
+$$
+\end{proof} 
+
+\noindent \textbf{例 3.41.} 
+$$
+\sigma_2(x_1, x_2, x_3) = x_1 x_2 + x_3(x_1 + x_2).
+$$
+
 定义 3.38, $k$ 阶初等对称多项式 (elementary symmetric polynomial), 注
 意公式(3.46) 的意思是全部 $n$ 个 $x_1, x_2, \cdots, x_n$ 中无重复抽取
 取 $k$ 个组成的乘积形式, 也就是全部的广义交叉项. 当 $k > n$ 时,
@@ -3834,12 +3896,127 @@ $$
   \sigma_3(x_1, x_2, x_3) &=& x_1x_2x_3; \\
   \sigma_3(x_1, x_2, x_3, x_4) &=& x_1x_2x_3 + x_1x_2x_4 + x_1x_3x_4 + x_2x_3x_4.\\
   \tau_1(x_1, x_2, x_3) &=& x_1 + x_2 + x_3;\\
-  \tau_3(x_1, x_2, x_3) &=& x_1x_2^2 + x_1x_3^2 + x_1^2x_2 + x_1^2x_3 + x_2^2x_3 + x_2x_3^2 + x_1x_2x_3;\\
+  \tau_3(x_1, x_2, x_3) &=& x_1x_2^2 + x_1x_3^2 + x_1^2x_2 + x_1^2x_3 + x_2^2x_3 + x_2x_3^2 + x_1x_2x_3 + x_1^3 + x_2^3 + x_3^3;\\
   \tau_3(x_1, x_2) &=& x_1^2x_2 + x_1x_2^2.
 \end{array}
 $$
 
+
+
 引理 3.40 给出了初等对称多项式的递推形式. 请配合例子 3.41 使用.
+
+\noindent \textbf{定义 3.42.} 基本对称多项式的生成函数是
+
+\[
+g_{\sigma, n}(z) = \prod_{i=1}^n (1 + x_i z) = (1 + x_1 z) \cdots (1 + x_n z) \quad (3.49)
+\]
+
+而对于完全对称多项式是
+
+\[
+g_{\tau, n}(z) = \prod_{i=1}^n \frac{1}{1 - x_i z} = \frac{1}{1 - x_1 z} \cdots \frac{1}{1 - x_n z}. \quad (3.50)
+\]
+
+\noindent \textbf{引理 3.43（生成基本和完全对称多项式）.} 基本和完全对称多项式与其生成函数的关系为
+
+\begin{align*}
+g_{\sigma, n}(z) &= \sum_{k=0}^n \sigma_k(x_1, \ldots, x_n) z^k. \\
+g_{\tau, n}(z) &= \sum_{k=0}^{+\infty} \tau_k(x_1, \ldots, x_n) z^k.
+\tag{3.52}
+\end{align*}
+
+\begin{proof}
+通过引理 3.40，我们可以通过对 (3.51) 进行简单的归纳来证明。
+对于 (3.52)，(3.50) 和恒等式
+\[
+  \frac{1}{1 - x} = \sum_{k=0}^{+\infty} x^k
+\]
+得出
+\begin{align*}
+  g_{\tau, n}(z) &= \prod_{i=1}^n \sum_{k=0}^{+\infty} x_i^k z^k \\
+  &= (1 + x_1 z + x_1^2 z^2 + \cdots) \left(1 + x_2 z + x_2^2 z^2 + \cdots\right) \\
+  &\cdots \left(1 + x_n z + x_n^2 z^2 + \cdots\right).
+\end{align*}
+单项式 $z^k$ 的系数是 $x_1, x_2, \ldots, x_n$ 中 $k$ 
+个变量的所有可能乘积的和。定义 3.38 完成了证明。
+\end{proof}
+
+\noindent \textbf{备注 3.33.} 恒等式 (3.53) 成立是因为
+
+\[
+1 \equiv (1-x) \sum_{k=0}^{+\infty} x^k 
+= \sum_{k=0}^{+\infty} x^k - \sum_{k=1}^{+\infty} x^k.
+\]
+
+这是一个代数论点，与几何级数列的收敛要求 $|x|<1$ 无关，
+因为 (i) 这里 $x$ 不是一个数而是一个符号，
+(ii) (3.53) 仅用于识别两个等价多项式的系数，这与几何级数的收敛无关。
+
+\noindent \textbf{例 3.44.}
+
+\begin{align*}
+&\left(1+x_1 z\right)\left(1+x_2 z\right)\left(1+x_3 z\right) \\
+=& 1+\left(x_1+x_2+x_3\right) z \\
+&+\left(x_1 x_2+x_1 x_3+x_2 x_3\right) z^2+x_1 x_2 x_3 z^3.
+\end{align*}
+
+\noindent \textbf{引理 3.45（完全对称多项式的递归关系）.} 完全对称多项式满足一个递归关系，
+
+\begin{align*}
+&\tau_{k+1}\left(x_1, \ldots, x_n, x_{n+1}\right) \\
+=&\tau_{k+1}\left(x_1, \ldots, x_n\right)+x_{n+1}\tau_k\left(x_1, \ldots, x_n, x_{n+1}\right). \quad (3.54)
+\end{align*}
+
+\begin{proof}
+  (3.50) 意味着
+  \[
+  g_{\tau, n+1} = g_{\tau, n} + x_{n+1} g_{\tau, n+1}.
+  \tag{3.555}
+  \]
+  
+证明通过要求 LHS 上 $z^{k+1}$ 的系数等于 RHS 上 $z^{k+1}$ 的系数来完成。    
+\end{proof} 
+
+\noindent \textbf{备注 3.34.} 我们可以通过从引理 3.45 中移除每个包含重复 
+$i$ 因子的项来推导出引理 3.40。此外，
+引理 3.40 中的条件 $k \leq n$ 没有出现在引理 3.45 中。
+
+\noindent \textbf{定理 3.46（作为单项式的差商的完全对称多项式）.} 
+$n+1$ 个变量中次数为 $m-n$ 的完全对称多项式是单项式 $x^m$ 的第 $n$ 阶差商，即
+\[
+\forall m \in \mathbb{N}^+, \forall i \in \mathbb{N}, 
+\forall n = 0, 1, \ldots, m, \quad \tau_{m-n}(x_1, \ldots, x_{i+n}) 
+= [x_1, \ldots, x_{i+n}] x^m.
+\tag{3.56}
+\]
+\begin{proof}
+通过引理 3.45，我们有
+\begin{align*}
+  &(x_{n+1} - x_i) \tau_k(x_1, \ldots, x_n, x_{n+1}) \\
+  =& \tau_{k+1}(x_1, \ldots, x_n, x_{n+1}) - \tau_{k+1}(x_1, \ldots, x_n) \\
+  -& x_1 \tau_k(x_1, \ldots, x_n, x_{n+1}) \\
+  =& \tau_{k+1}(x_2, \ldots, x_n, x_{n+1}) + x_1 \tau_k(x_1, \ldots, x_n, x_{n+1}) \\
+  -& \tau_{k+1}(x_1, \ldots, x_n) - x_1 \tau_k(x_1, \ldots, x_n, x_{n+1}) \\
+  =& \tau_{k+1}(x_2, \ldots, x_n, x_{n+1}) - \tau_{k+1}(x_1, \ldots, x_n).
+  \tag{3.57}
+\end{align*}
+  
+证明的其余部分是对 $n$ 的归纳。对于 $n = 0$，(3.56) 简化为  
+\[
+  \tau_m(x_i) = [x_i] x^m,
+\]
+这是显然成立的。现在假设 (3.56) 对于一个非负整数 $n < m$ 成立。那么 (3.57) 和归纳假设得出
+\[
+\begin{array}{rcl}
+  &&\tau_{m-n-1}(x_1, \ldots, x_{i+n+1})\\ 
+  &=& \tau_{m-n}(x_1, \ldots, x_{i+n+1}) 
+  - \tau_{m-n}(x_1, \ldots, x_i, \ldots, x_{i+n}) \frac{x_{i+n+1} - x_i}{x_{i+n+1} 
+  - x_i} \\
+  &=& [x_{i+1}, \ldots, x_{i+n+1}] x^m - [x_i, \ldots, x_{i+n}] x^m,
+\end{array}
+\]
+这完成了证明。
+\end{proof}
 
 定义 3.42 给出了初等对称多项式的生成函数, 原因是 (3.49) 关于 $z$ 的
 $k$ 次项即是 $\sigma_k$. 同样原因, (3.50) 称作完全对称多项式的生成函数.
@@ -3868,6 +4045,40 @@ $$
 这些证明都很形式. 其实它们的证明, 即枯燥, 又乏味. 真正的关键在于, 当年
 人们为什么需要它们, 又是怎么整理出它们的. 整个 3.4.5 节, 重现了历史.
 这种脏活累活, 也得去做. 不然这件事情本身就会一直又脏又累下去.
+
+\subsubsection{B-样条确实构成一个基}
+% 3.2.6 B-样条确实构成一个基
+
+\noindent\textbf{定理 3.47.} 给定任何 $k \in \mathbb{N}$，
+单项式 $x^{k}$ 可以表示为任何固定 $n \geq k$ 的 B-样条的线性组合，形式为
+\[
+\binom{n}{k} x^k 
+= \sum_{i=-\infty}^{+\infty} 
+\sigma_k(t_i, \ldots, t_{i+n-1}) B_i^n(x), \tag{3.58}
+\]
+其中 $\sigma_{k}(t_{i}, \ldots, t_{i+n-1})$ 是 
+$t_{i}, \ldots, t_{i+n-1}$ 中次数为 $k$ 的基本对称多项式。
+
+\begin{proof}
+  引理 3.43 得出
+  \[
+  (1 + t_i x) \cdots (1 + t_{i+n-1} x) = \sum_{k=0}^n \sigma_k(t_i, \ldots, t_{i+n-1}) x^k.
+  \]
+  将 $x$ 替换为 $-1/t$，两边乘以 $t^{n}$，我们有
+  \[
+  (t - t_i) \cdots (t - t_{i+n-1}) = \sum_{k=0}^n \sigma_k(t_i, \ldots, t_{i+n-1})(-1)^k t^{n-k}.
+  \]
+  将上述结果代入 (3.43) 得出
+  \begin{align*}
+  (t - x)^n &= \sum_{i=-\infty}^{+\infty} \sum_{k=0}^n \sigma_k(t_i, \ldots, t_{i+n-1})(-1)^k t^{n-k} B_i^n(x) \\
+  &= \sum_{k=0}^n \left\{ t^{n-k} (-1)^k \sum_{i=-\infty}^{+\infty} \sigma_k(t_i, \ldots, t_{i+n-1}) B_i^n(x) \right\}.
+  \end{align*}
+  另一方面，二项式定理表明
+  \[
+  (t - x)^n = \sum_{k=0}^n \binom{n}{k} t^{n-k} (-x)^k = \sum_{k=0}^n t^{n-k} (-1)^k \binom{n}{k} x^k.
+  \]
+  比较最后两个等式完成证明。
+\end{proof}
 
 定理 3.47 是关键的一步, 描述了全局支撑的基 $x^k$ 和局部支撑的基
 $B_i^n(x)$ 之间的关系. 因为是全局和局部间的转移, 所以出现 $-\infty$ 到
