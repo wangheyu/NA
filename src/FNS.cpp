@@ -2,6 +2,7 @@
 #include <limits>
 #include <bitset>
 #include <string>
+#include <iomanip>
 
 // 将二进制字符串转换为浮点数
 float Binary2Float(const std::string& binaryStr) {
@@ -68,8 +69,6 @@ int main() {
     // 零的 32 位二进制字符串
     binaryStr = "00000000000000000000000000000000";
     std::cout << "The float representation of " << binaryStr << " is: " << (zero = Binary2Float(binaryStr)) << std::endl;
-
-    // 负零的 32 位二进制字符串
     binaryStr = "10000000000000000000000000000000";
     std::cout << "The float representation of " << binaryStr << " is: " << (mzero = Binary2Float(binaryStr)) << std::endl;
 
@@ -93,15 +92,22 @@ int main() {
     binaryStr = "11111111100000000000000000000000";
     std::cout << "The float representation of " << binaryStr << " is: " << (num = Binary2Float(binaryStr)) << std::endl;
 
-    // eps + 1 的 32 位二进制字符串
-    binaryStr = "00111111100000000000000000000001";
-    std::cout << "The float representation of " << binaryStr << " is: " << (num = Binary2Float(binaryStr) - 1.0) << std::endl;
-    std::cout << "Compare to the smallest positive float in numeric_limits:" << std::numeric_limits<float>::epsilon() << std::endl;
-    std::cout << "The difference is: " << std::numeric_limits<float>::epsilon() - num << std::endl;
-
     // eps 的 32 位二进制字符串
     binaryStr = "00110100000000000000000000000000";
     std::cout << "The float representation of " << binaryStr << " is: " << (num = Binary2Float(binaryStr)) << std::endl;
+    std::cout << "Compare to the smallest positive float in numeric_limits:" << std::numeric_limits<float>::epsilon() << std::endl;
+    std::cout << "The difference is: " << std::numeric_limits<float>::epsilon() - num << std::endl;
+ 
+    // 给一个 eps + 1 的 32 位的二进制字符串
+    binaryStr = "00111111100000000000000000000001";
+    // 输出提示信息和变量的值
+    std::cout << binaryStr << " - eps/2 is: " 
+    << Float2Binary(Binary2Float(binaryStr) - std::numeric_limits<float>::epsilon() * 0.5) 
+    << std::endl;
+    
+    num = 1.0 / 3.0;        
+    std::cout << "The binary representation of " << num << " is: " << Float2Binary(num) << std::endl;
+
 
     return 0;
 }
