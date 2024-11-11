@@ -5366,326 +5366,1143 @@ $$
 定理 4.40 把上面全部结论总结在一起. 这里的关键是做浮点计算时,
 要有一个 $2p + 1$ 位的缓存.
 
+\noindent \textbf{定理 4.40（机器算术模型） } 设 $\mathcal{F}$ 是一个精度为 $p$ 的标准化浮点数系统。
+对于每个算术运算 $\odot = +, -, \times, /$, 我们有
+\[
+  \forall a, b \in \mathcal{F}, a \odot b \in \mathcal{R}(\mathcal{F}) \implies \text{fl}(a \odot b) = (a \odot b)(1 + \delta) \tag{4.19}
+\]
+其中 $|\delta| < \epsilon_u$ 当且仅当这些二元运算是在精度为 $2p + 1$ 的寄存器中执行的。
+
+\noindent \textbf{备注 4.26.} 机器算术模型指出，在一些合理的假设下，相对舍入误差小于单位舍入误差。
+强调在机器算术模型中，$a, b$ 是 $\mathcal{F}$ 中的机器数。因此，
+这个模型不应该与减去两个实数 $x, y \in \mathbb{R}$ 时的灾难性消去现象混淆，
+这两个实数不是由机器数精确表示的。
+
+我们以此为基础，继续下面的讨论。
+
 \subsubsection{舍入误差的传播}
+
+所谓传播，就是在多次浮点计算中，舍入误差是如何积累的问题。这个问题是非常重要的，我们从最基本的加法开始。
+
+\noindent \textbf{定理 4.41 } 如果 $\forall i = 0, 1, \cdots, n, a_i \in \mathcal{F}, a_i > 0$, 那么
+\[
+  \text{fl}\left(\sum_{i=0}^{n} a_i\right) = (1 + \delta_n) \sum_{i=0}^{n} a_i, \tag{4.20}
+\]
+其中 $|\delta_n| < (1 + \epsilon_u)^n - 1 \approx n\epsilon_u$.
+
+\begin{proof}
+定义 $s_k := \sum_{i=0}^{k} a_i$,
+\[
+  \begin{cases}
+    s_0 := a_0; \\
+    s_{k+1} := s_k + a_{k+1};
+  \end{cases}
+  \quad
+  \begin{cases}
+    s_0^* := a_0; \\
+    s_{k+1}^* := \text{fl}(s_k^* + a_{k+1});
+  \end{cases}
+\]
+$\delta_k := \frac{s_k^* - s_k}{s_k}$, $\epsilon_k := \frac{s_{k+1}^* - (s_k^* + a_{k+1})}{s_k^* + a_{k+1}}$.
+
+这里区分了每一步得到的真实浮点数和加法造成的舍入误差。
+  
+换句话说，$\delta_k$ 是第 $k$ 步的累积舍入误差，$\epsilon_k$ 是第 $k$ 步的舍入误差。那么我们有
+\begin{eqnarray*}
+  \delta_{k+1} &=& \frac{s_{k+1}^* - s_{k+1}}{s_{k+1}} = \frac{(s_k^* + a_{k+1})(1 + \epsilon_k) - s_{k+1}}{s_{k+1}} \\
+  &=& \frac{(s_k(1 + \delta_k) + a_{k+1})(1 + \epsilon_k) - s_k - a_{k+1}}{s_{k+1}} \\
+  &=& \frac{(\epsilon_k + \delta_k + \epsilon_k \delta_k)s_k + \epsilon_k a_{k+1}}{s_{k+1}} \\
+  &=& \frac{\epsilon_k s_{k+1} + \delta_k(1 + \epsilon_k)s_k}{s_{k+1}} = \epsilon_k + \delta_k(1 + \epsilon_k)\frac{s_k}{s_{k+1}}.
+\end{eqnarray*}  
+$a_i$ 为正的条件意味着 $s_k < s_{k + 1}$, 并且定理 4.27 指出 $|\epsilon_k| < \epsilon_u$. 因此我们有
+\[
+  |\delta_{k+1}| < |\epsilon_k| + |\delta_k|(1 + \epsilon_u) < \epsilon_u + |\delta_k|(1 + \epsilon_u).
+\]
+  
+一个简单的归纳法表明
+\[
+  \forall k \in \mathbb{N}, |\delta_{k+1}| < \epsilon_u \sum_{i=0}^{k} (1 + \epsilon_u)^i \tag{4.21}
+\]
+\[
+  = \epsilon_u \frac{(1 + \epsilon_u)^{k+1} - 1}{1 + \epsilon_u - 1} = (1 + \epsilon_u)^{k+1} - 1,
+\]
+其中第二步来自于几何级数的求和公式。证明由二项式定理完成。
+\end{proof}
 
 \noindent{\bf 定理} 4.41
 $$
 \mbox{fl}\left(\sum_{i = 0}^n a_i\right) = (1 + \delta_n)\sum_{i = 0}^n a_i,
 $$
 其中 $|\delta_n| < (1 + \epsilon_u)^n - 1 \approx b \epsilon_u$.
+
 这个定理表达的实际意思是, 因为每一次运算都有舍入误差, 所以舍入误差是一个逐步积累的过程.
 因为舍入误差界 $\epsilon_u$ 相对正常的浮点数是一个小量, 所以如果我们可以忽略高阶误差积累,
 那么最后的总舍入误差积累可以认为是一个线性增加过程. 但对于具体的运算, 需要具体的分析.
 
-比如:
-$$
-\begin{array}{rcl}
-  \mbox{fl}(a_1b_1 + a_2b_2) &=& \mbox{fl}(\mbox{fl}(a_1b_1) + \mbox{fl}(a_2b_2)) \\
-  &=&\mbox(fl)(a_1b_1(1 + \delta_1) + a_2b_2(1 + \delta_2))\\
-  &=&(a_1b_1(1+ \delta_1) + a_2b_2(1 + \delta_2))(1 + \delta_3) \\
-  &=&a_1b_1(1 + \delta_1)(1 + \delta_3) + a_2b_2(1 + \delta_2)(1 + \delta_3)\\
-  &\approx&(a_1b_1 + a_2b_2)(1 + 2\epsilon_u).
-\end{array}
-$$
+\noindent \textbf{练习 4.42. } 如果我们根据大小对正数 $a_i > 0$ 进行排序，
+并按照这种升序进行加法运算，我们可以最小化定理 4.41 中的舍入误差项 $\delta$. 
+你能举一些例子吗？
+
+保留 $3$ 位有效数字时，我们计算 $100 + 0.1 + \cdot 0.9$. 如果按照升序进行计算，那么和为 $101$, 
+但是如果我们按照逆序进行计算，那么和为 $100$.
+
+\noindent \textbf{备注 4.27.} 混合算术运算通常会导致形式为 $\prod_i (1 + \delta_i)$ 的误差项。
+例如，(4.21) 右侧的求和中的每一项都是这种形式。作为另一个例子，对于 $a_i, b_i \in \mathcal{F}$, 我们有
+\[
+\begin{aligned}
+\text{fl}(a_1b_1 + a_2b_2) &= \text{fl}(\text{fl}(a_1b_1) + \text{fl}(a_2b_2)) \\
+&= \text{fl}(a_1b_1(1 + \delta_1) + a_2b_2(1 + \delta_2)) \\
+&= (a_1b_1(1 + \delta_1) + a_2b_2(1 + \delta_2))(1 + \delta_3) \\
+&= a_1b_1(1 + \delta_1)(1 + \delta_3) + a_2b_2(1 + \delta_2)(1 + \delta_3),
+\end{aligned}
+\]
+其中 $|\delta_i| \leq \epsilon_u$.
+
+% 比如:
+% $$
+% \begin{array}{rcl}
+%   \mbox{fl}(a_1b_1 + a_2b_2) &=& \mbox{fl}(\mbox{fl}(a_1b_1) + \mbox{fl}(a_2b_2)) \\
+%   &=&\mbox(fl)(a_1b_1(1 + \delta_1) + a_2b_2(1 + \delta_2))\\
+%   &=&(a_1b_1(1+ \delta_1) + a_2b_2(1 + \delta_2))(1 + \delta_3) \\
+%   &=&a_1b_1(1 + \delta_1)(1 + \delta_3) + a_2b_2(1 + \delta_2)(1 + \delta_3)\\
+%   &\approx&(a_1b_1 + a_2b_2)(1 + 2\epsilon_u).
+% \end{array}
+% $$
+
+\noindent \textbf{练习 4.43.} 推导 $\text{fl}(a_1b_1 + a_2b_2 + a_3b_3)$ 对于 $a_i, b_i \in \mathcal{F}$, 
+并观察 $\text{fl}(\sum_i \prod_j a_{i,j})$ 的相应导数。
+
+\noindent \textbf{定理 4.44.} 对于给定的 $\mu \in \mathbb{R}^+$ 和正整数 $n \leq \left\lfloor \frac{\ln 2}{\mu} \right\rfloor$, 
+假设 $|\delta_i| \leq \mu$ 对于每个 $i = 1, 2, \ldots, n$. 那么
+\[
+  1 - n\mu \leq \prod_{i=1}^{n} (1 + \delta_i) \leq 1 + n\mu + (n\mu)^2, \tag{4.22}
+\]
+或者等价地，对于 $I_n := \left[-\frac{1}{1+n\mu}, 1\right]$,
+\[
+  \exists \theta \in I_n \text{ 使得 } \prod_{i=1}^{n} (1 + \delta_i) = 1 + \theta(n\mu + n^2\mu^2). \tag{4.23}
+\]
+
+\begin{proof}
+条件 $|\delta_i| \leq \mu$ 意味着
+\[
+  (1 - \mu)^n \leq \prod_{i=1}^{n} (1 + \delta_i) \leq (1 + \mu)^n.
+\]
+在 $\mu = 0$ 时，$f(\mu) = (1 - \mu)^n$ 的泰勒展开与拉格朗日余项给出
+\[
+  (1 - \mu)^n \geq 1 - n\mu,
+\]
+这意味着 (4.22) 中的第一个不等式。另一方面，$e^x$ 对于 $x \in \mathbb{R}^+$ 的泰勒级数满足
+\begin{align*}
+e^x &= 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots \\
+&= 1 + x + \frac{x^2}{2}\left(1 + \frac{x}{3} + \frac{2x^2}{4!} + \cdots\right) \\
+&\leq 1 + x + \frac{x^2}{2}e^x.
+\end{align*}
+设 $x = n\mu$ 在上述不等式中，应用条件 $n\mu \leq \ln 2$，我们有
+\[
+e^{n\mu} \leq 1 + n\mu + (n\mu)^2,
+\]
+这与不等式 $(1 + \mu)^n \leq e^{n\mu}$ 结合，得到 (4.22) 中的第二个不等式。
+
+最后，(4.22) 意味着 $\prod_{i=1}^{n} (1 + \delta_i)$ 在连续函数 $f(\tau) = 1 + \tau(1 + n\mu)n\mu$ 在 $I_n$ 上的范围之内。证明的其余部分来自中间值定理。
+\end{proof}
+
+\noindent \textbf{备注 4.28.} 根据定理 4.41 和 4.44，由于 $\epsilon_u \ll 1$, 机器算术中舍入误差的累积速率至少是线性的。
 
 定理 4.44 是一个工具, 给出一个舍入误差积累的估计界. 但注意, 这个和之前的估计一样,
 有一个前提是 $\epsilon_u$ 相比运算的数是个小量. 所以当我们进行小量计算时, 要格外小心.
 比如说, 一个序列快收敛到 $0$ 了.
 
 \subsection{精确性 (accuracy) 和稳定性 (stability)}
+% 4.3
 
-\noindent{\bf 定义 4.45} 绝对误差和相对误差. 是个老问题了.
+\noindent \textbf{备注 4.29.} 当在计算机上计算函数的近似值时，我们将相应的算法视为一个黑箱。
+算法的责任是以机器数的形式表示输入，计算结果，并以机器数的形式输出。在整个过程中，
+与准确性和稳定性这两个至关重要的问题相关。
 
-\noindent{\bf 定义 4.46} 对一个精确的数学过程
-$$
-y = f(x),
-$$
-如果
-$$
-\hat{y} = \hat{f}(x)
-$$
-是它的近似, 那么 $\hat{y}$ 相对 $y$ 的相对误差我们称向前误差
-(forward error), 而向后误差是指如果存在 $\hat{x}$ 满足
-$$
-f(\hat{x}) = \hat{f}(x),
-$$
-(未必存在) $\hat{x}$ 关于 $x$ 的相对误差的下界 (可能不止一个 $\hat{x}$).
-注意这里 $\hat{f}$ 表明算法本身和数学过程相比, 是有系统误差存在的.
-比如用一个差商代替了导数.
+\subsubsection{避免灾难性消去}
+% 4.3.1 避免灾难性消去
 
-\noindent{\bf 定义 4.47} (精确性定义). 对一个具体的算法
-$$
-\hat{y} = \hat{f}(x),
-$$
-它是用于计算数学过程
-$$
-y = f(x)
-$$
-的, 如果对任意的 $x \in \mathscr{D}_f$,
-$$
-\frac{|\hat{y} - y|}{|y|} \leq c \epsilon_u.
-$$
-这里 $c$ 是一个小常数. 也就是 $\hat{y}$ 是 $y$
-的一个在浮点舍入误差意义下可以接受的近似.
+\noindent \textbf{定义 4.45.} 设 $\hat{x}$ 是 $x \in \mathbb{R}$ 的一个近似值。
+$\hat{x}$ 的准确性可以通过其绝对误差
+\[
+  E_{\text{abs}}(\hat{x}) = |\hat{x} - x| \tag{4.24}
+\]
+和/或其相对误差
+\[
+  E_{\text{rel}}(\hat{x}) = \frac{|\hat{x} - x|}{|x|}. \tag{4.25}
+\]
+来衡量。
 
-这个定义不是严格的数学定义, 这里小常数的小, 是相对而言的.
-有时也是在具体条件下, 做出的选择.
+\noindent \textbf{备注 4.30.} 通常感兴趣的是相对误差，因为它是尺度无关的，并且科学计算中的答案在量级上变化巨大。
 
-例子 4.48 给出了一个精确性评估的例子. 注意它和我们之前的舍入误差分析是一致的.
+\noindent \textbf{定义 4.46.} 对于一个近似 $\hat{y}$ 到 $y = f(x)$ 通过 $\hat{y} = \hat{f}(x)$ 计算，
+前向误差是 $\hat{y}$ 在近似 $y$ 时的相对误差，后向误差是近似 $x$ 时的最小相对误差，
+假设这样的 $\hat{x}$ 存在，满足 $f(\hat{x}) = \hat{f}(x)$.
 
-\noindent{\bf 定理 4.49} 如果
-$$
-\beta^{-t} \leq 1 - \frac{y}{x} \leq \beta^{-s},
-$$
-那么 $x - y$ 会损失 $t$ 到 $s$ 位有效数字. 换言之, 如果 $x$ 和 $y$ 很接近,
-那么做减法会损失有效位数.
+\noindent \textbf{备注 4.31.} 为什么它被称为 ``后向'' 误差？给定 $\hat{y}$, 我们想知道问题 ``对于哪个输入我们解决了问题？'' 的答案。
+因此，名称随之而来；见图 4.2。注意这里的向前和向后是英文 forward 和 backward 的翻译。
 
-为了避免这一点, 有必要在数学上作出改动. 比如例 4.51.
+图 4.2 的含义是，我们希望计算 $f(x)$, 但实际计算中的公式 $f$ 无法精确，用 $\hat{f}$ 近似。但是在 $x$ 附近，有一个 $\hat{x}$,
+它在真实映射 $f$ 下的值就是 $f(\hat{x}) = \hat{f}(x)$. 于是在真实的数学推演中，$\hat{x}$ 其实代替了 $x$. 向后误差其实在问：
+这种替换造成的影响很大么？我们是否还在计算同一个问题？
+
+\noindent \textbf{定义 4.47 (准确性).} 一个算法 $\hat{y} = \hat{f}(x)$ 用于计算函数 $y = f(x)$ 是准确的，
+如果它的前向误差对所有 $x$ 都很小，即 
 $$
-x - \sin x = x - \left(x - \frac{x^3}{3!} + \frac{x^5}{5!} \cdots\right)
+\forall x \in \text{dom}(f), E_{\text{rel}}(\hat{f}(x)) \leq \epsilon_u,
 $$
-避免了当 $x \to 0$ 时, $x - \sin x$ 丢失有效位数. (这时候需要数学足够好,
+其中 $\epsilon_u$ 是一个小常数。
+
+\noindent \textbf{备注 4.32.} 定义 4.47 不寻常，因为使用了模糊的 ``小'' 这个词。
+显然，小的精确度量取决于上下文。一个理解可以概括如下：给定任何应用的小的概念，人们可以区分这种应用的 ``准确'' 算法和不准确的算法。
+
+\noindent \textbf{例子 4.48 (灾难性消去) } 对于两个实数 $x, y \in \mathcal{R}(\mathcal{F})$, 定理 4.27 和 4.40 暗示
+\begin{align*}
+  \text{fl}(\text{fl}(x) \odot \text{fl}(y)) &= (\text{fl}(x) \odot \text{fl}(y))(1 + \delta_3) \\
+  &= (x(1 + \delta_1) \odot y(1 + \delta_2))(1 + \delta_3)
+\end{align*}
+其中 $|\delta_i| \leq \epsilon_u$. 从定理 4.40 和 4.44，我们知道乘法是准确的：
+\begin{align*}
+\text{fl}(\text{fl}(x) \times \text{fl}(y)) &= xy(1 + \delta_1)(1 + \delta_2)(1 + \delta_3) \\
+  &= xy[1 + \theta(3\epsilon_u + 3\epsilon_u^2 + \epsilon_u^3)],
+\end{align*}
+其中 $\theta \in [-1, 1]$。同样，除法也是准确的：
+\begin{align*}
+\text{fl}(\text{fl}(x) / \text{fl}(y)) &= \frac{x(1 + \delta_1)}{y(1 + \delta_2)}(1 + \delta_3) \\
+  &= \frac{x}{y}(1 + \delta_1)(1 - \delta_2 + \delta_2^2 - \cdots)(1 + \delta_3) \\
+  &\approx \frac{x}{y}(1 + \delta_1)(1 - \delta_2)(1 + \delta_3).
+\end{align*}
+然而，加法和减法可能不准确：
+\begin{align*}
+  \text{fl}(\text{fl}(x) + \text{fl}(y)) &= (x(1 + \delta_1) + y(1 + \delta_2))(1 + \delta_3) \\
+  &= (x + y + x\delta_1 + y\delta_2)(1 + \delta_3) \\
+  &= (x + y)\left(1 + \delta_3 + \frac{x\delta_1 + y\delta_2}{x + y} + \delta_3 \frac{x\delta_1 + y\delta_2}{x + y}\right).
+\end{align*}
+换句话说，当 $x + y \rightarrow 0$ 时，加法或减法的相对误差可以任意大。
+
+\noindent \textbf{备注 4.33.} 强调例子 4.48 中的两个数 $x, y$ 不是机器数，而是实数。毕竟，我们已经为机器数有了定理 4.40。
+例子 4.48 表明，当我们应用浮点数算术来近似实数时，加法/减法是阿基米德鞋襻。
+
+\noindent \textbf{备注 4.34.} 从例子 4.48 可以看出，灾难性消去是我们通过计算机算术进行计算的一个弱点。
+一个自然的问题是：减法可能有多不准确？关于两个机器数的减法，定理 4.49 是回答这个问题的第一步。
+
+%\noindent{\bf 定义 4.45} 绝对误差和相对误差. 是个老问题了.
+
+% \noindent{\bf 定义 4.46} 对一个精确的数学过程
+% $$
+% y = f(x),
+% $$
+% 如果
+% $$
+% \hat{y} = \hat{f}(x)
+% $$
+% 是它的近似, 那么 $\hat{y}$ 相对 $y$ 的相对误差我们称向前误差
+% (forward error), 而向后误差是指如果存在 $\hat{x}$ 满足
+% $$
+% f(\hat{x}) = \hat{f}(x),
+% $$
+% (未必存在) $\hat{x}$ 关于 $x$ 的相对误差的下界 (可能不止一个 $\hat{x}$).
+% 注意这里 $\hat{f}$ 表明算法本身和数学过程相比, 是有系统误差存在的.
+% 比如用一个差商代替了导数.
+
+% \noindent{\bf 定义 4.47} (精确性定义). 对一个具体的算法
+% $$
+% \hat{y} = \hat{f}(x),
+% $$
+% 它是用于计算数学过程
+% $$
+% y = f(x)
+% $$
+% 的, 如果对任意的 $x \in \mathscr{D}_f$,
+% $$
+% \frac{|\hat{y} - y|}{|y|} \leq c \epsilon_u.
+% $$
+% 这里 $c$ 是一个小常数. 也就是 $\hat{y}$ 是 $y$
+% 的一个在浮点舍入误差意义下可以接受的近似.
+
+% 这个定义不是严格的数学定义, 这里小常数的小, 是相对而言的.
+% 有时也是在具体条件下, 做出的选择.
+
+% 例子 4.48 给出了一个精确性评估的例子. 注意它和我们之前的舍入误差分析是一致的.
+
+\noindent \textbf{定理 4.49 (最有效数字的丢失) } 假设 $x, y \in \mathcal{F}$, $x > y > 0$, 并且
+\[
+  \beta^{-t} \leq 1 - \frac{y}{x} \leq \beta^{-s}. \tag{4.26}
+\]
+那么在减法 $x - y$ 中丢失的最有效数字的数量最多为 $t$ 且至少为 $s$.
+
+\begin{proof}
+重写 $x = m_x \times \beta^n$ 和 $y = m_y \times \beta^m$ 其中 $1 \leq m_x, m_y < \beta$. 
+定义 4.30 和条件 $x > y$ 暗示 $m_y$, $y$ 的有效数字，被移位使得 $y$ 与 $x$ 具有相同的指数，
+然后执行 $m_x - m_y$ 在寄存器中。然后
+\begin{align*}
+  &y = (m_y \times \beta^{m-n}) \times \beta^n \\
+  \Rightarrow & x - y  = (m_x - m_y \times \beta^{m-n}) \times \beta^n\\
+  \Rightarrow & m_{x-y} = m_x \left(1 - \frac{m_y \times \beta^m}{m_x \times \beta^n}\right)  = m_x \left(1 - \frac{y}{x}\right) \\
+  \Rightarrow & \beta^{-t} \leq m_{x-y} < \beta^{1-s}.
+\end{align*}
+为了将 $m_{x-y}$ 归一化到区间 $[1, \beta)$, 它应该至少乘以 $\beta^s$ 且至多乘以 $\beta^t$. 
+换句话说，$m_{x-y}$ 应该至少向左移动 $s$ 位且至多移动 $t$ 位。因此，关于丢失的最有效数字数量的结论如下。
+\end{proof}
+
+比如：$x = 3.14$, $y = 3.10$, 都是三位有效数字。但是 $x - y = 0.04$, 只有一位有效数字了。丢失 $2$ 位有效数字。
+这里 
+$$
+1 - \frac{y}{x} = 1 - \frac{3.10}{3.14} = 0.0127, \quad \beta^{-2} \leq 0.0127 \leq \beta^{-1}.
+$$
+即 $t = 2$, $s = 1$.
+
+\noindent \textbf{备注 4.35.} 在定理 4.49 中，丢失的最有效数字的数量可以通过寄存器中最有效数字的连续零的数量来识别。
+我们强调，该定理仅得出在减去两个机器数时丢失的最有效数字的数量。它不主张任何准确性的损失。
+实际上，在减去两个机器数的情况下，由于在归一化过程中添加到 $m_{x-y}$ 右侧的零确实是要附加的正确数字，
+因此没有准确性的损失。然而，对于两个实数 $x, y$，减法可能会造成准确性的损失，
+因为添加到缩短的有效数字右侧的零可能与 $m_{x-y}$ 的真实数字非常不同。
+
+\noindent \textbf{规则 4.50.} 应尽可能避免灾难性消去。
+
+\noindent \textbf{例子 4.51.} 计算 $y = f(x) = x - \sin x$ 对于 $x \rightarrow 0$. 
+当 $x$ 很小时，直接计算将导致灾难性消去，因为 $x \approx \sin x$. 解决方案是使用泰勒级数
+\begin{align*}
+  x - \sin x &= x - \left(x - \frac{x^3}{3!} + \frac{x^5}{5!} - \frac{x^7}{7!} + \cdots\right) \\
+  &= \frac{x^3}{3!} - \frac{x^5}{5!} + \frac{x^7}{7!} + \cdots
+\end{align*}
+
+这里要避免的本质问题是两个非常接近的数相减。用 Taylor 展开，直接将 ``最接近'' 的一项消去了。
+
+% \noindent{\bf 定理 4.49} 如果
+% $$
+% \beta^{-t} \leq 1 - \frac{y}{x} \leq \beta^{-s},
+% $$
+% 那么 $x - y$ 会损失 $t$ 到 $s$ 位有效数字. 换言之, 如果 $x$ 和 $y$ 很接近,
+% 那么做减法会损失有效位数.
+
+% 为了避免这一点, 有必要在数学上作出改动. 比如例 4.51.
+% $$
+% x - \sin x = x - \left(x - \frac{x^3}{3!} + \frac{x^5}{5!} \cdots\right)
+% $$
+% 避免了当 $x \to 0$ 时, $x - \sin x$ 丢失有效位数. 
+
+(这时候需要数学足够好,
 编程帮不了你什么了...)
 
 \subsubsection{向后稳定性 (backward stability) 和数值稳定性 (numerical stability)}
 
-\noindent{\bf 定义 4.52} (向后稳定性, backward stability). 对数学过程 $y = f(x)$
-的算法 $\hat{f}(x)$ 的向后稳定性是指对 $\forall x \in \mathscr{D}_f$, 其向后误差很小.
-或者说
-$$
+\noindent \textbf{备注 4.36 } 在本章的剩余部分，我们将假设所有计算都使用符合 IEEE 754 标准的浮点数（FPN）进行。
+
+\noindent \textbf{定义 4.52 (后向稳定性) } 一个用于计算 $y = f(x)$ 的算法 $\hat{f}(x)$ 是后向稳定的，如果其后向误差对所有 $x$ 都很小，
+即
+\[
+\forall x \in \text{dom}(f), \exists \hat{x} \in \text{dom}(f), 
+\text{使得} \quad \hat{f}(x) = f(\hat{x}) \implies E_{\text{rel}}(\hat{x}) \leq c\epsilon_u, \tag{4.27}
+\]
+其中 $c$ 是一个小常数。
+
+\noindent \textbf{定义 4.53 } 一个用于计算 $y = f(x_1, x_2)$ 的算法 $\hat{f}(x_1, x_2)$ 是后向稳定的，如果
+\[
+\forall (x_1, x_2) \in \text{dom}(f), \exists (\hat{x}_1, \hat{x}_2) \in \text{dom}(f) \text{ 使得 }
+\]
+\[
+\hat{f}(x_1, x_2) = f(\hat{x}_1, \hat{x}_2) \implies \left\{
 \begin{array}{l}
-  \exists \hat{x} \in \mathscr{D}_f, \quad \mbox{s. t.} \\
-  \hat{f}(x) = f(\hat{x}) \Rightarrow E_{\mbox{rel}}(\hat{x}) \leq c \epsilon_u.
+E_{\text{rel}}(\hat{x}_1) \leq c_1\epsilon_u, \\
+E_{\text{rel}}(\hat{x}_2) \leq c_2\epsilon_u,
 \end{array}
-$$
-这里 $\hat{f}$ 和 $f$ 之间是算法模型和数学问题的差别, 这个差别是系统的. 这里的问题是,
-能不能将这个差别, 看作是一个输入的小偏差? 定义 4.53 将这个定义扩展到多元.
-这里算法模型和数学问题之间的小偏差, 暗指系统性舍入误差.
+\right. \tag{4.28}
+\]
+其中 $c_1, c_2$ 是两个小常数。
 
-\noindent{\bf 引理 4.54} 对 $f(x_1, x_2) = x_1 - x_2$ 这个二元运算, 实际的计算模型是
-$$
-\hat{f}(x_1, x_2) = \mbox{fl}(\mbox{fl}(x_1) - \mbox{fl}(x_2)),
-$$
-显然这里 $\hat{f}$ 和 $f$ 之间的偏差 (总舍入误差), 可以看作是 $x$ 发生一个小偏移到
-$\hat{x}$ 造成的. 这个引理, 更像一个例子.
+\noindent \textbf{备注 4.37.} 在 (4.27) 和 (4.28) 中，逻辑语句的公式是 $A \Rightarrow B$ 的形式，而不是 $A \text{ 和 } B$. 
+前者比后者更简洁。
 
-注意精确性和向后稳定性的区别. 精确性说的是, $\hat{f}$ 和 $f$ 是区别不大的.
-而向后稳定性说的是: 这种区别, 可以等价看作是输入的一个偏移.
-于是这种系统性的误差可以稳定地向前传播 (到算法的下一个环节).
-注意这种等价性需要是任意的, 和 $x$ 的实际取值无关.
+% \noindent{\bf 定义 4.52} (向后稳定性, backward stability). 对数学过程 $y = f(x)$
+% 的算法 $\hat{f}(x)$ 的向后稳定性是指对 $\forall x \in \mathscr{D}_f$, 其向后误差很小.
+% 或者说
+% $$
+% \begin{array}{l}
+%   \exists \hat{x} \in \mathscr{D}_f, \quad \mbox{s. t.} \\
+%   \hat{f}(x) = f(\hat{x}) \Rightarrow E_{\mbox{rel}}(\hat{x}) \leq c \epsilon_u.
+% \end{array}
+% $$
+% 这里 $\hat{f}$ 和 $f$ 之间是算法模型和数学问题的差别, 这个差别是系统的. 这里的问题是,
+% 能不能将这个差别, 看作是一个输入的小偏差? 
 
-\noindent{\bf 例 4.55} 给出了一个向后稳定性不成立的反例.
-$$
-f(x) = 1 + x,
-$$
-在 $x$ 非常接近 $0$, 即 $x \in (0, \epsilon_u)$ 时, 舍入误差系统的影响不能再用
-$x$ 的一个相对小偏差来替代. 意味着一旦这种情况发生, 舍入误差的积累可能不再是一个小量,
-而是会发生非线性变化.
+定义 4.53 将这个定义扩展到多元。
+
+\noindent \textbf{引理 4.54 } 对于 $f(x_1, x_2) = x_1 - x_2, x_1, x_2 \in \mathcal{R}(\mathcal{F})$, 
+算法 $\hat{f}(x_1, x_2) = \text{fl}(\text{fl}(x_1) - \text{fl}(x_2))$ 是后向稳定的。
+
+\begin{proof}
+我们有 $\hat{f}(x_1, x_2) = (\text{fl}(x_1) - \text{fl}(x_2))(1 + \delta_3)$ 来自定理 4.40。
+然后定理 4.27 暗示
+\[
+  \hat{f}(x_1, x_2) = (x_1(1 + \delta_1) - x_2(1 + \delta_2))(1 + \delta_3)
+\]
+\[
+  = x_1(1 + \delta_1 + \delta_3 + \delta_1\delta_3) - x_2(1 + \delta_2 + \delta_3 + \delta_2\delta_3).
+\]
+取 $\hat{x}_1$ 和 $\hat{x}_2$ 为上述行中的两个项，我们有
+\[
+  E_{\text{rel}}(\hat{x}_1) = |\delta_1 + \delta_3 + \delta_1\delta_3|,
+\]
+\[
+  E_{\text{rel}}(\hat{x}_2) = |\delta_2 + \delta_3 + \delta_2\delta_3|.
+\]
+然后定义 4.53 完成了证明。
+\end{proof}
+
+\noindent \textbf{备注 4.38.} 引理 4.54 表明稳定性和准确性是不同的概念。此外，引理 4.54 对于 $x_1, x_2 \notin \mathcal{R}(\mathcal{F})$ 不成立。
+例子 4.55 通过考虑一个额外的区间 $(0, \text{UFL}]$ 来说明这一点。
+
+\noindent \textbf{例子 4.55.} 对于 $f(x) = 1 + x, x \in (0, \text{OFL})$，
+算法 $\hat{f}(x) = \text{fl}(1.0 + \text{fl}(x))$ 不是后向稳定的。
+
+我们证明一个更强的陈述，它暗示了 (4.27) 的否定。对于每个 $x \in (0, \epsilon_u)$, 定义 4.24 得出 $\hat{f}(x) = 1.0$.
+然后 $\hat{f}(x) = f(\hat{x})$ 暗示 $\hat{x} = 0$, 这进一步暗示 $E_{\text{rel}}(\hat{x}) = 1$.
+
+这里的关键是可以取 $x$ 为任意小的正数，比如小于 $\epsilon_u$，这是舍入误差无法分辨的精度。此时，
+相对误差为 $1$ 表明实际计算得到的结果和用户试图反映的数学问题之间几乎可以说毫无关系。
+
+% \noindent{\bf 引理 4.54} 对 $f(x_1, x_2) = x_1 - x_2$ 这个二元运算, 实际的计算模型是
+% $$
+% \hat{f}(x_1, x_2) = \mbox{fl}(\mbox{fl}(x_1) - \mbox{fl}(x_2)),
+% $$
+% 显然这里 $\hat{f}$ 和 $f$ 之间的偏差 (总舍入误差), 可以看作是 $x$ 发生一个小偏移到
+% $\hat{x}$ 造成的. 这个引理, 更像一个例子.
+
+% 注意精确性和向后稳定性的区别. 精确性说的是, $\hat{f}$ 和 $f$ 是区别不大的.
+% 而向后稳定性说的是: 这种区别, 可以等价看作是输入的一个偏移.
+% 于是这种系统性的误差可以稳定地向前传播 (到算法的下一个环节).
+% 注意这种等价性需要是任意的, 和 $x$ 的实际取值无关.
+
+% \noindent{\bf 例 4.55} 给出了一个向后稳定性不成立的反例.
+% $$
+% f(x) = 1 + x,
+% $$
+% 在 $x$ 非常接近 $0$, 即 $x \in (0, \epsilon_u)$ 时, 舍入误差系统的影响不能再用
+% $x$ 的一个相对小偏差来替代. 意味着一旦这种情况发生, 舍入误差的积累可能不再是一个小量,
+% 而是会发生非线性变化.
 
 举个生活中的例子, 如果我在开一辆车, 一般我们设计车的时候, 不会把方向盘做的太灵敏,
 也就是说, 我方向盘转了两圈, 可能车的定向轮才偏了 60 度. 所以即便轮子有点不正,
 或者有点松动, 我都可以用一个小的校正保持车子继续直线前行. 但现在如果这个方向盘特别灵敏,
 盘子转一度, 轮子转一圈. 你想一下会发生什么事? 所以称这个为稳定性.
 
-\noindent{\bf 定义 4.56} 一个用于计算 $y = f(x)$ 的算法 $\hat{f}(x)$
-称为是数值稳定的 (numerical stable) 或稳定的 (stable), 当且仅当
-$$
-\forall x \in \mathscr{D}_f, \exists \hat{x} \in \mathscr{D}_f,
-~\mbox{s. t.}~ \left\{
-\left|\frac{\hat{f}(x) - f(\hat{x})}{f(\hat{x})}\right| \leq c_f \epsilon_u,
-E_{\mbox{rel}}(\hat{x}) \leq c \epsilon_u.
-\right.
-$$
-也就是向前向后误差都得很小. 或者说, 输入差一点, 不会引起结果巨大的变化. 光有精确性,
-可能对 $x$ 过于敏感, 稍微差一点, 根本不能用. 引理 4.57 是显然的, 一个向后稳定的算法,
-数值必然是稳定的. 但反之不真.
+\noindent \textbf{备注 4.39.} 通过例子 4.55，后向稳定性的条件无必要地强到足以排除一些合理的算法，这些算法的错误主要由舍入误差主导。
+定义 4.56 放宽了定义 4.52 中的条件，因此适用于更广泛的算法范围。然而，定义 4.52 是通常用于算法稳定性分析的定义，参见定义 4.76。
 
-\noindent{\bf 例 4.58} 还是
-$$
-f(x) = 1 + x,
-$$
-但现在我们如果不要求 $\hat{f}(x) = f(\hat{x})$, 允许它们之间有个小偏差,
-那么就可以接受输入也只有一个小偏差. 这里也可以看出, 向后稳定比数值稳定要严格.
+\textbf{定义 4.56.} 一个用于计算 $y = f(x)$ 的算法 $\hat{f}(x)$ 是稳定或数值稳定的，如果
+\[
+\forall x \in \text{dom}(f), \exists \hat{x} \in \text{dom}(f) \text{ 使得 }
+\]
+\[
+\left\{
+\begin{array}{l}
+\left|\frac{\hat{f}(x) - f(\hat{x})}{f(\hat{x})}\right| \leq c_f \epsilon_u, \\
+E_{\text{rel}}(\hat{x}) \leq c_x \epsilon_u,
+\end{array}
+\right. \tag{4.29}
+\]
+其中 $c_f, c_x$ 是两个小常数。
 
-本质上, 稳定性讨论的就是当输入发生一个小偏差时, 会不会导致算法结果出现剧烈的震荡.
-这件事情不但是定性的, 也可以定量分析.
+\noindent \textbf{备注 4.40 } 如图 4.3 所示，数值稳定性意味着当输入有扰动误差时，
+它的扰动后的精确解，一定落在精确输入由近似计算得到的近似解的附近。这是一种非常接近实际计算需求的定义。
+下面这个引理说明，它不比向后稳定性更强。
+
+% ``接近正确答案到几乎正确的问题'' 或 
+% ``计算值 $\hat{y}$ 几乎与由输入 $x + \Delta x$ 产生的值 $\hat{y} + \Delta y$ 相同，而 $\Delta x$ 与实际输入 $x$ 几乎没有差异。'' 
+% 相比之下，后向稳定性意味着完全正确答案到几乎正确的问题。
+
+\noindent \textbf{引理 4.57.} 如果一个算法是后向稳定的，那么它是数值稳定的。
+
+\begin{proof}
+  根据定义 4.52，$f(\hat{x}) = \hat{f}(x)$, 因此 $c_f = 0$. 另一个条件也很容易得出。
+\end{proof}
+
+而下面的例子说明，数值稳定性比后向稳定性实际上更弱。
+
+\noindent \textbf{例子 4.58.} 对于 $f(x) = 1 + x, x \in (0, \text{OFL})$, 我们展示算法 $\hat{f}(x) = \text{fl}(1.0 + \text{fl}(x))$ 是数值稳定的。
+
+如果 $|x| < \epsilon_u$, 那么 $\hat{f}(x) = 1.0$. 
+选择 $\hat{x} = x$, （关键是这里不必 $f(\hat{x}) = \hat{f}(x)$，允许它们有一个小量误差）
+那么 $f(\hat{x}) - x = \hat{f}(x)$ 并且 
+$$
+\left|\frac{\hat{f}(x) - f(\hat{x})}{f(\hat{x})}\right| = \left|\frac{x}{1+x}\right| < 2\epsilon_u.
+$$
+
+否则 $|x| \geq \epsilon_u$. 范围和单位舍入的定义（定义 4.26 和 4.20）得出 $x \in \mathcal{R}(\mathcal{F})$; 
+这里我们假设 $\epsilon_u > \text{UFL}$, 这对所有现实世界的浮点数系统都成立。根据定理 4.27，
+$$
+\hat{f}(x) = (1 + x(1 + \delta_1))(1 + \delta_2),
+$$
+即
+$$
+\hat{f}(x) = 1 + \delta_2 + x(1 + \delta_1 + \delta_2 + \delta_1\delta_2),
+$$
+其中 $|\delta_1|, |\delta_2| < \epsilon_u$. 选择 
+$$
+\hat{x} = x(1 + \delta_1 + \delta_2 + \delta_1\delta_2)
+$$ 
+并且我们有
+\[
+E_{\text{rel}}(\hat{x}) = |\delta_1 + \delta_2 + \delta_1\delta_2| < 3\epsilon_u,
+\]
+\[
+\Rightarrow \left|\frac{\hat{f}(x) - f(\hat{x})}{f(\hat{x})}\right| 
+= \left|\frac{\delta_2}{1 + x(1 + \delta_1 + \delta_2 + \delta_1\delta_2)}\right| \leq \epsilon_u,
+\]
+其中分母从不接近零，因为 $x > 0$.
+
+\noindent\textbf{备注 4.41 } 准确性和稳定性的概念定性地描述了算法对输入小变化的敏感性。条件数的概念量化了这些概念。
+
+% \noindent{\bf 定义 4.56} 一个用于计算 $y = f(x)$ 的算法 $\hat{f}(x)$
+% 称为是数值稳定的 (numerical stable) 或稳定的 (stable), 当且仅当
+% $$
+% \forall x \in \mathscr{D}_f, \exists \hat{x} \in \mathscr{D}_f,
+% ~\mbox{s. t.}~ \left\{
+% \left|\frac{\hat{f}(x) - f(\hat{x})}{f(\hat{x})}\right| \leq c_f \epsilon_u,
+% E_{\mbox{rel}}(\hat{x}) \leq c \epsilon_u.
+% \right.
+% $$
+% 也就是向前向后误差都得很小. 或者说, 输入差一点, 不会引起结果巨大的变化. 光有精确性,
+% 可能对 $x$ 过于敏感, 稍微差一点, 根本不能用. 引理 4.57 是显然的, 一个向后稳定的算法,
+% 数值必然是稳定的. 但反之不真.
+
+% \noindent{\bf 例 4.58} 还是
+% $$
+% f(x) = 1 + x,
+% $$
+% 但现在我们如果不要求 $\hat{f}(x) = f(\hat{x})$, 允许它们之间有个小偏差,
+% 那么就可以接受输入也只有一个小偏差. 这里也可以看出, 向后稳定比数值稳定要严格.
+
+% 本质上, 稳定性讨论的就是当输入发生一个小偏差时, 会不会导致算法结果出现剧烈的震荡.
+% 这件事情不但是定性的, 也可以定量分析.
 
 \subsubsection{条件数: 数量函数}
 
-\noindent{\bf 定义 4.59} 数量函数
-$$
-y = f(x)
-$$
-的相对 (relative) 条件数 (condition number) 是
-$$
-C_f(x) = \left|\frac{x f'(x)}{f(x)}\right|.
-$$
-从这个定义可以看到, 条件数考察的就是当输入 $x$ 有一个扰动成为 $x + \delta x$ 时,
-$y$ 的相对改变量:
-$$
-\hat{y} - y = f(x + \delta x) - f(x) = f'(x)\delta x + O(\delta x^2),
-$$
-这里显然用了 Taylor 展开, 然后有
-$$
-\frac{\delta y}{y} = \left(\frac{x f'(x)}{f(x)}\right)\frac{\delta x}{x}
-+ O(\delta x^2).
-$$
+\noindent \textbf{定义 4.59 } 函数 $y = f(x)$ 的（相对）条件数是衡量输入小变化时输出相对变化的量，
+\[
+  C_f(x) = \left|\frac{xf'(x)}{f(x)}\right|. \tag{4.30}
+\]
 
-\noindent{\bf 定义 4.60} 小条件数的问题我们称为是良态的 (well-conditioned),
-大条件数的问题我们称为是病态的 (ill-conditioned).
+\noindent \textbf{备注 4.42.} 定义 4.59 是从泰勒展开式导出的，
+\begin{align*}
+  & \hat{y} - y = f(x + \Delta x) - f(x) = f'(x)\Delta x + O((\Delta x)^2) \\
+\Rightarrow & \frac{\Delta y}{y} = \left(\frac{xf'(x)}{f(x)}\right)\frac{\Delta x}{x} + O((\Delta x)^2).
+\end{align*}
 
-注意条件数是数学问题决定的, 而不是算法决定的. 它是一个问题的计算上的困难的客观衡量.
+\noindent \textbf{定义 4.60.} 条件数低的问题被认为是良态的。条件数高的问题被认为是病态的。
 
-\noindent{\bf 引理 4.63} 对非线性方程
-$$
-f(x) = 0
-$$
-在单根 $r$ 附近的求根. 也即 $f(r) = 0$, $f'(r) \neq 0$.
-如果 $f$ (由于计算的原因) 受到扰动, 成为
-$$
-F = f + \epsilon g,
-$$
-这里 $f, g \in C^2$, $g(r) \neq 0$, 且
-$$
-|\epsilon g'(r)| << |f'(r)|,
-$$
-即导数上的扰动也是小量. 则 $F$ 有根 $r + h$, 其中
-$$
-h \approx \epsilon \frac{g(r)}{f'(r)}.
-$$
-证明过程只需 Taylor 展开.
+\noindent \textbf{例子 4.61.} 定义 4.59 得出
+\[
+  E_{\text{rel}}(\hat{y}) \leq C_f E_{\text{rel}}(\hat{x}). \tag{4.31}
+\]
+近似标记 ``$\approx$'' 指的是忽略了二次项 $(\Delta x)^2$. 解释 (4.31) 并理解定义 4.59 的一种方式是，
+计算得到的病态问题的解可能有较大的前向误差。
 
-以上分析告诉我们, 从实数连续统到浮点运算系统, 从微积分到算法, 精确性和稳定性,
-是普遍问题. 后者更加复杂且重要.
+\noindent \textbf{例子 4.62.} 对于函数 $f(x) = \arcsin(x)$，其条件数，根据定义 4.59，是
+\[
+  C_f(x) = \left|\frac{xf'(x)}{f(x)}\right| = \frac{x}{\sqrt{1 - x^2} \arcsin x}.
+\]
+因此 $C_f(x) \rightarrow +\infty$ 当 $x \rightarrow \pm 1$.
+
+注意这里的病态指的是函数本身，和你的计算方法无关。只要你的计算是近似的（比如说在浮点数系统下经行计算），
+那么这个问题就是病态的。这个问题是数学问题的固有属性，而不是计算方法的问题。
+
+\begin{center}
+  \includegraphics[width = 0.5\textwidth]{images/arcsin.png}
+\end{center}
+
+% \noindent{\bf 定义 4.59} 数量函数
+% $$
+% y = f(x)
+% $$
+% 的相对 (relative) 条件数 (condition number) 是
+% $$
+% C_f(x) = \left|\frac{x f'(x)}{f(x)}\right|.
+% $$
+% 从这个定义可以看到, 条件数考察的就是当输入 $x$ 有一个扰动成为 $x + \delta x$ 时,
+% $y$ 的相对改变量:
+% $$
+% \hat{y} - y = f(x + \delta x) - f(x) = f'(x)\delta x + O(\delta x^2),
+% $$
+% 这里显然用了 Taylor 展开, 然后有
+% $$
+% \frac{\delta y}{y} = \left(\frac{x f'(x)}{f(x)}\right)\frac{\delta x}{x}
+% + O(\delta x^2).
+% $$
+
+% \noindent{\bf 定义 4.60} 小条件数的问题我们称为是良态的 (well-conditioned),
+% 大条件数的问题我们称为是病态的 (ill-conditioned).
+
+% 注意条件数是数学问题决定的, 而不是算法决定的. 它是一个问题的计算上的困难的客观衡量.
+
+\noindent \textbf{备注 4.43.} 定义 4.59 依赖于 $f(x) \neq 0$ 的条件。为了在函数 $f(x)$ 的根 $x = r$ 处定义条件数，我们转而使用绝对误差。
+
+\noindent \textbf{引理 4.63.} 考虑在简单根 $r$ 附近求解方程 $f(x) = 0$, 即 $f(r) = 0$ 且 $f'(r) \neq 0$. 
+假设我们扰动函数 $f$ 为 $F = f + \epsilon g$, 其中 $f, g \in \mathcal{C}^2$, 
+$g(r) \neq 0$, 且 $|\epsilon g'(r)| \ll |f'(r)|$. 那么 $F$ 的根是 $r + h$, 其中
+\[
+  h \approx -\epsilon \frac{g(r)}{f'(r)}. \tag{4.32}
+\]
+
+\begin{proof}
+假设 $r + h$ 是新根，即 $F(r + h) = 0$, 或者，
+\[
+  f(r + h) + \epsilon g(r + h) = 0.
+\]
+
+$F(r + h)$ 的泰勒展开式得出
+\[
+  f(r) + hf'(r) + \epsilon[g(r) + hg'(r)] = O(h^2)
+\]
+并且我们有
+\[
+  h \approx -\epsilon \frac{g(r)}{f'(r) + \epsilon g'(r)} \approx -\epsilon \frac{g(r)}{f'(r)}. 
+\]
+\end{proof}
+
+\noindent \textbf{备注 4.44.} 对于引理 4.63 中的求根问题，我们不能基于相对误差定义条件数，
+因为 $f(x) = 0$ 在 $x = r$ 处。然而，我们可以使用绝对误差定义条件数如下：
+\[
+  \left|\frac{r + h - r}{f(r) + \epsilon g(r) - f(r)}\right| = \left|\frac{1}{f'(r)}\right|,
+\]
+其中 $h$ 是输出的变化，而 $\epsilon g(r)$ 是输入的变化，分母用 Taylor 展开。上述方程意味着，如果 $|f'(r)|$ 接近零，
+那么在 $r$ 处寻找 $f$ 的根的问题是非常病态的。（脑补一下什么场景？）
+
+\noindent \textbf{例子 4.64 (Wilkinson).} 定义
+\[
+  f(x) := \prod_{k=1}^{p} (x - k),
+\]
+\[
+  g(x) := x^p.
+\]
+根 $x = p$ 如何受到扰动 $f$ 到 $f + \epsilon g$ 的影响？根据引理 4.63，答案是
+\[
+  h \approx -\epsilon \frac{g(p)}{f'(p)} = -\epsilon \frac{p^p}{(p-1)!}.
+\]
+对于 $p = 20, 30, 40$, $\frac{p^p}{(p-1)!}$ 的值分别大约是 
+$8.6 \times 10^8$, $2.3 \times 10^{13}$, $5.9 \times 10^{17}$. 
+因此，单项式 $x^p$ 中系数的微小变化将导致根的大幅变化。
+因此，对于非常高阶的多项式，求根问题是无望的。
+
+% \noindent{\bf 引理 4.63} 对非线性方程
+% $$
+% f(x) = 0
+% $$
+% 在单根 $r$ 附近的求根. 也即 $f(r) = 0$, $f'(r) \neq 0$.
+% 如果 $f$ (由于计算的原因) 受到扰动, 成为
+% $$
+% F = f + \epsilon g,
+% $$
+% 这里 $f, g \in C^2$, $g(r) \neq 0$, 且
+% $$
+% |\epsilon g'(r)| << |f'(r)|,
+% $$
+% 即导数上的扰动也是小量. 则 $F$ 有根 $r + h$, 其中
+% $$
+% h \approx \epsilon \frac{g(r)}{f'(r)}.
+% $$
+% 证明过程只需 Taylor 展开.
+
+% 以上分析告诉我们, 从实数连续统到浮点运算系统, 从微积分到算法, 精确性和稳定性,
+% 是普遍问题. 后者更加复杂且重要.
 
 \subsubsection{向量函数的条件数}
 
-\noindent{\bf 定义 4.65} 向量函数
-$$
-\vec{f} : \mathbb{R}^m \to \mathbb{R}^n 
-$$
-的条件数是
-$$
-\mbox{cond}_{\vec{f}}(\vec{x})
-= \frac{\|\vec{x}\|\|\nabla\vec{f}\|}{\|\vec{f}(\vec{x})\|},
-$$
-这里范数可取 $p-$ 范数. 这个条件数基本是一元情形的自然推广.
-它的一个重要特例是对线性方程组
-$$
-A \vec{x} = \vec{b}
-$$
-有
-$$
-\vec{x} = A^{-1}\vec{b},
-$$
-令 $\vec{f}(\vec{b}) = A^{-1}\vec{b}$, 则 $\nabla \vec{f} = A^{-1}$.
-于是 $f$ 的条件数为:
-$$
-\mbox{cond}_{\vec{f}}(\vec{b})
-= \frac{\|\vec{b}\|\|A^{-1}\|}{\|\vec{x}\|}
-= \frac{\|A\vec{x}\|\|A^{-1}\|}{\|\vec{x}\|}.
-$$
-如果我们把向量范数和矩阵范数用诱导公式
-$$
-\|A\| = \max_{\vec{u} \neq 0}\frac{\|A\vec{u}\|}{\|\vec{u}\|}
-$$
-联系起来, 那么就有
-$$
-\mbox{cond}_A := \|A\|\|A^{-1}\|.
-$$
-这是判断矩阵问题是否病态的重要指标. 例 4.69 给出了一个病态矩阵的例子. 注意到, 
-对问题 $A x = b$, 有
-$$
-\left[
-\begin{array}{cc}
-  1 & 1 - \delta \\
-  1 & 1 + \delta
-\end{array}
-\right]\left[\begin{array}{c}
-  x_1 \\ x_2
-\end{array}
-\right] = \left[\begin{array}{c}
-  b_1 \\ b_2
-\end{array} \right] \Rightarrow x_2 = \frac{b_2 - b_1}{2 \delta}.
-$$
-于是 $b_2 - b_1$ 的舍入误差 $\epsilon_u$ 会被放大到 $\frac{1}{\delta}$. 
-导致这个线性方程组数值求解困难. 定理 4.70 将这个问题推广到一般. 
+\noindent \textbf{备注 4.45.} 定义 4.65 是定义 4.59 向量函数的直接和自然推广。
+
+\noindent \textbf{定义 4.65.} 向量函数 $f : \mathbb{R}^m \rightarrow \mathbb{R}^n$ 的条件数是
+\[
+  \text{cond}_f(x) = \frac{\|x\| \|\nabla f\|}{\|f(x)\|}, \tag{4.33}
+\]
+其中 $\|\cdot\|$ 表示欧几里得范数，如 1-范数、2-范数和 $\infty$-范数。
+
+\noindent \textbf{例子 4.66.} 在求解线性系统 $Au = b$ 时，算法可以被视为接受输入 $b$ 并返回输出 $A^{-1}b$, 
+即 $f(b) = A^{-1}b$. 显然 $\nabla f = A^{-1}$. 定义 4.65 得出
+\[
+  \text{cond}_f(x) = \frac{\|b\| \|A^{-1}\|}{\|u\|} = \frac{\|Au\| \|A^{-1}\|}{\|u\|}.
+\]
+在实践中，输入 $b$ 可以取任何值，因此我们有
+\[
+  \max \text{cond}_f(x) = \max_{u \neq 0} \frac{\|Au\| \|A^{-1}\|}{\|u\|} = \|A\| \|A^{-1}\|,
+\]
+其中我们使用了常见的定义
+\[
+  \|A\| := \max_{u \neq 0} \frac{\|Au\|}{\|u\|}. \tag{4.34}
+\]
+这解释了定义 4.67。
+
+\noindent \textbf{定义 4.67.} 非奇异方阵 $A$ 的条件数是
+\[
+\text{cond} A := \|A\| \|A^{-1}\|. \tag{4.35}
+\]
+
+\noindent \textbf{引理 4.68.} 基于 2-范数，非奇异方阵 $A$ 的条件数是
+\[
+\text{cond}_2 A := \|A\|_2 \|A^{-1}\|_2 = \frac{\sigma_{\text{max}}}{\sigma_{\text{min}}},
+\]
+其中 $\sigma_{\text{max}}$ 和 $\sigma_{\text{min}}$ 分别是 $A$ 的最大和最小奇异值。如果 $A$ 也是正规矩阵，我们有
+\[
+\text{cond}_2 A = \frac{|\lambda_{\text{max}}|}{|\lambda_{\text{min}}|},
+\]
+其中 $\lambda_{\text{max}}$ 和 $\lambda_{\text{min}}$ 分别是 $A$ 的最大和最小模的本征值。此外，如果 $A$ 是酉矩阵，我们有 $\text{cond}_2 A = 1$.
+
+\noindent \textbf{例子 4.69.} 对于矩阵
+\[
+A = \begin{bmatrix}
+1 & 1 - \delta \\
+1 & 1 + \delta
+\end{bmatrix}
+\]
+和 $\delta = 10^{-8}$，我们有 $\text{cond}_2 A = 19999999999.137258$.
+
+\noindent \textbf{定理 4.70.} 设 $A$ 是一个可逆矩阵，$\hat{A}$ 是 $A$ 的一个扰动，满足
+\[
+\|A^{-1}\|\|\hat{A} - A\| < 1, \tag{4.37}
+\]
+
+设 \( \mathbf{x} \) 和 \( \hat{\mathbf{x}} \) 是线性系统的解
+\[
+A\mathbf{x} = \mathbf{b}, \quad \hat{A}\hat{\mathbf{x}} = \hat{\mathbf{b}}. \tag{4.38}
+\]
+那么 \( \hat{\mathbf{x}} \) 近似 \( \mathbf{x} \) 的相对误差有界为
+\[
+  \frac{\|\hat{\mathbf{x}} - \mathbf{x}\|}{\|\mathbf{x}\|} 
+  \leq \frac{\text{cond} \, A}{1 - (\text{cond} \, A) \frac{\|\hat{A} - A\|}{\|A\|}} 
+  \left( \frac{\|\hat{\mathbf{b}} - \mathbf{b}\|}{\|\mathbf{b}\|} + \frac{\|\hat{A} - A\|}{\|A\|} \right).\tag{4.39}
+\]
+
+\begin{proof}
+写成 $\hat{A} = A[I + A^{-1}(\hat{A} - A)]$ 并且我们有从定理 E.76 和 (4.37) 得出 $\hat{A}$ 是可逆的，并且
+\[
+  \hat{A}^{-1} = [I + A^{-1}(\hat{A} - A)]^{-1}A^{-1}.
+\]
+然后定理 E.76 和三角不等式得出
+\[
+  \|A^{-1}|\leq \frac{\|A^{-1}\|}{1 - \|A^{-1}\|\|\hat{A} - A\|}.  \tag{4.40}
+\]
+%通过 (4.38) 我们可以写成 
+
+根据(4.38)，我们可以写出 
+\[ 
+  \hat{\mathbf{x}} - \mathbf{x} = \hat{A}^{-1}[\hat{\mathbf{b}} - \mathbf{b} - (\hat{A} - A)\mathbf{x}],
+\]
+结合(4.40)和三角不等式，得到
+\[
+  \frac{\|\hat{\mathbf{x}} - \mathbf{x}\|}{\|\mathbf{x}\|} \leq \frac{\text{cond} \, A}{1 - \|\hat{A} - A\|\|A^{-1}\|} 
+  \left( \frac{\|\hat{\mathbf{b}} - \mathbf{b}\|}{\|A\|\|\mathbf{x}\|} + \frac{\|\hat{A} - A\|}{\|A\|} \right).
+\]
+然后(4.39)由 \( \|A\|\|\mathbf{x}\| \geq \|\mathbf{b}\| \) 得出。 
+\end{proof}
 
 
-\noindent{\bf 定义 4.71} 向量函数 $\vec{f}: \mathbb{R}^m \to \mathbb{R}^n$
-分量形式的条件数为:
-$$
-\mbox{cond}_{\vec{f}}(\vec{x}) = \|A(\vec{x})\|,
-$$
-其中 $A(\vec{x}) = [a_{ij}(\vec{x})]$ 为
-$$
-a_{ij}(\vec{x})
-= \left|\frac{x_j\frac{\partial f_i}{\partial x_j}}{f_i(\vec{x})}\right|.
-$$
-这个分量形式的结果, 有时会比向量形式(定义 4.65) 更加精确一些, 例 4.67 给出了一个定义4.71 
-比定义 4.65 更好捕捉到病态性质的例子. 注意条件数一般用于理论分析, 
-不用于计算的判定. 也就是作为一个算法, 并不会去算条件数. 只有在分析这个算法是否病态时, 
-才会从理论角度去分析.
+这个定理告诉我们矩阵 $A$ 的扰动带来的影响。
 
-定义 4.73 说明了 Vandermonde
-矩阵也是病态的. 对于病态的矩阵, 唯一的办法是绕路走. 
-这也是为什么第二章我们不能直接求解这个矩阵的原因之一.
+\noindent \textbf{备注 4.46. } 线性系统的解在矩阵和右手边向量受到扰动时会发生变化。定理 4.70 量化了解的相对变化与矩阵条件数的关系。
+
+\noindent \textbf{定义 4.71.} 向量函数 \( f: \mathbb{R}^m \to \mathbb{R}^n \) 的分量条件数为
+\[
+  \text{cond}_f(\mathbf{x}) = \|A(\mathbf{x})\|, \tag{4.41}
+\]
+其中矩阵 \( A(\mathbf{x}) = [a_{ij}(\mathbf{x})] \) 且每个分量为
+\[
+  a_{ij}(\mathbf{x}) = \left| \frac{x_j \frac{\partial f_i}{\partial x_j}}{f_i(\mathbf{x})} \right|. \tag{4.42}
+\]
+
+\noindent \textbf{备注 4.47.} 显然，(4.42) 来自于 (4.30)。但为什么我们首先需要定义 4.71 呢？
+因为它可能比定义 4.65 更准确地描述算法的条件；毕竟，范数往往会抹去细节。
+
+\noindent \textbf{例子 4.72.} 对于向量函数
+\[
+  f(\mathbf{x}) := \begin{bmatrix} \frac{1}{x_1} + \frac{1}{x_2} \\ \frac{1}{x_1} - \frac{1}{x_2} \end{bmatrix},
+\]
+其雅可比矩阵为
+\[
+  \nabla f = -\frac{1}{x_1^2 x_2^2} \begin{bmatrix} x_2^2 & x_1^2 \\ x_2^2 & -x_1^2 \end{bmatrix}.
+\]
+基于定义 4.71 的条件数清楚地捕捉到 \( x_1 \pm x_2 \approx 0 \) 导致条件不良的事实，其中
+\[
+  C_c = \|A_c\|,
+\]
+\[
+  A_c = \begin{bmatrix} \left| \frac{x_2}{x_1 + x_2} \right| & \left| \frac{x_1}{x_1 + x_2} \right| \\ 
+    \left| \frac{x_2}{x_1 - x_2} \right| & \left| \frac{x_1}{x_1 - x_2} \right| \end{bmatrix},
+\]
+
+基于定义 4.65 的 $1-$范数无法捕捉到条件不良的情况，
+\[
+  C_1 = \frac{\|\mathbf{x}\|_1 \|\nabla f\|_1}{\|f\|_1} = \frac{|x_1| + |x_2|}{|x_1 x_2|} \frac{2 \max(x_1^2, x_2^2)}{|x_1 + x_2| + |x_1 - x_2|},
+\]
+
+在条件 \( x_1 \pm x_2 \approx 0 \) 下，得到 \( C_1 \approx 2 \)。注意我们使用了著名的公式
+\[
+  \forall A \in \mathbb{R}^{n \times n}, \quad \|A\|_1 = \max_j \sum_i |a_{ij}|.
+\]
+
+\noindent \textbf{例子 4.73.} 如果参数 \( t_1, t_2, \ldots, t_n \) 在 \([-1, 1]\) 中等间距分布，
+基于 \(\infty\)-范数的范德蒙矩阵的条件数在定义 2.3 中为
+
+\[
+\text{cond}_{\infty} V_n \sim \frac{1}{\pi} \exp \left[ -\frac{\pi}{4} + \frac{n}{4} (\pi + 2 \ln 2) \right],
+\]
+
+对于 \( n = 20 \)，其值为 \( 9.86 \times 10^8 \).
+
+\noindent \textbf{备注 4.48.} 我们知道从第二章中，多项式插值导致范德蒙矩阵，其大条件数是我们应该避免在等间距点上进行高阶多项式插值的另一个原因。
+同样地，定义 4.74 中的希尔伯特矩阵自然地来自于函数的最佳多项式近似，这将在第五章中讨论，以 \( L_2 \) 范数为标准。
+
+\noindent \textbf{定义 4.74.} 希尔伯特矩阵 \( H_n \in \mathbb{R}^{n \times n} \) 为
+\[
+h_{i,j} = \frac{1}{i + j - 1}.
+\]
+
+\noindent \textbf{例子 4.75.} 基于 2-范数的希尔伯特矩阵的条件数为
+\[
+  \text{cond}_2 H_n \sim \frac{(\sqrt{2} + 1)^{4n + 4}}{2^{15/4} \sqrt{\pi n}},
+\]
+
+对于 \( n = 10 \), 其值为 \( 9.22 \times 10^{14} \). 参见例子 5.42。
+
+如果一个正问题会有巨大的向前误差，比如求多项式的值，比如求线性变换。
+那么我们更加不能期待其反问题有良好的条件数，比如求根，比如线性方程组求解。
+ 
+如果我们必须面对一个病态问题怎么办？这里如例 4.64 说 ``hopeless'' 有一点过于绝望了。 
+如果我们数学上没有新的技巧来改进这个问题的条件数，那么有一个 ``万金油'' 方法是充分提升我们的浮点精度。
+因此会有 GPM（GNU Multiple Precision Arithmetic Library） 这样的无限精度计算包。
+
+
+% $$
+% \hat{x} - x = \hat{A}^{-1}[\hat{b} - b - (\hat{A} - A)x]，
+% $$
+% 这与 (4.40) 和三角不等式一起，得出
+% \[
+%   \frac{|\hat{x} - x|}{|x|} 
+%   \leq \frac{\text{cond} A}{1 - (\text{cond} A)\frac{|\hat{A} - A|}{|A|}} \left(\frac{|\hat{b} - b|}{|b|} + \frac{|\hat{A} - A|}{|A|}\right).\tag{4.39}
+% \]
+% 然后 (4.39) 从 $|A||x| \geq |b|$ 得出。
+
+% \noindent{\bf 定义 4.65} 向量函数
+% $$
+% \vec{f} : \mathbb{R}^m \to \mathbb{R}^n 
+% $$
+% 的条件数是
+% $$
+% \mbox{cond}_{\vec{f}}(\vec{x})
+% = \frac{\|\vec{x}\|\|\nabla\vec{f}\|}{\|\vec{f}(\vec{x})\|},
+% $$
+% 这里范数可取 $p-$ 范数. 这个条件数基本是一元情形的自然推广.
+% 它的一个重要特例是对线性方程组
+% $$
+% A \vec{x} = \vec{b}
+% $$
+% 有
+% $$
+% \vec{x} = A^{-1}\vec{b},
+% $$
+% 令 $\vec{f}(\vec{b}) = A^{-1}\vec{b}$, 则 $\nabla \vec{f} = A^{-1}$.
+% 于是 $f$ 的条件数为:
+% $$
+% \mbox{cond}_{\vec{f}}(\vec{b})
+% = \frac{\|\vec{b}\|\|A^{-1}\|}{\|\vec{x}\|}
+% = \frac{\|A\vec{x}\|\|A^{-1}\|}{\|\vec{x}\|}.
+% $$
+% 如果我们把向量范数和矩阵范数用诱导公式
+% $$
+% \|A\| = \max_{\vec{u} \neq 0}\frac{\|A\vec{u}\|}{\|\vec{u}\|}
+% $$
+% 联系起来, 那么就有
+% $$
+% \mbox{cond}_A := \|A\|\|A^{-1}\|.
+% $$
+% 这是判断矩阵问题是否病态的重要指标. 例 4.69 给出了一个病态矩阵的例子. 注意到, 
+% 对问题 $A x = b$, 有
+% $$
+% \left[
+% \begin{array}{cc}
+%   1 & 1 - \delta \\
+%   1 & 1 + \delta
+% \end{array}
+% \right]\left[\begin{array}{c}
+%   x_1 \\ x_2
+% \end{array}
+% \right] = \left[\begin{array}{c}
+%   b_1 \\ b_2
+% \end{array} \right] \Rightarrow x_2 = \frac{b_2 - b_1}{2 \delta}.
+% $$
+% 于是 $b_2 - b_1$ 的舍入误差 $\epsilon_u$ 会被放大到 $\frac{1}{\delta}$. 
+% 导致这个线性方程组数值求解困难. 定理 4.70 将这个问题推广到一般. 
+
+
+% \noindent{\bf 定义 4.71} 向量函数 $\vec{f}: \mathbb{R}^m \to \mathbb{R}^n$
+% 分量形式的条件数为:
+% $$
+% \mbox{cond}_{\vec{f}}(\vec{x}) = \|A(\vec{x})\|,
+% $$
+% 其中 $A(\vec{x}) = [a_{ij}(\vec{x})]$ 为
+% $$
+% a_{ij}(\vec{x})
+% = \left|\frac{x_j\frac{\partial f_i}{\partial x_j}}{f_i(\vec{x})}\right|.
+% $$
+% 这个分量形式的结果, 有时会比向量形式(定义 4.65) 更加精确一些, 例 4.67 给出了一个定义4.71 
+% 比定义 4.65 更好捕捉到病态性质的例子. 注意条件数一般用于理论分析, 
+% 不用于计算的判定. 也就是作为一个算法, 并不会去算条件数. 只有在分析这个算法是否病态时, 
+% 才会从理论角度去分析.
+
+% 定义 4.73 说明了 Vandermonde
+% 矩阵也是病态的. 对于病态的矩阵, 唯一的办法是绕路走. 
+% 这也是为什么第二章我们不能直接求解这个矩阵的原因之一.
 
 \subsubsection{算法的条件数}
 
-\noindent{\bf 定义 4.76} 考虑在浮点系统 $\mathscr{F}$ 下近似计算向量函数,
-即用
-$$
-\vec{f}_A : \mathscr{F}^m \to \mathscr{F}^n
-$$
-来近似计算
-$$
-\vec{f} : \mathbb{R}^m \to \mathbb{R}^n.
-$$
-如果
-$$
-\forall \vec{x} \in \mathscr{F}^m, \exists \vec{x}_A \in \mathbb{R}^m,
-$$
-使得
-$$
-\vec{f}_A(\vec{x}) = \vec{f}(\vec{x}_A),
-$$
-那么 $\vec{f}_A$ 的条件数是
-$$
-\mbox{cond}_A (\vec{x}) = \frac{1}{\epsilon_u}
-\inf_{\{\vec{x}_A\}}\frac{\|\vec{x}_A - \vec{x}\|}{\|\vec{x}\|}.
-$$
-也即由舍入误差可能引起的最大干扰. 而定理 4.78 给出了条件数的上界.
+问题的条件数不好，说明要么这个问题建模有错，要么这个问题本质上就是不稳定的。比如物理上，这就是一个混沌问题。
+比如台风路径的预测。有时候一点小扰动，比如一只乌鸦飞过，就会导致完全不同的结果。
 
-\begin{remark}
+更多的时候，我们面对的问题并没有这么病态，这个时候，我们要小心不好的算法带来额外的困难。如果说问题条件数，
+衡量的是探索自然界的艰难，那么算法条件数，某种程度上是在衡量我们的人类的愚蠢。
 
-  函数 $f : \mathbb{R}^m \rightarrow \mathbb{R}^n$ 下的 $y \in \mathbb{R}^n$ 的纤维是集合
-\[f^{-1}(y) = \{x : f(x) = y\}\]
-因此, 定义4.76中的条件数可以被视为度量 $f^{-1}$ 在 $y$ 处对于 (4.45) 中所取的下确界的准确性. 
-因此, 按定义精确性和稳定性具有一定程度的重叠.
+\noindent \textbf{备注 4.49. } 第 4.3.3 节和 4.3.4 节中的条件数衡量了数学问题对输入变化的敏感性，
+而定义 4.76 衡量了一个算法的稳健性。如果数学问题的条件数足够大，那么对该问题的任何数值计算都是无望的。
+相比之下，对于一个不稳定的算法，可能存在另一个算法以稳定的方式计算相同的基础问题，参见例子 4.51。
 
-(4.46)中的不等式仅来自于条件 $|\delta| \leq \phi(x)\epsilon_u$,
-其中$\phi(x)$作为一个上界, 表示最坏情况的情景. 因此, (4.46)中的RHS应该被解释为给定$x$的条件数的最大估计. 
-这是一个``最大-最小''特性, 其中最小值取自所有满足 (4.44) 中的 $f_A(x) = f(x_A)$ 的 $x_A$, 
-而最大值则取自算法的所有可能输入. 
+\noindent \textbf{定义 4.76. } 考虑用算法 \( f_A : \mathcal{F}^m \rightarrow \mathcal{F}^n \) 来近似一个函数 \( f : \mathbb{R}^m \rightarrow \mathbb{R}^n \).
+假设
+\[
+  \forall \mathbf{x} \in \mathcal{F}^m, \, \exists \mathbf{x}_A \in \mathbb{R}^m \text{ 使得 } f_A(\mathbf{x}) = f(\mathbf{x}_A),
+\]
 
-在例 4.79 中, 当 $x \rightarrow 0$ 时, 数学问题的条件数为 $0$, 
-因为 
-$$
-\lim_{x\rightarrow0} \frac{x^2}{2\sin x} = 0,
-$$
-而算法 (4.47) 的条件数为 $\infty$. 这是一个典型的示例, 表明粗心的实现可能改变数学问题的条件属性. 
-为了在 $x \rightarrow 0$ 的情况下恢复数学问题的良好条件, 应通过 Taylor 级数重写 $f$, 以得到另一种算法.
-\end{remark}
+算法 \( f_A \) 的条件数由下式给出
+\[
+  \text{cond}_A(\mathbf{x}) = \frac{1}{\epsilon_u} \inf_{\{\mathbf{x}_A\}} \frac{\|\mathbf{x}_A - \mathbf{x}\|}{\|\mathbf{x}\|},
+\]
 
-我们已经量化了数学问题以及相应算法的敏感性. 当我们使用算法来解决数学问题时, 
-问题的条件数和算法的条件数都会影响总体误差. 
+其中 \( \epsilon_u \) 是定义4.26中 \( \mathcal{F} \) 的单位舍入误差。如果算法 \( f_A \) 的条件数接近 $1$, 则算法是条件良好的；否则，算法是条件不良的。
 
-作为一整章的总结, 最后的定理 4.81 表达的意思是: 如果函数$f$的条件数过大, 那么近似它是不可行的: 
-(4.50)在右侧的每一项中都包含一个因子$condf(x^*)$或$condf(x)$. 另一方面, 
-对于一个条件良好的函数$f$, 在设计近似算法时仍需要谨慎, 否则$condA(x^*)$这一项可能会使(4.50)右边的上界过大.
+这里 ``接近 $1$'' 的实际含义是一个不要太大的有界量。这个定义的实际含义是：你计算的是 $x$, 但在问题眼里，你计算的是 $x_A$.
+所以产生的绝对误差相比当前的机器精度是多少？
 
-关于计算机算术与数值精度和稳定性之间的交互的更多例子, 读者可以参考Higham [2002]的书.
+\noindent \textbf{备注 4.50.} 函数 \( f: \mathbb{R}^m \rightarrow \mathbb{R}^n \) 下的 \( y \in \mathbb{R}^n \) 的纤维是集合
+\[
+f^{-1}(y) = \{ \mathbf{x} : f(\mathbf{x}) = y \}.
+\]
+
+因此，定义4.76中的条件数可以被视为 \( f^{-1} \) 在 \( y \) 处的精度度量，相对于(4.45)中取的下确界。因此，根据定义，精度和稳定性在某种程度上有重叠。
+
+\noindent \textbf{例子 4.77.} 考虑一个用于计算 \( y = \ln x \) 的算法 \( A \). 
+假设对于任何正数 \( x \), 该程序产生一个 \( y_A \) 满足 \( y_A = (1 + \delta) \ln x \) 其中 \( |\delta| \leq 5 \epsilon_u \). 
+算法的条件数是多少？我们显然有
+\[
+  y_A = \ln x_A \text{ 其中 } x_A = x^{1 + \delta},
+\]
+因此
+\[
+  E_{\text{rel}}(x_A) = \left| \frac{x^{1 + \delta} - x}{x} \right| = |x^\delta - 1| = |e^{\delta \ln x} - 1|
+\]
+\[
+\approx |\delta \ln x| \leq 5 |\ln x| \epsilon_u.
+\]
+因此，除非 \( x \rightarrow 0^+ \)，否则 \( A \) 是条件良好的。
+
+
+\noindent \textbf{备注 4.51.} 显然，(4.45) 意味着
+
+\[
+  \forall \mathbf{x}_A \text{ 满足 } (4.44), \, \text{cond}_A(\mathbf{x}) \leq \frac{1}{\epsilon_u} \frac{\|\mathbf{x}_A - \mathbf{x}\|}{\|\mathbf{x}\|}.
+\]
+根据定义4.52和4.76，算法 \( A \) 的条件数 \( \text{cond}_A(\mathbf{x}) \) 很小等价于 \( A \) 是向后稳定的。
+
+估计算法条件数的一种方法是将其与数学问题的条件数联系起来。
+
+\noindent \textbf{定理 4.78. } 假设一个光滑函数 \( f: \mathbb{R} \rightarrow \mathbb{R} \) 
+被一个算法 \( A: \mathcal{F} \rightarrow \mathcal{F} \) 近似，产生 \( f_A(x) = f(x)(1 + \delta(x)) \) 其中 
+\( |\delta(x)| \leq \varphi(x) \epsilon_u \). 如果 \( \text{cond}_f(x) \) 是有界且非零的，那么我们有
+\[
+  \forall x \in \mathcal{F}, \quad \text{cond}_A(x) \leq \frac{\varphi(x)}{\text{cond}_f(x)}. \tag{4.46}
+\]
+
+注意这里，问题条件数是客观的，我们不能去改。而且这里指出，问题条件数是良好的，有界，不为零。
+这里 $\varphi(x)$ 是 $\delta(x)$ 去掉精度量纲的上界.  这个定理建立问题条件数和算法条件数之间的关系。
+
+\begin{proof}
+假设 \( \forall x, \, \exists x_A \) 使得 \( f(x_A) = f_A(x) \). 写成 \( x_A = x(1 + \epsilon_A) \) 并且我们有
+\[
+  f(x)(1 + \delta) = f(x_A) = f(x(1 + \epsilon_A)) = f(x + x \epsilon_A)
+\]
+\[
+  = f(x) + x \epsilon_A f'(x) + O(\epsilon_A^2).
+\]
+  
+忽略二次项得到
+\[
+  x \epsilon_A f'(x) = f(x) \delta
+\]
+\[
+  \Rightarrow \left| \frac{x_A - x}{x} \right| = |\epsilon_A| = \left| \frac{f(x)}{x f'(x)} \right| |\delta(x)|.
+\]
+  
+两边同时除以 \( \epsilon_u \) 得到
+\[
+  \frac{1}{\epsilon_u} \left| \frac{x_A - x}{x} \right| = \frac{\delta(x)}{\epsilon_u \text{cond}_f(x)}.
+\]
+对所有 \( x_A \) 取下确界，应用条件 \( |\delta(x)| \leq \varphi(x) \epsilon_u \)，我们得到(4.46)。 
+\end{proof}
+
+\noindent \textbf{备注 4.52.} (4.46)中的不等式仅来自于条件 \( |\delta| \leq \varphi(x) \epsilon_u \)，
+其中 \( \varphi(x) \) 作为上界，代表了最坏情况下的场景。因此，(4.46)中的 RHS 应该被解释为给定 \( x \) 的最大条件数的估计。
+这是一个 ``最大-最小'' 特征，其中最小值是在所有满足 \( f_A(\mathbf{x}) = f(\mathbf{x}_A) \) 的 \( \mathbf{x}_A \) 上取的，
+最大值是在算法的所有可能输入上取的。
+
+\noindent \textbf{例子 4.79.} 假设 \( \sin x \) 和 \( \cos x \) 是在机器精度内以相对误差计算的（这可以通过截断泰勒级数轻松满足）。
+应用定理4.78来分析算法的条件数
+\[
+  f_A = \text{fl} \left[ \frac{\text{fl}(1 - \text{fl}(\cos x))}{\text{fl}(\sin x)} \right]
+\]
+
+对于 \( x \in (0, \pi/2) \) 计算 \( f(x) = \frac{1 - \cos x}{\sin x} \)。根据定义4.59，很容易计算出
+\[
+  \text{cond}_f(x) = \frac{x}{\sin x}.
+\]
+
+此外，根据定理4.40和对 \( \sin x \) 和 \( \cos x \) 的假设，我们有
+
+\[
+  f_A(x) = \frac{(1 - (\cos x)(1 + \delta_1))(1 + \delta_2)}{(\sin x)(1 + \delta_3)}(1 + \delta_4),
+\]
+
+其中 \( |\delta_i| \leq \epsilon_u \) 对于 \( i = 1, 2, 3, 4 \)。忽略二次项 \( O(\delta_i^2) \)，上述方程等价于
+
+\[
+  f_A(x) = \frac{1 - \cos x}{\sin x} \left\{ 1 + \delta_2 + \delta_4 - \delta_3 - \delta_1 \frac{\cos x}{1 - \cos x} \right\},
+\]
+
+因此我们有 \( \varphi(x) = 3 + \frac{\cos x}{1 - \cos x} \) （每一个 $\delta_i$ 都看成 $\epsilon_u$）并且
+
+\[
+  \text{cond}_A(x) \leq \frac{\sin x}{x} \left( 3 + \frac{\cos x}{1 - \cos x} \right).
+\]
+
+因此，当 \( x \rightarrow 0 \) 时，\( \text{cond}_A(x) \) 可能是无界的。
+另一方面，当 \( x \rightarrow \frac{\pi}{2} \) 时，\( \text{cond}_A(x) \) 由 \( \frac{6}{\pi} \) 控制。
+
+\noindent \textbf{备注 4.53.} 在例子4.79中，当 \( x \rightarrow 0 \) 时，数学问题的条件数为 $1$,
+而算法(4.47)的条件数为无穷大。
+这是一个典型的例子，说明一个不小心的实现可能会改变数学问题的条件性质。为了恢复数学问题在 \( x \rightarrow 0 \) 时的良好条件，
+应该通过泰勒级数重写 \( f \) 以获得另一个算法。
+
+\noindent \textbf{练习 4.80.} 在相同的区间上重复例子4.79，对于 \( f(x) = \frac{\sin x}{1 + \cos x} \).
+
+\noindent \textbf{备注 4.54.} 我们已经量化了数学问题和相应算法的敏感性。当我们使用算法来解决数学问题时，问题的条件数和算法的条件数都影响整体误差。
+
+\subsubsection{机器求解的整体误差}
+% 4.3.6
+
+\begin{center}
+  \includegraphics[width = 0.7\textwidth]{images/error.png}
+\end{center}
+
+\noindent \textbf{定理 4.81.} 如图4.4所示，考虑使用标准化的浮点数算术来解决数学问题
+\[
+f: \mathbb{R}^m \rightarrow \mathbb{R}^n, \quad \mathbf{y} = f(\mathbf{x}).
+\]
+
+将计算机的输入和输出表示为
+\[
+\mathbf{x}^* \approx \mathbf{x}, \quad \mathbf{y}_A^* = f_A(\mathbf{x}^*),
+\]
+其中 \( f_A \) 是近似 \( f \) 的算法。用 \( \mathbf{y}_A^* \) 近似 \( \mathbf{y} \) 的相对误差可以限定为
+\[
+  E_{\text{rel}}(\mathbf{y}_A^*) \lessapprox E_{\text{rel}}(\mathbf{x}^*) \text{cond}_f(\mathbf{x}) + \epsilon_u \text{cond}_f(\mathbf{x}^*) \text{cond}_A(\mathbf{x}^*),
+\]
+其中相对误差在(4.25)中定义。
+
+\begin{proof}
+根据三角不等式，我们有
+\[
+  \frac{\|\mathbf{y}_A^* - \mathbf{y}\|}{\|\mathbf{y}\|} = \frac{\|f_A(\mathbf{x}^*) - f(\mathbf{x})\|}{\|f(\mathbf{x})\|}
+\]
+\[
+  \leq \frac{\|f(\mathbf{x}^*) - f(\mathbf{x})\|}{\|f(\mathbf{x})\|} + \frac{\|f_A(\mathbf{x}^*) - f(\mathbf{x}^*)\|}{\|f(\mathbf{x})\|}.
+\]
+根据(4.31)，第一项是
+\[
+  \frac{\|f(\mathbf{x}^*) - f(\mathbf{x})\|}{\|f(\mathbf{x})\|} \lessapprox \text{cond}_f(\mathbf{x}) \frac{\|\mathbf{x}^* - \mathbf{x}\|}{\|\mathbf{x}\|}
+\]
+\[
+  = E_{\text{rel}}(\mathbf{x}^*) \text{cond}_f(\mathbf{x}).
+\]
+根据(4.31)和定义4.76，第二项是
+\[
+  \frac{\|f_A(\mathbf{x}^*) - f(\mathbf{x}^*)\|}{\|f(\mathbf{x})\|} = \frac{\|f(\mathbf{x}_A^*) - f(\mathbf{x}^*)\|}{\|f(\mathbf{x})\|} \approx \frac{\|f(\mathbf{x}_A^*) - f(\mathbf{x}^*)\|}{\|\mathbf{x}^*\|}
+\]
+\[
+  \leq \text{cond}(\mathbf{x}^*) \frac{\|\mathbf{x}_A^* - \mathbf{x}^*\|}{\|\mathbf{x}^*\|}
+\]
+\[
+  = \epsilon_u \text{cond}_A(\mathbf{x}^*) \text{cond}_f(\mathbf{x}^*),
+\]
+其中最后一步遵循于我们只考虑最不危险的 \( \mathbf{x}_A^* \).
+\end{proof}
+
+\noindent \textbf{备注 4.55.} 根据定理4.81，希望近似一个条件数过大的函数是没有希望的：(4.50)的右侧每个求和项都包含一个因子 
+\( \text{cond}_f(\mathbf{x}^*) \) 或 \( \text{cond}(\mathbf{x}) \)。另一方面，对于条件良好的函数，设计一个近似算法时仍需小心，
+因为术语 \( \text{cond}_A(\mathbf{x}^*) \) 可能会使(4.50)的右侧界限过大。
+
+\noindent \textbf{备注 4.56.} 关于计算机算术与数值精度和稳定性之间相互作用的更多例子，请参阅Higham 2002年出版的书籍。 
+
+% \noindent{\bf 定义 4.76} 考虑在浮点系统 $\mathscr{F}$ 下近似计算向量函数,
+% 即用
+% $$
+% \vec{f}_A : \mathscr{F}^m \to \mathscr{F}^n
+% $$
+% 来近似计算
+% $$
+% \vec{f} : \mathbb{R}^m \to \mathbb{R}^n.
+% $$
+% 如果
+% $$
+% \forall \vec{x} \in \mathscr{F}^m, \exists \vec{x}_A \in \mathbb{R}^m,
+% $$
+% 使得
+% $$
+% \vec{f}_A(\vec{x}) = \vec{f}(\vec{x}_A),
+% $$
+% 那么 $\vec{f}_A$ 的条件数是
+% $$
+% \mbox{cond}_A (\vec{x}) = \frac{1}{\epsilon_u}
+% \inf_{\{\vec{x}_A\}}\frac{\|\vec{x}_A - \vec{x}\|}{\|\vec{x}\|}.
+% $$
+% 也即由舍入误差可能引起的最大干扰. 而定理 4.78 给出了条件数的上界.
+
+% \begin{remark}
+
+%   函数 $f : \mathbb{R}^m \rightarrow \mathbb{R}^n$ 下的 $y \in \mathbb{R}^n$ 的纤维是集合
+% \[f^{-1}(y) = \{x : f(x) = y\}\]
+% 因此, 定义4.76中的条件数可以被视为度量 $f^{-1}$ 在 $y$ 处对于 (4.45) 中所取的下确界的准确性. 
+% 因此, 按定义精确性和稳定性具有一定程度的重叠.
+
+% (4.46)中的不等式仅来自于条件 $|\delta| \leq \phi(x)\epsilon_u$,
+% 其中$\phi(x)$作为一个上界, 表示最坏情况的情景. 因此, (4.46)中的RHS应该被解释为给定$x$的条件数的最大估计. 
+% 这是一个``最大-最小''特性, 其中最小值取自所有满足 (4.44) 中的 $f_A(x) = f(x_A)$ 的 $x_A$, 
+% 而最大值则取自算法的所有可能输入. 
+
+% 在例 4.79 中, 当 $x \rightarrow 0$ 时, 数学问题的条件数为 $0$, 
+% 因为 
+% $$
+% \lim_{x\rightarrow0} \frac{x^2}{2\sin x} = 0,
+% $$
+% 而算法 (4.47) 的条件数为 $\infty$. 这是一个典型的示例, 表明粗心的实现可能改变数学问题的条件属性. 
+% 为了在 $x \rightarrow 0$ 的情况下恢复数学问题的良好条件, 应通过 Taylor 级数重写 $f$, 以得到另一种算法.
+% \end{remark}
+
+% \noindent \textbf{备注 4.54.} 我们已经量化了数学问题和相应算法的敏感性。当我们使用算法来解决数学问题时，问题的条件数和算法的条件数都影响整体误差。
+
+% 我们已经量化了数学问题以及相应算法的敏感性. 当我们使用算法来解决数学问题时, 
+% 问题的条件数和算法的条件数都会影响总体误差. 
+
+% 作为一整章的总结, 最后的定理 4.81 表达的意思是: 如果函数$f$的条件数过大, 那么近似它是不可行的: 
+% (4.50)在右侧的每一项中都包含一个因子$condf(x^*)$或$condf(x)$. 另一方面, 
+% 对于一个条件良好的函数$f$, 在设计近似算法时仍需要谨慎, 否则$condA(x^*)$这一项可能会使(4.50)右边的上界过大.
+
+% 关于计算机算术与数值精度和稳定性之间的交互的更多例子, 读者可以参考Higham [2002]的书.
 
 
 \section*{计算软件介绍}
