@@ -6497,7 +6497,31 @@ f^{-1}(y) = \{ \mathbf{x} : f(\mathbf{x}) = y \}.
 \noindent \textbf{备注 4.53.} 在例子4.79中，当 \( x \rightarrow 0 \) 时，数学问题的条件数为 $1$,
 而算法(4.47)的条件数为无穷大。
 这是一个典型的例子，说明一个不小心的实现可能会改变数学问题的条件性质。为了恢复数学问题在 \( x \rightarrow 0 \) 时的良好条件，
-应该通过泰勒级数重写 \( f \) 以获得另一个算法。
+应该通过重写 \( f \) 以获得另一个算法。
+
+要化简表达式 \(\frac{1 - \cos x}{\sin x}\)，我们可以使用三角恒等式。以下是步骤：
+
+这可以重写为：
+\[
+   1 - \cos x = (1 - \cos x)(1 + \cos x) / (1 + \cos x) = \sin^2 x / (1 + \cos x)
+\]
+
+将此代入原始表达式：
+\[
+   \frac{1 - \cos x}{\sin x} = \frac{\sin^2 x / (1 + \cos x)}{\sin x}
+\]
+
+简化分数：
+\[
+   \frac{\sin^2 x / (1 + \cos x)}{\sin x} = \frac{\sin^2 x}{\sin x (1 + \cos x)} 
+   = \frac{\sin x}{1 + \cos x}
+\]
+
+因此，表达式 \(\frac{1 - \cos x}{\sin x}\) 的化简形式是：
+\[
+  \frac{\sin x}{1 + \cos x}
+\]
+
 
 \noindent \textbf{练习 4.80.} 在相同的区间上重复例子4.79，对于 \( f(x) = \frac{\sin x}{1 + \cos x} \).
 
@@ -6704,14 +6728,17 @@ $$
 \max_{x \in [-1, 1]}\left|\frac{T_n(x)}{2^{n - 1}}\right|
 \leq \max_{x \in [-1, 1]} |p_n(x)|.
 $$
-现在我们取 $f(x) = -x^n \in Y = \mathbb{P}_n$, 这里 $\mathbb{P}_n$ 是最高次到 $n$ 的多项式空间.
+现在我们取 $f(x) = -x^n \in Y = \mathbb{P}_n$, 
+这里 $\mathbb{P}_n$ 是最高次到 $n$ 的多项式空间.
 而取 $X = \mathbb{P}_{n - 1}$, 则 $X$ 中关于 $f$ 的基于无穷范数的最佳逼近元为 
 (不妨设定义域仍为 $[-1, 1]$):
 $$
 \hat{\phi}(x) = \frac{T_n(x)}{2^{n - 1}} - x^n.
 $$
-显然, $\forall \phi(x) \in X$, $\phi(x) - f(x) \in \tilde{\mathbb{P}}_{n}$ 是首项为 $1$ 的
-$n$ 次多项式, 因此由 Chebyshev 定理 2.46, 误差在无穷范数 (又称最大模范数)
+显然, $\forall \phi(x) \in X$, $\phi(x) - f(x) \in \tilde{\mathbb{P}}_{n}$ 
+是首项为 $1$ 的
+$n$ 次多项式($X$ 中没有 $n$ 次), 因此由 Chebyshev 定理 2.46, 
+误差在无穷范数 (又称最大模范数)
 $$
 \|g(x)\|_\infty := \max_{x \in [-1, 1]}|g(x)|
 $$
@@ -6720,6 +6747,7 @@ $$
 \|\phi(x) - f(x)\|_\infty \leq \|\hat{\phi}(x) - f(x)\|_\infty 
 = \|\frac{T_n(x)}{2^{n - 1}} - x^n + x^n\|_\infty = \|\frac{T_n(x)}{2^{n - 1}}\|_\infty.
 $$
+（实际是反算回去的。）
 
 \hl{定义 5.3} 线性最佳逼近基本问题 (the fundamental problem of linear approximation), 
 对 $f \in Y$, 求最佳逼近元
@@ -7409,6 +7437,37 @@ f(r) = \sum_{j=r+1}^{m} \left| \langle \hat{b} - b, v_j \rangle \right|^2 - \eps
 
 \section{数值积分和数值微分}
 
+
+% \noindent \textbf{定义 6.1.} 加权求积公式 \( I_n(f) \) 是一个线性泛函
+% \[
+% I_n(f) := \sum_{k=1}^{n} w_k f(x_k)
+% \]
+% 它近似于函数 \( f \in C[a, b] \) 的积分，
+% \[
+% I(f) := \int_{a}^{b} f(x) \rho(x) dx,
+% \]
+% 其中权重函数 \( \rho \in \mathcal{L}[a, b] \) 
+% 满足 \( \forall x \in (a, b), \rho(x) > 0 \).
+% 在积分函数 \( f \) 被求值的点 \( x_k \) 称为节点或横坐标，
+% 乘数 \( w_k \) 称为权重或系数。
+
+% \noindent \textbf{备注 6.1.} 为什么我们假设 \(\rho > 0\)？
+% 因为这个假设没有损失一般性：可以在 \(\rho\) 不变号的子区间上对这些子积分求和。
+
+% 一个更深层次的问题是：为什么我们甚至需要 \(\rho\)？答案是：
+
+% \begin{itemize}
+%     \item 为了将两个函数 \(u, v\) 的积分表述为内积 \(\langle u, v \rangle\)，
+%     以便我们可以利用内积空间的强大概念，如正交性。
+%     因此，内积的 ``真实正性'' 给出了对 \(\rho\) 的条件。
+%     例如，如果去掉正性条件 \(\rho > 0\)，那么权重函数 \(\rho(x) = x\) 
+%     且 \(a = -1, b = 1\) 将导致 \(\langle 1, 1 \rangle = 0\)，
+%     这与定义 B.165 中的确定性条件 (IP-2) 相矛盾；
+%     \item 为了引入一定程度的自由度来定义内积，因为不同的应用可能涉及不同的权重函数；
+%     \item 为了处理具有奇异被积函数的不适定积分；参见例子 6.2 和 6.11。
+% \end{itemize}
+
+
 \hl{定义 6.1} 定义线性范函 
 $$
 I_n(f) := \sum_{k = 1}^n w_k f(x_k)
@@ -7479,7 +7538,7 @@ $K := \max_{x \in [a,b]} |f(x) - f_{\epsilon}(x)|$ ($K < \varepsilon$). 然后�
 \]
 (注意此时 $n$ 是定值)
 \[
-\leq K \int_{a}^{b} \rho(x)dx + \sum_{k=1}^{n} |w_k| + |I(f_{\epsilon}) - I_n(f_{\epsilon})|,
+\leq K \left[\int_{a}^{b} \rho(x)dx + \sum_{k=1}^{n} |w_k|\right] + |I(f_{\epsilon}) - I_n(f_{\epsilon})|,
 \]
 其中第一步是由三角不等式得到的, 第二步是由 定义6.1 得到的, 第三步是由 $K$ 的定义得到的. 
 方括号内的项是有界的, 因为 $\rho \in C[a, b]$ 和条件 (b). 由条件(a), 
