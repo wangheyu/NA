@@ -6682,20 +6682,29 @@ Anaconda 是第三方公司提供的集成科学计算环境, 严格来说, 它�
 
 以下进入 Jupyter-Notebook.
 
-\section{逼近, Approximation}
-\noindent{\bf 定义 5.1} 对赋范向量空间 $Y$, $X \subset Y$, 函数 $\hat{\phi} \in X$ 称为 $f \in Y$
-在范数 $\|\|$ 下的最佳逼近 (the best approximation), 如果
-$$
-\forall \phi \in X, \|f - \hat{\phi}\| \leq \|f - \phi\|.
-$$
+\section{最佳逼近和最小二乘}
+% 5
 
-换言之, $\hat{\phi}$ 可以看成是如下优化问题的解:
-$$
-\hat{\phi} = \arg \min_{\phi \in X} \|\phi - f\|, 
-$$
-其中 $f \in Y$, $X \subset Y$.
+\noindent {\bf 定义 5.1} 给定一个函数的赋范向量空间 \( Y \) 及其子空间 \( X \subset Y \). 如果函数 \( \hat{\varphi} \in X \) 满足
+\[
+  \forall \varphi \in X, \quad \|f - \hat{\varphi}\| \leq \|f - \varphi\|. \tag{5.1}
+\]
+则称 \( \hat{\varphi} \) 为 \( f \in Y \) 从 \( X \) 出发关于范数 \( \|\cdot\| \) 的最佳逼近。
 
-这里的关键是用小范围的一个函数 $\hat{\phi}$ 去近似大范围的一个函数 $f$. 而且要求是最优的.
+\noindent \textbf{备注 5.1} 需要注意的是，定义 5.1 中的 \( \hat{\varphi} \) 也可以被视为一个优化问题的解，
+\[
+  \hat{\varphi} = \arg\min_{\varphi \in X} \|\varphi - f\|,
+\]
+其中 \( f \in Y \) 且 \( X \subset Y \).
+
+\noindent \textbf{例子 5.2} 切比雪夫定理 2.47 可以按照定义 5.1 的格式重新表述如下。
+如同例子 B.25 中，用 \( P_{n}(\mathbb{R}) \) 表示所有系数在实数域 \( \mathbb{R} \) 中且次数不超过 \( n \) 的多项式的集合。
+对于 \( Y = P_{n}(\mathbb{R}) \) 和 \( X = P_{n-1}(\mathbb{R}) \), \( f(x) = -x^n \) 在 \( Y \) 中从 \( X \) 
+出发关于最大范数 \( \|\cdot\|_{\infty} \) 的最佳逼近
+\[
+  \|g\|_{\infty} = \max_{x \in [-1,1]} |g(x)| \tag{5.2}
+\]
+是 \( \hat{\varphi} = \frac{T_{n}}{2^{n-1}} - x^n \)，其中 \( T_{n} \) 是次数为 \( n \) 的切比雪夫多项式。显然，\( \hat{\varphi} \) 满足 (5.1).
 
 \hl{例 5.2}  Chebyshev 定理 2.46 说, 记 $\tilde{{\mathbb{P}}}_n$, 为全部 $n$ 次且首项系数为 $1$ 
 的多项式空间, $n \in \mathbb{N}^+$, 则
@@ -6720,6 +6729,8 @@ $$
 \|\phi(x) - f(x)\|_\infty \leq \|\hat{\phi}(x) - f(x)\|_\infty 
 = \|\frac{T_n(x)}{2^{n - 1}} - x^n + x^n\|_\infty = \|\frac{T_n(x)}{2^{n - 1}}\|_\infty.
 $$
+
+\subsection{线性逼近的基本问题}
 
 \hl{定义 5.3} 线性最佳逼近基本问题 (the fundamental problem of linear approximation), 
 对 $f \in Y$, 求最佳逼近元
@@ -6778,271 +6789,945 @@ $$
 $$
 可以看作是两条曲线本质区别的量化. 所以我们可以基于 $1$-范数给出一个关于样条拟合的最佳逼近问题.
 
-\hl{定理 5.6} 若 $X$ 是赋范向量空间 $Y$ 的有限维线性空间, 则 $\forall y \in Y$, $X$ 中的最佳逼近元存在, 也即
-$$
-\exists \hat{\phi} \in X, s.t. \forall \phi \in X, \|\hat{\phi} - y\| \leq \|\phi - y\|. 
-$$
+\hl{定理 5.6} 假设 \( X \) 是赋范向量空间 \( (Y, \|\cdot\|) \) 的有限维子空间。那么我们有
+\[
+  \forall y \in Y, \exists \hat{\varphi} \in X \text{ 使得 } \forall \varphi \in X, \|\hat{\varphi} - y\| \leq \|\varphi - y\|. \tag{5.5}
+\]
 
-该定理的证明使用了极值原理 (the extreme value theorem, 闭区间上连续函数必有最大最小值, 扩展到一般赋范空间就是紧集上的连续函数必能取到极值. )
-首先对 $\forall y \in Y$, 弄个圆框住它 (有界闭集):
-$$
-B_y := \{x \in X, \|x\| > 2\|y\|\}.
-$$
-然后最佳逼近元一定不可能在圆外, 因为圆内至少有一个零元和 $y$ 的距离是 $\|y\|$. 然后在圆内, $\|x - y\|$ 是一个连续函数. 搞定.
-(紧性是随连续映射传递的.)
+\begin{proof}
+对于给定的 \( y \in Y \), 定义一个闭球
+\[
+  B_{y} := \{x \in X : \|x\| \leq 2\|y\|\}.
+\]
+显然 \( 0 \in B_{y} \), 并且 \( y \) 到 \( B_{y} \) 的距离是
+\[
+  \operatorname{dist}(y, B_{y}) := \inf_{x \in B_{y}} \|y - x\| \leq \|y - 0\| = \|y\|.
+\]
+  
+根据定义，任何 \( z \in X, z \notin B_{y} \) 必须满足 \( \|z\| > 2\|y\| \)，因此
+\[
+  \|z - y\| \geq \|z\| - \|y\| > \|y\|.
+\]
+  
+因此，如果存在对 \( y \) 的最佳逼近，它必须在 \( B_{y} \) 中。作为 \( X \) 的子空间，\( B_{y} \) 是有限维的、闭的、有界的，
+因此 \( B_{y} \) 是紧致的。极值定理指出，连续标量函数在紧致集上取得其最小值和最大值。
+范数是一个连续函数，因此函数 \( d: B_{y} \rightarrow \mathbb{R}^{+} \cup \{0\} \) 由 \( d(x) = \|x - y\| \) 给出，
+必须在 \( B_{y} \) 上取得其最小值。
+\end{proof}
 
-这本书不讨论最佳逼近元的唯一性, 自己看泛函分析的书.
+\noindent \textbf{备注 5.2} 更一般地，连续函数保持包括紧致性在内的拓扑性质。对于连续函数 \( f: X \rightarrow \mathbb{R} \), 
+在 \( X \) 的紧致子集上取得最小值和最大值是由 \( f \) 的像的紧致性保证的。
 
-\hl{定理 5.7} 从 $[a, b] \to \mathbb{C}$ 的连续映射关于内积
-$$
-<u, v> := \int_a^b \rho(t) u(t) \bar{v(t)} dt
-$$
-构成内积空间. 这里 $\rho(t) > 0$ 是实值的权重函数, $\bar{v(t)}$ 表示 $v(t)$ 的共轭. 注意由该内积可自然诱导 $2$-范数:
-$$
-\|u\|_2 := \left(\int_a^b |u(t)|^2\right)^\frac{1}{2},
-$$
-这里 $|u(t)|$ 表示 $u(t)$ 的模. 注意此时, $u^2(t)$ 和 $|u(t)|^2$ 是不同的.
+\noindent \textbf{备注 5.3} 最佳逼近的唯一性超出了本书的范围，可以在许多泛函分析教科书中找到。
 
-\hl{定义 5.8} (最佳平方逼近, the least-square approximation), 即逼近范数采用 $2$-范数的最佳逼近.
+\noindent \textbf{定理 5.7} 连续函数集 \( \mathcal{C}[a, b] \) 在 \( [a, b] \) 上是复数域 \( \mathbb{C} \) 上的内积空间，其内积定义为
+\[
+  \langle u, v \rangle := \int_a^b \rho(t) u(t) \overline{v(t)} \, dt, \tag{5.6}
+\]
+其中 \( \overline{v(t)} \) 是 \( v(t) \) 的复共轭，权重函数 \( \rho(x) \in \mathcal{L}[a, b] \) 满足对所有 \( x \in (a, b) \) 有 \( \rho(x) > 0 \). 
+此外，\( \mathcal{C}[a, b] \) 与
+\[
+  \|u\|_2 := \left( \int_a^b \rho(t) |u(t)|^2 \, dt \right)^{\frac{1}{2}} \tag{5.7}
+\]
+是复数域 \( \mathbb{C} \) 上的赋范向量空间。
 
-由于最佳平方逼近的重要性, 我们本章将主要集中于这个问题. 本章剩下的部分, 默认范数为 $2$-范数.
+\begin{proof}
+这遵循定义 B.2、B.165 和 B.170。
+\end{proof}
 
-\subsection{标准正交系, orthonormal system}
-\hl{定义 5.9} 内积空间 $X$ 的子集 $S$ 称为是标准正交的, 如果
-$$
-\forall u, v \in S, <u, v> = \left\{
-\begin{array}{ll}
-  1, & u = v,\\
-  0, & u \neq v.
+\noindent \textbf{备注 5.4} \( |u(t)|^2 \) 可能与 \( u^2(t) \) 不同，因为底层域可能是复数！
+
+\noindent \textbf{定义 5.8} \( \mathcal{C}[a, b] \) 上的最小二乘逼近是一个最佳逼近问题，其范数在 (5.1) 中设置为 (5.7) 中的范数。
+
+\noindent \textbf{备注 5.5} 最小二乘逼近是我们在本章中关注的一种特殊类型的最佳逼近。此后，没有下标的范数意味着 2-范数。
+请注意，基于其他范数（如 1-范数和最大范数）的最佳逼近问题的解决方案需要完全不同的工具，这是由于这些范数的不同性质；参见 Powell[1981]。
+
+% \hl{定理 5.6} 若 $X$ 是赋范向量空间 $Y$ 的有限维线性空间, 则 $\forall y \in Y$, $X$ 中的最佳逼近元存在, 也即
+% $$
+% \exists \hat{\phi} \in X, s.t. \forall \phi \in X, \|\hat{\phi} - y\| \leq \|\phi - y\|. 
+% $$
+
+% 该定理的证明使用了极值原理 (the extreme value theorem, 闭区间上连续函数必有最大最小值, 扩展到一般赋范空间就是紧集上的连续函数必能取到极值. )
+% 首先对 $\forall y \in Y$, 弄个圆框住它 (有界闭集):
+% $$
+% B_y := \{x \in X, \|x\| > 2\|y\|\}.
+% $$
+% 然后最佳逼近元一定不可能在圆外, 因为圆内至少有一个零元和 $y$ 的距离是 $\|y\|$. 然后在圆内, $\|x - y\|$ 是一个连续函数. 搞定.
+% (紧性是随连续映射传递的.)
+
+% 这本书不讨论最佳逼近元的唯一性, 自己看泛函分析的书.
+
+% \hl{定理 5.7} 从 $[a, b] \to \mathbb{C}$ 的连续映射关于内积
+% $$
+% <u, v> := \int_a^b \rho(t) u(t) \bar{v(t)} dt
+% $$
+% 构成内积空间. 这里 $\rho(t) > 0$ 是实值的权重函数, $\bar{v(t)}$ 表示 $v(t)$ 的共轭. 注意由该内积可自然诱导 $2$-范数:
+% $$
+% \|u\|_2 := \left(\int_a^b |u(t)|^2\right)^\frac{1}{2},
+% $$
+% 这里 $|u(t)|$ 表示 $u(t)$ 的模. 注意此时, $u^2(t)$ 和 $|u(t)|^2$ 是不同的.
+
+% \hl{定义 5.8} (最佳平方逼近, the least-square approximation), 即逼近范数采用 $2$-范数的最佳逼近.
+
+% 由于最佳平方逼近的重要性, 我们本章将主要集中于这个问题. 本章剩下的部分, 默认范数为 $2$-范数.
+
+\subsection{正交系统}
+% 5.2
+
+\hl{定义 5.9} 内积空间 \( X \) 的子集 \( S \) 是正交的，当且仅当
+\[
+\forall u, v \in S, \quad \langle u, v \rangle = \begin{cases} 
+0 & \text{如果 } u \neq v, \\
+> 0 & \text{如果 } u = v.
+\end{cases} \tag{5.8}
+\]
+
+\hl{定理 5.10} 任何有限的非零正交元素集合 \( u_1, u_2, \ldots, u_n \) 是线性无关的。
+
+\begin{proof}
+这是通过使用定义 B.26 和 5.9 进行反证法证明的。
+\end{proof}
+
+\hl{定义 5.11} 内积空间 \( X \) 的子集 \( S \) 是标准正交的（orthonormal），如果它既是正交的（如定义 5.9 所述），
+又满足 \( \forall u \in S, \langle u, u \rangle = 1 \).
+
+\hl{备注 5.6} 正交和标准正交系统源于底层域的两个特殊数字：$0$ 和 $1$，其中 $0$ 与内积意义下两个向量的正交性有关，而 $1$ 是向量的 ``单位长度''。
+关于使用这些概念的线性空间的二分性，见备注 5.21。
+
+\hl{例子 5.12} \( \mathbb{R}^n \) 中的标准基向量是标准正交的。
+
+\hl{例子 5.13} 如定义 2.42 所述的第一类切比雪夫多项式，关于
+\[
+  \int_{-1}^{1} \frac{1}{\sqrt{1-x^2}} p(x) q(x) \, dx
+\]
+是正交的，其中 \( a = -1, b = 1, \rho = \frac{1}{\sqrt{1 - x^2}} \). 然而，它们不是标准正交的。
+
+
+\subsubsection{正交多项式}
+
+\hl{定义 5.14} 正交多项式集是一组多项式 \( P \), 满足
+\[
+  \forall p_i, p_j \in P, \quad i \neq j \Longrightarrow \langle p_i, p_j \rangle = 0,
+\]
+其中 \( p_i \) 是次数为 \( i \) 的多项式。
+
+\hl{例子 5.15} 在第 6 章中，实多项式 \( p_i \) 和 \( p_j \) 的内积（5.9）被定义为
+\[
+  \langle p_i, p_j \rangle := \int_a^b \rho(x) p_i(x) p_j(x) \, dx, \tag{5.10}
+\]
+这是（5.6）的一个特例。
+
+\hl{定义 5.16} 单项式移位勒让德多项式是
+
+\[
+  \left\{ \widetilde{P}_s(t) = \frac{s!}{(2s)!} \frac{d^s}{dt^s} \phi_s(t) : s \in \mathbb{N}; \phi_s(t) = t^s (t-1)^s \right\},
+\]
+其中 \( \widetilde{P}_0(t) \equiv 1 \) 当 \( s = 0 \).
+
+\hl{引理 5.17} 单项式移位勒让德多项式关于（5.10）是正交的，其中 \( a = 0 \)，\( b = 1 \)，且 \( \rho \equiv 1 \).
+
+\begin{proof}
+只需验证
+\[
+  \forall Q \in P_{s-1}, \quad \int_0^1 \widetilde{P}_s(t) Q(t) \, dt = 0. \tag{5.12}
+\]  
+
+定义 5.16 意味着 \( \phi_s^{(k)}(0) = \phi_s^{(k)}(1) = 0 \) 对于每个 \( k = 0, 1, \ldots, s-1 \) 并且我们有
+\begin{align*}
+\int_0^1 \widetilde{P}_s(t) Q(t) \, dt &= \int_0^1 \frac{s!}{(2s)!} \phi^{(s)}(t) Q(t) \, dt \\
+&= -\int_0^1 \frac{s!}{(2s)!} \phi^{(s-1)}(t) Q'(t) \, dt \\
+&= \cdots = (-1)^s \int_0^1 \frac{s!}{(2s)!} \phi(t) Q^{(s)}(t) \, dt = 0,
+\end{align*}
+其中第二步来自于分部积分，最后一步来自于 \( Q^{(s)}(t) = 0 \).
+\end{proof}
+
+\noindent \textbf{备注 }
+勒让德多项式是一类在区间[-1,1]上的正交多项式，通常用符号\( P_n(x) \)表示第\( n \)阶勒让德多项式。
+对于非负整数\( n \)，有：
+\[ 
+  P_n(x) = \frac{1}{2^n n!} \frac{d^n}{dx^n} (x^2 - 1)^n 
+\]
+
+勒让德多项式具有几个重要性质：
+\begin{itemize}
+  \item 正交性：在区间[-1, 1]上，对不同的\( n \)和\( m \), 有 \(\int_{-1}^{1} P_n(x) P_m(x) dx = 0\)（当\( n \neq m \)时）。
+  \item 递推关系：相邻的勒让德多项式之间有递推关系：\( (n + 1) P_{n + 1}(x) = (2 n + 1) x P_n(x) - n P_{n - 1}(x) \).
+  \item 生成函数：勒让德多项式可以通过生成函数 \(\frac{1}{\sqrt{1 - 2 x t + t^2}}\) 的泰勒展开来生成。
+\end{itemize}
+
+勒让德多项式 \( P_n(x) \) 的前四项可以通过罗德里格公式或者递推关系来计算。下面是前四项的显式表达式（未归一化）：
+\begin{itemize}
+  \item 第 $0$ 项:
+  \[ P_0(x) = 1 \]
+  \item 第 $1$ 项:
+  \[ P_1(x) = x \]
+  \item 第 $2$ 项:
+  \[ P_2(x) = \frac{1}{2}(3x^2 - 1) \]
+  \item 第 $3$ 项:
+  \[ P_3(x) = \frac{1}{2}(5x^3 - 3x) \]
+\end{itemize}
+
+\hl{备注 5.7} 单项式移位勒让德多项式将用于在第10.6.4节设计高斯-勒让德龙格-库塔方法。
+
+\hl{定理 5.18} 对于一组在区间 \([a, b]\) 上关于（5.10）的实正交多项式，这些多项式中的每一个零点都是实数、简单且位于 \((a, b)\) 内。
+
+\begin{proof}
+对于固定的 \( n \geq 1 \), 假设 \( p_n(x) \) 在 \([a, b]\) 内不改变符号。那么（积分中值定理）
+\[
+  \exists c \in \mathbb{R}^{+} \text{ 使得 } \int_{a}^{b} \rho(x) p_{n}(x) \, dx = c \langle p_{n}, p_{0} \rangle \neq 0,
+\]
+这与 \( p_n \) 和 \( p_0 \) 的正交性矛盾。因此，存在 \( x_1 \in (a, b) \) 使得 \( p_n(x_1) = 0 \).
+  
+假设在 \( x_1 \) 处有一个多重零点。那么 \( \frac{p_n(x)}{(x - x_1)^2} \) 将是一个次数为 \( n - 2 \) 的多项式。因此，
+\[
+  0 = \left\langle p_n(x), \frac{p_n(x)}{(x-x_1)^2} \right\rangle = \left\langle 1, \frac{p_n^2(x)}{(x-x_1)^2} \right\rangle 
+  = \int_{a}^{b} \rho(x) \frac{p_n^2(x)}{(x-x_1)^2} \, dx > 0,
+\]
+这是错误的。因此，每一个零点都是单的。
+  
+假设 \( p_n \) 的 \( j < n \) 个零点，比如 \( x_1, x_2, \ldots, x_j \)，在 \((a, b)\) 内，
+而所有其他零点在 \((a, b)\) 外。令 \( v_j(x) = \prod_{i=1}^{j} (x - x_i) \in P_j \). 
+那么 \( p_n v_j = P_{n-j} v_j^2 \), 其中 \( P_{n-j} \) 是一个在 \([a, b]\) 上不改变符号的次数为 \( n-j \) 的多项式（以免下面的内积为零）。因此，
+\[
+  \left| \left\langle P_{n-j}, v_j^2 \right\rangle \right| > 0,
+\]
+这与 \( p_n(x) \) 和 \( v_j(x) \) 的正交性矛盾。(所有低于 $n$ 的多项式和 $p_n$ 都是正交的。)
+\end{proof}
+
+\subsubsection{格拉姆-施密特过程}
+
+%5.2.2 
+
+\hl{定义 5.19} 格拉姆-施密特过程接受一个有限或无限独立的列表 \((u_1, u_2, \ldots)\) 并输出另外两个列表 \((v_1, v_2, \ldots)\) 和 
+\((u_1^*, u_2^*, \ldots)\)，通过以下方式：
+\begin{align*}
+& v_{n+1} = u_{n+1} - \sum_{k=1}^n \langle u_{n+1}, u_k^* \rangle u_k^*, \quad (5.13a) \\
+& u_{n+1}^* = v_{n+1} / \|v_{n+1}\|, \quad (5.13b)
+\end{align*}
+
+其中递归基础为 \(v_1 = u_1, u_1^* = v_1 / \|v_1\|\).
+
+\hl{备注 5.8} 如果我们将格拉姆-施密特过程视为一个算法，那么列表 \((u_1, u_2, \ldots)\) 独立是格拉姆-施密特过程完成的必要前提：
+假设 \(u_k\) 可以表示为 \(u_1, u_2, \ldots, u_{k-1}\) 的线性组合；那么 \(v_k = 0, \|v_k\| = 0\)，\(u^*\) 将无法定义。输出的后置条件在以下定理中说明。
+
+\hl{定理 5.20} 对于一个有限或无限独立的列表 \((u_1, u_2, \ldots)\)，格拉姆-施密特过程产生常数
+\[
+\begin{array}{ccc}
+a_{11} &&\\
+a_{21} & a_{22} &\\
+a_{31} & a_{32} & a_{33} \\
+\vdots
 \end{array}
-\right.
-$$
+\]
+使得 \(a_{kk} = \frac{1}{\|v_k\|} > 0\) 且元素 \(u_1^*, u_2^*, \ldots\)
+\begin{align*}
+u_1^* &= a_{11}u_1 \\
+u_2^* &= a_{21}u_1 + a_{22}u_2 \\
+u_3^* &= a_{31}u_1 + a_{32}u_2 + a_{33}u_3
+\end{align*}
+是标准正交的。
 
-\hl{例 5.10} 空间 $\mathbb{R}^n$ 的一个标准正交基是一个标准正交的.
+\begin{proof}
+定义 5.19 意味着公式 (5.13) 可以重写为 (5.14) 的形式；这可以通过归纳法证明。归纳基础是递归基础 \(u_1^* = u_1 / \|u_1\|\)，归纳步骤遵循 (5.13) 作为
+\[
+  u_n^* = \frac{1}{\|v_n\|} \left( u_n - \sum_{k=1}^{n-1} \langle u_n, u_k^* \rangle u_k^* \right),
+\]
 
-\hl{定义 2.41} 第一类 Chebyshev 多项式定义为
-$$
-T_n : [-1, 1] \to [-1, 1], T_n(x) = \cos(n\arccos(x)).
-$$
+其中每个 \(u_k^*\) 是 \(u_1, u_2, \ldots, u_k\) 的线性组合，且 \(a_{nn}\)，(5.14) 中 \(u_n\) 的系数，显然是 \(\frac{1}{\|v_n\|}\)。根据 (5.13b)，\(u_{n+1}^*\) 是标准化的。我们通过归纳法证明 \(u_{n+1}^*\) 与 \(u_n^*, u_{n-1}^*, \ldots, u_1^*\) 正交。归纳基础成立，因为
+\begin{align*}
+  \langle v_2, u_1^* \rangle &= \langle u_2 - \langle u_2, u_1^* \rangle u_1^*, u_1^* \rangle \\
+  &= \langle u_2, u_1^* \rangle - \langle u_2, u_1^* \rangle \langle u_1^*, u_1^* \rangle = 0,
+  \end{align*}
+  
+其中第二步遵循定义 B.165 中的 (IP-3)，第三步遵循 \(u_1^*\) 被标准化。归纳步骤也成立，因为对于任何 \(j < n+1\) 我们有
+\begin{align*}
+  \langle v_{n+1}, u_j^* \rangle &= \langle u_{n+1} - \sum_{k=1}^n \langle u_{n+1}, u_k^* \rangle u_k^*, u_j^* \rangle \\
+  &= \langle u_{n+1}, u_j^* \rangle - \sum_{k=1}^n \langle u_{n+1}, u_k^* \rangle \langle u_k^*, u_j^* \rangle \\
+  &= \langle u_{n+1}, u_j^* \rangle - \langle u_{n+1}, u_j^* \rangle = 0,
+\end{align*}
 
-\hl{例 5.11} 定义 2.41 中给出的第一类 Chebyshev 多项式关于定理 5.7 中的内积定义是标准正交的, 这里取 
-$$
-a = -1, b = 1, \rho(x) = \frac{1}{\sqrt{1 - x^2}}.
-$$
-对第二类 Chebyshev 多项式, 内积的权函数要取的不同. 见后.
-(验证一下? 对 $\rho(x)$ 做变量替换, 所以 $\rho(x)$ 是剧情需要.)
+其中第三步遵循归纳假设和 (5.13b)，即
+\[
+  \langle u_k^*, u_j^* \rangle = \begin{cases} 
+  1 & \text{如果 } k = j \\
+  0 & \text{否则.}
+  \end{cases} \tag{5.16}
+\]    
+\end{proof}
 
-标准正交化中的正交指向量两两正交, 标准指向量的模长都是 $1$. 正交系可以通过规范化变成标准正交系. 
+\hl{练习 5.21} 使用 \(\left\|u_{n}^{*}\right\|=1\) 证明 \(a_{kk}=\frac{1}{\left\|v_{k}\right\|}\).
 
-\hl{定理 5.12} 有限个标准正交的向量组是线性无关组. 
+\[
+u_2^* = u_2 - \langle u_2, u_1^* \rangle u_1^*
+\]
 
-\hl{定义 5.13} (Gram-Schmidt 过程) 输入内积空间线性无关向量组 $(u_1, u_2, \cdots)$, 可以是无穷个. 输出 $(v_1, v_2, \cdots)$
-和 $(u^*_1, u^*_2, \cdots)$, 具体过程为:
-$$
-\begin{array}{rcl}
-  v_1 &=& u_1, \\
-  u^*_1 &=& v_1 / \|v_1\|, \\
-  v_{n + 1} &=& u_{n + 1} - \sum_{k = 1}^n <u_{n + 1}, u^*_k> u^*_k,  n = 1, 2, \cdots\\
-  u^*_{n + 1} &=& v_{n + 1} / \|v_{n + 1}\|, n = 1, 2, \cdots .
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/gram_shmidt.png}
+  \caption{格拉姆-施密特过程（5.13）的几何意义。这里 \(v_{n+1}\) 是将 \(u_{n+1}\) 投影到由标准正交基 \((u_1^*, u_2^*, \ldots, u_n^*)\) 
+  张成的空间后的误差残差，而 \(u_{n+1}^*\) 是 \(v_{n+1}\) 的标准化。另见定义 5.26 和例子 5.27。}
+  \label{fig::gram_shmidt}
+\end{figure}
+
+\hl{推论 5.22} 对于有限或无限独立的列表 \((u_1, u_2, \ldots)\)，我们可以找到常数
+\[
+\begin{array}{ccc}
+b_{11} &&\\
+b_{21} & b_{22}& \\
+b_{31} & b_{32} & b_{33} \\
+\vdots
 \end{array}
-$$
+\]
 
-这个过程就是我们代数中学过的 Schmidt 正交化. 它将一组非正交的线性无关组 $(u_1, u_2, \cdots)$ 改造成一组标准正交组
-$(u^*_1, u^*_2, \cdots)$. 这里 $(v_1, v_2, \cdots)$ 正交但没有归一化. 
+以及一个标准正交列表 \((u_1^*, u_2^*, \ldots)\)，使得 \(b_{ii} > 0\) 且
+\begin{align*}
+& u_1 = b_{11} u_1^* \\
+& u_2 = b_{21} u_1^* + b_{22} u_2^* \\
+& u_3 = b_{31} u_1^* + b_{32} u_2^* + b_{33} u_3^*
+\end{align*}
 
-\hl{定理 5.14} 这个定理结论是
-$$
-\begin{array}{rcl}
-  u^*_1 &=& a_{11}u_1 \\
-  u^*_2 &=& a_{21}u_1 + a_{22}u_2\\
-  u^*_3 &=& a_{31}u_1 + a_{32}u_2 + a_{33}u_3\\
-  &\vdots&
+\begin{proof}
+这遵循（5.14）以及具有正对角线元素的下三角矩阵是可逆的。
+\end{proof}
+
+\hl{推论 5.23} 在定理 5.20 中，我们有 \(\langle u_n^*, u_i \rangle = 0\) 对于每个 \(i = 1, 2, \ldots, n-1\).
+
+\begin{proof}
+根据推论 5.22，每个 \(u_i\) 可以表示为
+\[
+  u_i = \sum_{k=1}^i b_{ik} u_k^*.
+\]
+将上述方程与 \(u_n^*\) 内积，应用正交条件，我们得到结论。
+\end{proof}
+
+% \hl{备注 5.9} 为了继续图 5.1 中的几何解释，推论 5.23 表明 \(u_i\) 和 \(u_i^*\) 张成相同的空间。
+% 由于 \(u_n^*\) 对于每个 \(i = 1, 2, \ldots, n-1\) 与 \(u_i^*\) 垂直，所以它也与每个 \(u_i\) 垂直。
+
+
+% \hl{定义 5.9} 内积空间 $X$ 的子集 $S$ 称为是标准正交的, 如果
+% $$
+% \forall u, v \in S, <u, v> = \left\{
+% \begin{array}{ll}
+%   1, & u = v,\\
+%   0, & u \neq v.
+% \end{array}
+% \right.
+% $$
+
+% \hl{例 5.10} 空间 $\mathbb{R}^n$ 的一个标准正交基是一个标准正交的.
+
+% \hl{定义 2.41} 第一类 Chebyshev 多项式定义为
+% $$
+% T_n : [-1, 1] \to [-1, 1], T_n(x) = \cos(n\arccos(x)).
+% $$
+
+% \hl{例 5.11} 定义 2.41 中给出的第一类 Chebyshev 多项式关于定理 5.7 中的内积定义是标准正交的, 这里取 
+% $$
+% a = -1, b = 1, \rho(x) = \frac{1}{\sqrt{1 - x^2}}.
+% $$
+% 对第二类 Chebyshev 多项式, 内积的权函数要取的不同. 见后.
+% (验证一下? 对 $\rho(x)$ 做变量替换, 所以 $\rho(x)$ 是剧情需要.)
+
+% 标准正交化中的正交指向量两两正交, 标准指向量的模长都是 $1$. 正交系可以通过规范化变成标准正交系. 
+
+% \hl{定理 5.12} 有限个标准正交的向量组是线性无关组. 
+
+% \hl{定义 5.13} (Gram-Schmidt 过程) 输入内积空间线性无关向量组 $(u_1, u_2, \cdots)$, 可以是无穷个. 输出 $(v_1, v_2, \cdots)$
+% 和 $(u^*_1, u^*_2, \cdots)$, 具体过程为:
+% $$
+% \begin{array}{rcl}
+%   v_1 &=& u_1, \\
+%   u^*_1 &=& v_1 / \|v_1\|, \\
+%   v_{n + 1} &=& u_{n + 1} - \sum_{k = 1}^n <u_{n + 1}, u^*_k> u^*_k,  n = 1, 2, \cdots\\
+%   u^*_{n + 1} &=& v_{n + 1} / \|v_{n + 1}\|, n = 1, 2, \cdots .
+% \end{array}
+% $$
+
+% 这个过程就是我们代数中学过的 Schmidt 正交化. 它将一组非正交的线性无关组 $(u_1, u_2, \cdots)$ 改造成一组标准正交组
+% $(u^*_1, u^*_2, \cdots)$. 这里 $(v_1, v_2, \cdots)$ 正交但没有归一化. 
+
+% \hl{定理 5.14} 这个定理结论是
+% $$
+% \begin{array}{rcl}
+%   u^*_1 &=& a_{11}u_1 \\
+%   u^*_2 &=& a_{21}u_1 + a_{22}u_2\\
+%   u^*_3 &=& a_{31}u_1 + a_{32}u_2 + a_{33}u_3\\
+%   &\vdots&
+% \end{array}
+% $$
+% 是标准正交的, 这里 $a_{ij}$ 是常数, $i = 1, 2, \cdots$, $j = 1, 2, \cdots, i$. 
+% 另外一个平凡的结论是, $u^*_n$ 只和 $u_1$, $u_2$, $\cdots$, $u_n$ 相关. 具体的证明过程是 Schmidt 正交化的重复, 
+% 不再复述.
+
+% \hl{例题 5.15} 这道题旨在解释 Schmidt 正交化的几何意义. 已知 $u^*_1$, $u^*_2$, $\cdots$, $u^*_n$ 已经标准正交, 
+% 现在 $u_{n + 1}$ 和 $u^*_1$, $u^*_2$, $\cdots$, $u^*_n$ 均线性无关 (这一点由输入的 $u_1$, $u_2$, $\cdots$ 线性无关保证),
+% 所以 $u_{n + 1}$ 在减去它在 $u^*_1$, $u^*_2$, $\cdots$, $u^*_n$ 等维度上的投影以后, 也即
+% $$
+% v_{n + 1} = u_{n + 1} - \sum_{k = 1}^n <u_{n + 1}, u^*_k> u^*_k 
+% $$
+% 是 $u_{n + 1}$ 在空间 
+% $$
+% \mbox{span}\{u^*_1, u^*_2, \cdots, u^*_n, u_{n + 1}\}
+% $$
+% 正交投影后的剩余部分, 或者误差. 
+
+% \hl{推论 5.16} 定理 5.14 的结论可以反过来, 这个是显然的, 因为标准正交系是一组基.
+
+% \hl{推论 5.17} 这个结论尽管简单, 但直观很重要. 
+% $$
+% u_i = \sum_{k = 1}^i b_{ik} u^*_k
+% $$ 
+% 也就是说 $u_i$ 已经全部分解到 $u^*_1$, $u^*_2$, $\cdots$, $u^*_i$ 上了, 
+% 对任何 $u^*_j$, $j > i$, $u_i$ 在上面的投影必为零.
+
+% \hl{定义 5.18} 对我们最熟悉的多项式空间基 $(1, x, x^2, \cdots)$ 在对应的内积下做 Gram-Schmidt 标准正交化, 
+% 就得到表中的各组正交多项式系. 包括我们以及知道的第一类和第二类的 Chebyshev 多项式. 
+% 表中给出了具体的积分区间 $[a, b]$ (可以是无穷) 和权函数. 这些正交多项式系由于其良好的性质,
+% 在各种数值算法中有应用. 但注意, Schmidt 正交化虽然可以定义这些正交系, 
+% 但实际计算我们一般不这么做, 而是采用递推公式, 比如第一类 Chebyshev 多项式, 
+% 我们可以用递推公式 (2.43).
+
+% \hl{例 5.19} 这个例子大家应该算一遍, 但要知道实际工作不这么做, 这个专门用于考试. 
+% 各正交多项式系的公式可以在各种工程数学用表中查到. 不过如果一定要做 Schmidt 正交化, 
+% 那么积分时注意利用区间对称性和函数奇偶性.
+
+
+\hl{定义 5.24} 使用格拉姆-施密特正交化过程以及内积（5.6），我们从独立的单项式列表 $(1, x, x^2, \cdots)$ 获得以下经典的正交多项式：
+
+\[
+\begin{array}{|c|c|c|c|}
+\hline
+\text{多项式类型} & a & b & \rho(x) \\
+\hline
+\text{第一类切比雪夫多项式} & -1 & 1 & \frac{1}{\sqrt{1-x^2}} \\
+\text{第二类切比雪夫多项式} & -1 & 1 & \sqrt{1-x^2} \\
+\text{勒让德多项式} & -1 & 1 & 1 \\
+\text{雅可比多项式} & -1 & 1 & (1-x)^\alpha(1+x)^\beta \\
+\text{拉盖尔多项式} & 0 & +\infty & x^\alpha e^{-x} \\
+\hline
 \end{array}
-$$
-是标准正交的, 这里 $a_{ij}$ 是常数, $i = 1, 2, \cdots$, $j = 1, 2, \cdots, i$. 
-另外一个平凡的结论是, $u^*_n$ 只和 $u_1$, $u_2$, $\cdots$, $u_n$ 相关. 具体的证明过程是 Schmidt 正交化的重复, 
-不再复述.
+\]
+其中 \(\alpha, \beta > -1\) 对于雅可比多项式，以及 \(\alpha > -1\) 对于拉盖尔多项式。
 
-\hl{例题 5.15} 这道题旨在解释 Schmidt 正交化的几何意义. 已知 $u^*_1$, $u^*_2$, $\cdots$, $u^*_n$ 已经标准正交, 
-现在 $u_{n + 1}$ 和 $u^*_1$, $u^*_2$, $\cdots$, $u^*_n$ 均线性无关 (这一点由输入的 $u_1$, $u_2$, $\cdots$ 线性无关保证),
-所以 $u_{n + 1}$ 在减去它在 $u^*_1$, $u^*_2$, $\cdots$, $u^*_n$ 等维度上的投影以后, 也即
-$$
-v_{n + 1} = u_{n + 1} - \sum_{k = 1}^n <u_{n + 1}, u^*_k> u^*_k 
-$$
-是 $u_{n + 1}$ 在空间 
-$$
-\mbox{span}\{u^*_1, u^*_2, \cdots, u^*_n, u_{n + 1}\}
-$$
-正交投影后的剩余部分, 或者误差. 
+\hl{例子 5.25} 我们使用格拉姆-施密特过程计算前三个勒让德多项式。
 
-\hl{推论 5.16} 定理 5.14 的结论可以反过来, 这个是显然的, 因为标准正交系是一组基.
+\begin{align*}
+u_1 &= 1, \, v_1 = 1, \|v_1\|^2 = \int_{-1}^{+1} dx = 2, \quad u_1^* = \frac{1}{\sqrt{2}}. \\
+u_2 &= x, \, v_2 = x - \left\langle x, \frac{1}{\sqrt{2}} \right\rangle \frac{1}{\sqrt{2}} = x, \, \|v_2\|^2 = \frac{2}{3}, \\
+u_2^* &= \sqrt{\frac{3}{2}} x. \\
+v_3 &= x^2 - \left\langle x^2, \sqrt{\frac{3}{2}} x \right\rangle \sqrt{\frac{3}{2}} x - \left\langle x^2, \frac{1}{\sqrt{2}} \right\rangle \frac{1}{\sqrt{2}} 
+= x^2 - \frac{1}{3}, \\
+\|v_3\|^2 &= \int_{-1}^{+1} \left(x^2 - \frac{1}{3}\right)^2 dx = \frac{8}{45}, \\
+u_3^* &= \frac{3}{4} \sqrt{10} \left(x^2 - \frac{1}{3}\right).
+\end{align*}
 
-\hl{推论 5.17} 这个结论尽管简单, 但直观很重要. 
-$$
-u_i = \sum_{k = 1}^i b_{ik} u^*_k
-$$ 
-也就是说 $u_i$ 已经全部分解到 $u^*_1$, $u^*_2$, $\cdots$, $u^*_i$ 上了, 
-对任何 $u^*_j$, $j > i$, $u_i$ 在上面的投影必为零.
 
-\hl{定义 5.18} 对我们最熟悉的多项式空间基 $(1, x, x^2, \cdots)$ 在对应的内积下做 Gram-Schmidt 标准正交化, 
-就得到表中的各组正交多项式系. 包括我们以及知道的第一类和第二类的 Chebyshev 多项式. 
-表中给出了具体的积分区间 $[a, b]$ (可以是无穷) 和权函数. 这些正交多项式系由于其良好的性质,
-在各种数值算法中有应用. 但注意, Schmidt 正交化虽然可以定义这些正交系, 
-但实际计算我们一般不这么做, 而是采用递推公式, 比如第一类 Chebyshev 多项式, 
-我们可以用递推公式 (2.43).
+\hl{备注 5.10} 对于区间 \([-1,+1]\)，通过检查函数是奇函数还是偶函数，可以加快其上积分的计算速度。
 
-\hl{例 5.19} 这个例子大家应该算一遍, 但要知道实际工作不这么做, 这个专门用于考试. 
-各正交多项式系的公式可以在各种工程数学用表中查到. 不过如果一定要做 Schmidt 正交化, 
-那么积分时注意利用区间对称性和函数奇偶性.
+\subsubsection{傅里叶展开}
+% 5.2.3 
 
-\subsection{傅立叶展开, Fourier expansions}
+\hl{备注 5.11} 由于 $2$-范数作为 ``长度'' 的度量，正交系统导致正交展开。注意，正交归一系统不需要是正交归一基，因为对于任何子空间，最佳逼近都是有意义的。
 
-\hl{定义 5.20} 傅立叶展开. 令 $(u^*_1, u^*_2, \cdots)$ 是有限或无限的标准正交系,
-对任意的向量 $w$, 其傅立叶展开或正交展开为
-$$
-\sum_{n = 1}^m <w, u^*_n>u^*_n.
-$$
-这里 $<w, u^*_n>$ 称为傅立叶系数. 而 $w$ 关于 $(u^*_1, u^*_2, \cdots)$ 
-的傅立叶展开的误差为:
-$$
-\sum_{n = 1}^m <w, u^*_n>u^*_n - w.
-$$
-这里 $<w, u^*_n> u^*_n$ 的几何意义为 $w$ 在 $u^*_n$ 的投影.
+\hl{定义 5.26} 设 \((u_1^*, u_2^*, \ldots)\) 是有限或无限标准正交基。对于任意 \(w\)，其正交展开或傅里叶展开是级数
+\[
+  \sum_{n=1}^m \langle w, u_n^* \rangle u_n^*,
+\]
+其中常数 \(\langle w, u_n^* \rangle\) 被称为 \(w\) 的傅里叶系数，而项 \(\langle w, u_n^* \rangle u_n^*\) 是 \(w\) 在 \(u_n^*\) 上的投影。
+\(w\) 关于 \((u_1^*, u_2^*, \ldots)\) 的傅里叶展开的误差仅仅是 \(\sum_{n} \langle w, u_n^* \rangle u_n^* - w\).
+（就是 $w$ 在 $\mathrm{span}\{u_1^*, u_2^*, \ldots\}$ 空间的正交投影。）
 
-\hl{例 5.21} 傅立叶展开是和内积空间相关的. 我们可以对任意 $w \in \mathbb{R}^3$ 
-空间, 关于欧氏内积对标准正交基 $(1, 0, 0)^T$, $(0, 1, 0)^T$ 和 $(0, 0, 1)^T$ 
-做傅立叶展开, 得到的系数就是标准坐标. 所以展开误差是 $0$.
 
-对于非标准(没有规一化)的正交组 $(u_1, u_2, \cdots)$, 我们可以直接通过归一化
-$u^*_i = u_i / \|u_i\|$, $i = 1, 2, \cdots$ 后再得到任意向量 $w$ 的傅立叶展开:
-$$
-w \sim \sum_i \left<w, \frac{u_i}{\|u_i\|}\right>\frac{u_i}{\|u_i\|}
-= \sum_i\frac{<w, u_i>}{<u_i, u_i>}u_i.
-$$
-注意 
-$$
-<u_i, u_i> = \|u_i\|^2.
-$$
-这里使用 $\sim$ 而不是 $=$, 是因为对于无穷项标准正交系, 求和式不一定收敛. 
+\hl{例子 5.27} 使用定义 B.169 中的欧几里得内积，我们选择 \(\mathbb{R}^3\) 中的正交归一向量为
+\[
+  u_1^* = (1,0,0)^T, \, u_2^* = (0,1,0)^T, \, u_3^* = (0,0,1)^T.
+\]
 
-\hl{例题 5.22} 对 $f \in L_{\rho = 1}^2[-\pi, \pi]$ 关于其上的标准正交系
-$$
-\frac{1}{\sqrt{2\pi}}, \frac{\sin x}{\sqrt{\pi}}, \frac{\cos x}{\sqrt{\pi}}, 
-\frac{\sin 2x}{\sqrt{\pi}}, \frac{\cos 2x}{\sqrt{\pi}}, \cdots,
-\frac{\sin nx}{\sqrt{\pi}, \frac{\cos nx}{\sqrt{\pi}}}, \cdots,
-$$
-做傅立叶展开, 就是我们熟悉的傅立叶级数:
-$$
-f(x) \sim \frac{a_0}{2} + \sum_{k = 1}^{\infty}(a_k \cos kx + b_k \sin kx),
-$$
-其中
-$$
-a_k = \frac{1}{\pi}\int^\pi_{-\pi} f(x) \cos kx dx, 
-b_k = \frac{1}{\pi}\int^\pi_{-\pi} f(x) \sin kx dx. 
-$$
+对于向量 \(w = (a, b, c)^T\)，傅里叶系数为
+\[
+  \langle w, u_1^* \rangle = a, \, \langle w, u_2^* \rangle = b, \, \langle w, u_3^* \rangle = c,
+\]
 
-如果标准正交系是有限个, 那么傅立叶展开就是在这组正交系下的线性表出.
+且 \(w\) 在 \(u_1^*\) 和 \(u_2^*\) 上的投影为
+\[
+  \langle w, u_1^* \rangle u_1^* = (a,0,0)^T, \quad \langle w, u_2^* \rangle u_2^* = (0,b,0)^T.
+\]
 
-\hl{定理 5.23} 令 $(u_1, u_2, \cdots, u_n)$ 线性无关, 而 $u^*_i$ 是 $u_i$ 做 
-Gram-Schmidt 正交化后的输出. 如果
-$$
-w = \sum_{i = 1}^n u_i,
-$$
-那么
-$$
-w = \sum_{i = 1}^n <w, u^*_i> u^*_i,
-$$
-也即有限维的傅立叶展开总是收敛且相等的.
+\(w\) 的傅里叶展开为
+\[
+  w = \langle w, u_1^* \rangle u_1^* + \langle w, u_2^* \rangle u_2^* + \langle w, u_3^* \rangle u_3^*,
+\]
+傅里叶展开的误差为 $0$；因为 $w \in \mathbb{R}^3$.
 
-\hl{证明: } 因为 $(u^*_1, u^*_2, \cdots, u^*_n)$ 是一组标准正交基, 故令
-$$
-w = \sum_{i = 1}^n c_i u^*_i,
-$$
-于是
-$$
-<w, u^*_k> = \sum_{i = 1}^n c_i <u^*_i, u^*_k>,
-$$
-由正交性,
-$$
-<u^*_i, u^*_k> = \delta_{ik}, 
-$$
-所以 $<w, u^*_k> = c_k$, 证毕. $\qed$
+\hl{备注 5.12} 对于正交基 \(u_i\) ，我们可以通过 \(u_i^* = u_i / \|u_i\|\) 构造一个标准正交基，以得到傅里叶展开
+\[
+  w \sim \sum_i \langle w, \frac{u_i}{\|u_i\|} \rangle \frac{u_i}{\|u_i\|} = \sum_i \frac{\langle w, u_i \rangle}{\langle u_i, u_i \rangle}.
+\]
 
-从最佳逼近的角度看, 以上操作就是 $w \in \mbox{span}(u_1, u_2, \cdots, u_n)$
-的最佳逼近, 而且误差是零. 当 $w \notin \mbox{span}(u_1, u_2, \cdots, u_n)$
-时, 该最佳逼近公式仍然成立. 
+这里我们使用 ``$\sim$'' 而不是 ``='' 是因为对于无限序列 \((u_i)_{i \in \mathbb{N}}\)，级数可能不收敛。（在无穷维，这么做可能失败。）
 
-\hl{定理 5.24} 傅立叶展开的最小性质. 令 $(u^*_1, u^*_2, \cdots)$ 是一组标准正交基,
-而 $w$ 是任意向量. 则
-$$
-\left\|w - \sum_{i = 1}^N <w, u^*_i> u^*_i\right\| 
-\leq \left\|w - \sum_{i = 1}^N a_i u^*_i\right\|,
-$$
-对任意常数序列 $a_1$, $a_2$, $\cdots$, $a_N$ 成立.
+\hl{练习 5.28} 对于 \(L_{\rho=1}^{2}[-\pi,\pi]\) 中的标准正交基，
+\[
+  \frac{1}{\sqrt{2\pi}}, \frac{\sin x}{\sqrt{\pi}}, \frac{\cos x}{\sqrt{\pi}}, \ldots, \frac{\sin(nx)}{\sqrt{\pi}}, \frac{\cos(nx)}{\sqrt{\pi}}, \ldots, \tag{5.19}
+\]
+导出函数 \(f(x)\) 的傅里叶级数为
+\[
+  f(x) \sim \frac{a_0}{2} + \sum_{k=1}^{+\infty} (a_k \cos kx + b_k \sin kx), \tag{5.20}
+\]
+其中系数为
+\[
+  a_k = \frac{1}{\pi} \int_{-\pi}^\pi f(x) \cos kx \, dx, \, b_k = \frac{1}{\pi} \int_{-\pi}^\pi f(x) \sin kx \, dx.
+\]
+（这就是我们在实分析中熟悉的傅里叶展开。）
 
-这个证明其实很简单, 直接对
-$$
-\left\|w - \sum_{i = 1}^N a_i u^*_i\right\|^2
-$$
-做展开后整理成
-$$
-\left\|w - \sum_{i = 1}^N a_i u^*_i\right\|^2 
-= \|w\|^2 - \sum_i|<w, u^*_i>|^2 + \sum_i|a_i - <w, u^*_i>|^2,
-$$
-显然当 
-$$
-\sum_i|a_i - <w, u^*_i>|^2 = 0
-$$
-时取极小, 也即 $a_i = <w, u^*_i>$, $i = 1, 2, \cdots, N$.
 
-\hl{推论 5.25} 令 $(u_1, u_2, \cdots, u_n)$ 是线性无关组, 则任意向量 $w$ 的基本最佳逼近问题的解为
-$\hat{\phi} = \sum_k <w, u^*_k> u^*_k$, 其中 $u^*_k$ 是 $u_k$ 的 Gram-Schmidt 正交化过程对应的输出. 
-而误差的范数为
-$$
-\|w - \hat{\phi}\|^2 := \min_{a_k} \|w - \sum_{k = 1}^n a_k u_k\|^2 
-= \|w\|^2 - \sum_{k = 1}^n|<w, u^*_k>|^2.
-$$
+\hl{备注 5.13} 假设有限维标准正交基 \((u_1^*, u_2^*, \ldots)\) 是有限的，那么这个列表张成空间中的任何线性组合都等于其傅里叶展开。这与备注 5.12 相比较。
 
-这个就是定理 5.24 结论的重复叙述.
+\hl{定理 5.29} 设 \(u_1, u_2, \ldots, u_n\) 是线性无关的，并且 \(u_i^*\) 是通过格拉姆-施密特过程正交归一化的 \(u_i\). 
+如果 \(w = \sum_{i=1}^{n} a_i u_i\)，那么
+\[
+  w = \sum_{i=1}^n \langle w, u_i^* \rangle u_i^*, \tag{5.21}
+\]
+即 \(w\) 等于其傅里叶展开。
 
-\hl{推论 5.26} 贝塞尔不等式, Bessel inequality. 如果 $(u^*_1, u^*_2, \cdots, u^*_N)$ 是标准正交系, 
-则对任意向量 $w$, 有
-$$
-\sum_{i = 1}^N |<w, u^*_i>|^2 \leq \|w\|^2.
-$$
-就看 $w$ 在不在空间内了.
+\begin{proof}
+根据条件 \(w = \sum_{i=1}^{n} a_i u_i\) 和推论 5.22，我们可以将 \(w\) 表达为 \(u_i^*\) 的线性组合，
+即 \(w = \sum_{i=1}^{n} c_i u_i^*\)。然后 \(u_i^*\) 的正交归一性意味着
+\[
+  \forall k = 1, 2, \cdots, n, \quad \langle w, u_k^* \rangle = c_k,
+\]
+这完成了证明。
+\end{proof}
 
-\hl{推论 5.27} Gram-Schmidt 正交化过程满足
-$$
-\|v_{n + 1}\|^2  = \|u_{n + 1}\|^2 - \sum_{k = 1}^n|<u_{n + 1}, u^*_k>|^2.
-$$
-这是将 $v_{n + 1}$ 看作是 $u_{n + 1}$ 关于 $(u^*_1, u^*_2, \cdots, u^*_n)$ 做投影后的误差.
+\hl{备注 5.14} 从逼近的角度来看，对于 \(w \in \operatorname{span}(u_1, u_2, \ldots, u_n)\), 
+使用 \(u_1, u_2, \ldots, u_n\) 的某些线性组合对 \(w\) 进行最佳逼近的误差为零。
+这也推广到 \(w \notin \operatorname{span}(u_1, u_2, \ldots, u_n)\) 的情况。
 
-\hl{例题 5.28} 我们来考虑如何做最佳平方逼近. 比如将 $e^x$, 在 $[-1, 1]$ 上用直到 $2$ 次的多项式逼近. 
-或者说, 求
+\hl{定理 5.30}（傅里叶展开的最小性质）。设 \(u_1^*, u_2^*, \ldots\) 是一个正交归一系统，并且让 \(w\) 是任意的。那么
+\[
+  \left\| w - \sum_{i=1}^N \langle w, u_i^* \rangle u_i^* \right\| \leq \left\| w - \sum_{i=1}^N a_i u_i^* \right\|, \tag{5.22}
+\]
+对于任意常数选择 \(a_1, a_2, \cdots, a_N\)。（注意这里的范数都是$2-$范数。）
+
+\begin{proof}
+使用简写符号 \(\sum_i = \sum_{i = 1}^{N}\), 我们从内积的定义和性质推导出
+\begin{align*}
+  &\left\| w - \sum_i a_i u_i^* \right\|^2 = \left\langle w - \sum_i a_i u_i^*, w - \sum_i a_i u_i^* \right\rangle \\
+  &= \langle w, w \rangle - \left\langle w, \sum_i a_i u_i^* \right\rangle - \left\langle \sum_i a_i u_i^*, w \right\rangle \\
+  &\quad + \left\langle \sum_i a_i u_i^*, \sum_i a_i u_i^* \right\rangle \\
+  &= \langle w, w \rangle - \sum_i \overline{a_i} \langle w, u_i^* \rangle - \sum_i a_i \langle u_i^*, w \rangle \\
+  &\quad + \sum_i \sum_j a_i \overline{a_j} \langle u_i^*, u_j^* \rangle \\
+  &= \langle w, w \rangle - \sum_i \overline{a_i} \langle w, u_i^* \rangle - \sum_i a_i \langle u_i^*, w \rangle + \sum_i |a_i|^2 \\
+  &\quad - \sum_i \langle u_i^*, w \rangle \langle w, u_i^* \rangle + \sum_i \langle u_i^*, w \rangle \langle w, u_i^* \rangle \\
+  &= \left\| w \right\|^2 - \sum_i \left| \langle w, u_i^* \rangle \right|^2 + \sum_i \left| a_i - \langle w, u_i^* \rangle \right|^2,
+\end{align*}
+其中 ``$|\cdot|$'' 表示复数的模。前两项与 \(a_i\) 无关。因此 \(\left\| w - \sum_i a_i u_i^* \right\|^2\) 仅在 \(a_i = \langle w, u_i^* \rangle\) 
+时取得最小值。
+\end{proof}
+（记 $V = \mathrm{span}\{u^*_1, u^*_2, \cdots\}$，任取 $w' \in V$, 那么误差 $e = w - w'$ 在该空间的正交投影记作 $e^*$ 是
 $$
-\min_{a_i} \int^1_{-1}\left(e^x - \sum_{i = 1}^2a_i x^i\right)^2 dx.
+e^* = \sum \langle w - w', u_i^* \rangle u_i^* =  \sum \langle w, u_i^* \rangle u_i^* + \sum \langle w', u_i^* \rangle u_i^*.
 $$
-我们直接给出 $[-1, 1]$ 上 $\rho = 1$ 的正交多项式系, 也就是 Legenfre 多项式, 由例题 5.19,
+注意上式第一部分就是证明需要的 $w$ 在 $V$ 的最佳逼近元，记作 $w^*$. 而第二部分注意到 $w' \in V$, 因此就是 $w'$ 本身。即
 $$
-u^*_1 = \frac{1}{\sqrt{2}}, u^*_2 = \sqrt{\frac{3}{2}}x, u^*_3 = \frac{1}{4}\sqrt{10}(3x^2 - 1).
-$$ 
-(直到 $2$ 次.) 然后对 $e^x$ 求在这些正交系上的表出系数, 或傅立叶展开系数:
+e^* = w^* - w'
 $$
-\begin{array}{rcl}
-  a_1 &=& \int^1_{-1} \frac{1}{\sqrt{2}} e^x dx = \frac{1}{\sqrt{2}}\left(e - \frac{1}{e}\right) \\
-  a_2 &=& \int^1_{-1} \sqrt{\frac{3}{2}}x e^x dx = \sqrt{6}\frac{1}{e}\\
-  a_3 &=& \int^1_{-1} \frac{1}{4}\sqrt{10}(3x^2 - 1) e^x dx = \frac{\sqrt{10}}{2}\left(e - \frac{7}{e}\right)
-\end{array}
+于是 
 $$
-最终结果是
+\|w - w'\| = \|w - w^* + e^*\| \leq \|w - w^*\| + \|e^*\|.
 $$
-\begin{array}{rcl}
-  \hat{\phi} &=& a_1 u^*_1 + a_2 u^*_2 + a_3 u^*_3 \\
-  &=& \frac{1}{2e}(e^2 - 1) + \frac{3}{e} x + \frac{5}{4e} (e^2 - 7)(3 x^2 - 1)
-\end{array}
-$$
-一般意义下的最佳平方逼近也是容易的.
+当 $\|e^*\| = 0$ 时取到最小，而此时，$w^* = w'$. 这个定理的意义是，正交投影其实是一种分解，$w$ 被分解成一个空间内的元素 $w^*$ 
+和一个已经无法用空间信息表达的误差 $e$，因此这个正交投影对于该空间而言是最佳的。）
+
+\hl{备注 5.15} 作为图 5.1 关于格拉姆-施密特过程几何意义的延续，
+定理 5.30 指出 \(\left\|v_{n+1}\right\|\) 是用其在由 \((u_1^*, \ldots, u_n^*)\) 张成的空间上的投影来逼近 \(u_{n+1}\) 时的最小误差。
+
+\hl{推论 5.31} 设 \((u_1, u_2, \ldots, u_n)\) 是一组基，
+线性逼近任意向量 \(w\) 的基本问题通过最佳逼近 \(\hat{\varphi} = \sum_{k} \langle w, u_k^* \rangle u_k^*\) 来解决，
+其中 \(u_k^{*}\) 是通过格拉姆-施密特过程正交归一化的 \(u_k^*\)。误差范数是
+\[
+  |w - \hat{\varphi}|^2 := \min_{a_k} \left\|w - \sum_{k=1}^n a_k u_k\right\|^2 = \|w\|^2 - \sum_{k=1}^n \left|\langle w, u_k^* \rangle\right|^2.
+\]
+\begin{proof}
+这直接来自 (5.23)。  
+\end{proof}
+
+\hl{推论 5.32}（贝塞尔不等式）如果 \(u_1^*, u_2^*, \ldots, u_N^*\) 是标准正交的，那么对于任意 \(w\),
+\[
+  \sum_{i=1}^N \left|\langle w, u_i^* \rangle\right|^2 \leq \|w\|^2. \tag{5.25}
+\]
+
+\begin{proof}
+这直接来自推论 5.31 和范数的实正性。
+\end{proof}
+
+\hl{推论 5.33} 定义 5.19 中的格拉姆-施密特过程满足
+\[
+  \forall n \in \mathbb{N}^+, \quad \left\|v_{n+1}\right\|^2 = \left\|u_{n+1}\right\|^2 - \sum_{k=1}^n \left|\langle u_{n+1}, u_k^* \rangle\right|^2. \tag{5.26}
+\]
+\begin{proof}
+根据 (5.13a)，每个 \(v_{n+1}\) 可以被视为 \(u_{n+1}\) 相对于标准正交 \((u_1^*, u_2^*, \ldots, u_n^*)\) 的傅里叶展开的误差。
+在推论 5.31 中，将 \(w\) 与 \(u_{n+1}\) 识别完成证明。
+\end{proof}
+
+\hl{备注 5.16} 傅里叶展开在两个方面帮助我们理解格拉姆-施密特过程：
+\begin{itemize}
+  \item 定义 5.19 是傅里叶展开的一种特殊类型；这有助于记忆。
+  \item 作为定义 5.19 和定理 5.20 的补充，推论 5.33 揭示了向量 \(u_k, v_k\) 和 \(u_k^*\) 之间的额外关系。
+\end{itemize}
+
+\hl{例子 5.34} 考虑例子 5.4 中的最小二乘逼近问题，权重函数 \(\rho=1\)。它等价于
+\[
+  \min_{a_i} \int_{-1}^{+1} \left(e^x - \sum_{i=0}^n a_i x^i\right)^2 dx.
+\]
+
+对于 \(n=1,2\)，使用例子 5.25 中导出的勒让德多项式：
+\[
+  u_1^* = \frac{1}{\sqrt{2}}, \, u_2^* = \sqrt{\frac{3}{2}} x, \, u_3^* = \frac{1}{4} \sqrt{10} (3x^2 - 1).
+\]
+
+我们得到 \(e^x\) 的傅里叶系数为
+
+\begin{align*}
+b_1 &= \int_{-1}^{+1} \frac{1}{\sqrt{2}} e^x \, dx = \frac{1}{\sqrt{2}} \left(e - \frac{1}{e}\right), \\
+b_2 &= \int_{-1}^{+1} \sqrt{\frac{3}{2}} x e^x \, dx = \sqrt{6} e^{-1}, \\
+b_3 &= \int_{-1}^{+1} \frac{1}{4} \sqrt{10} (3x^2 - 1) e^x \, dx = \frac{\sqrt{10}}{2} \left(e - \frac{7}{e}\right).
+\end{align*}
+
+因此，最小化多项式为
+
+\[
+\hat{\varphi}_n = \begin{cases}
+\frac{1}{2e}(e^2 - 1) + \frac{3}{e}x & \text{如果 } n = 1; \\
+\hat{\varphi}_1 + \frac{5}{4e}(e^2 - 7)(3x^2 - 1) & \text{如果 } n = 2.
+\end{cases} \tag{5.28}
+\]
+\hl{备注 5.17} 例子 5.34 展示了在解决最小二乘逼近问题时正交归一系统的性能优势：
+低阶最佳逼近的傅里叶系数可以并且应该在构建高阶最佳逼近时重复使用。这类似于牛顿法相对于拉格朗日公式的优势。
+
+
+
+% \subsubsection{傅立叶展开, Fourier expansions}
+
+% \hl{定义 5.20} 傅立叶展开. 令 $(u^*_1, u^*_2, \cdots)$ 是有限或无限的标准正交系,
+% 对任意的向量 $w$, 其傅立叶展开或正交展开为
+% $$
+% \sum_{n = 1}^m <w, u^*_n>u^*_n.
+% $$
+% 这里 $<w, u^*_n>$ 称为傅立叶系数. 而 $w$ 关于 $(u^*_1, u^*_2, \cdots)$ 
+% 的傅立叶展开的误差为:
+% $$
+% \sum_{n = 1}^m <w, u^*_n>u^*_n - w.
+% $$
+% 这里 $<w, u^*_n> u^*_n$ 的几何意义为 $w$ 在 $u^*_n$ 的投影.
+
+% \hl{例 5.21} 傅立叶展开是和内积空间相关的. 我们可以对任意 $w \in \mathbb{R}^3$ 
+% 空间, 关于欧氏内积对标准正交基 $(1, 0, 0)^T$, $(0, 1, 0)^T$ 和 $(0, 0, 1)^T$ 
+% 做傅立叶展开, 得到的系数就是标准坐标. 所以展开误差是 $0$.
+
+% 对于非标准(没有规一化)的正交组 $(u_1, u_2, \cdots)$, 我们可以直接通过归一化
+% $u^*_i = u_i / \|u_i\|$, $i = 1, 2, \cdots$ 后再得到任意向量 $w$ 的傅立叶展开:
+% $$
+% w \sim \sum_i \left<w, \frac{u_i}{\|u_i\|}\right>\frac{u_i}{\|u_i\|}
+% = \sum_i\frac{<w, u_i>}{<u_i, u_i>}u_i.
+% $$
+% 注意 
+% $$
+% <u_i, u_i> = \|u_i\|^2.
+% $$
+% 这里使用 $\sim$ 而不是 $=$, 是因为对于无穷项标准正交系, 求和式不一定收敛. 
+
+% \hl{例题 5.22} 对 $f \in L_{\rho = 1}^2[-\pi, \pi]$ 关于其上的标准正交系
+% $$
+% \frac{1}{\sqrt{2\pi}}, \frac{\sin x}{\sqrt{\pi}}, \frac{\cos x}{\sqrt{\pi}}, 
+% \frac{\sin 2x}{\sqrt{\pi}}, \frac{\cos 2x}{\sqrt{\pi}}, \cdots,
+% \frac{\sin nx}{\sqrt{\pi}, \frac{\cos nx}{\sqrt{\pi}}}, \cdots,
+% $$
+% 做傅立叶展开, 就是我们熟悉的傅立叶级数:
+% $$
+% f(x) \sim \frac{a_0}{2} + \sum_{k = 1}^{\infty}(a_k \cos kx + b_k \sin kx),
+% $$
+% 其中
+% $$
+% a_k = \frac{1}{\pi}\int^\pi_{-\pi} f(x) \cos kx dx, 
+% b_k = \frac{1}{\pi}\int^\pi_{-\pi} f(x) \sin kx dx. 
+% $$
+
+% 如果标准正交系是有限个, 那么傅立叶展开就是在这组正交系下的线性表出.
+
+% \hl{定理 5.23} 令 $(u_1, u_2, \cdots, u_n)$ 线性无关, 而 $u^*_i$ 是 $u_i$ 做 
+% Gram-Schmidt 正交化后的输出. 如果
+% $$
+% w = \sum_{i = 1}^n u_i,
+% $$
+% 那么
+% $$
+% w = \sum_{i = 1}^n <w, u^*_i> u^*_i,
+% $$
+% 也即有限维的傅立叶展开总是收敛且相等的.
+
+% \hl{证明: } 因为 $(u^*_1, u^*_2, \cdots, u^*_n)$ 是一组标准正交基, 故令
+% $$
+% w = \sum_{i = 1}^n c_i u^*_i,
+% $$
+% 于是
+% $$
+% <w, u^*_k> = \sum_{i = 1}^n c_i <u^*_i, u^*_k>,
+% $$
+% 由正交性,
+% $$
+% <u^*_i, u^*_k> = \delta_{ik}, 
+% $$
+% 所以 $<w, u^*_k> = c_k$, 证毕. $\qed$
+
+% 从最佳逼近的角度看, 以上操作就是 $w \in \mbox{span}(u_1, u_2, \cdots, u_n)$
+% 的最佳逼近, 而且误差是零. 当 $w \notin \mbox{span}(u_1, u_2, \cdots, u_n)$
+% 时, 该最佳逼近公式仍然成立. 
+
+% \hl{定理 5.24} 傅立叶展开的最小性质. 令 $(u^*_1, u^*_2, \cdots)$ 是一组标准正交基,
+% 而 $w$ 是任意向量. 则
+% $$
+% \left\|w - \sum_{i = 1}^N <w, u^*_i> u^*_i\right\| 
+% \leq \left\|w - \sum_{i = 1}^N a_i u^*_i\right\|,
+% $$
+% 对任意常数序列 $a_1$, $a_2$, $\cdots$, $a_N$ 成立.
+
+% 这个证明其实很简单, 直接对
+% $$
+% \left\|w - \sum_{i = 1}^N a_i u^*_i\right\|^2
+% $$
+% 做展开后整理成
+% $$
+% \left\|w - \sum_{i = 1}^N a_i u^*_i\right\|^2 
+% = \|w\|^2 - \sum_i|<w, u^*_i>|^2 + \sum_i|a_i - <w, u^*_i>|^2,
+% $$
+% 显然当 
+% $$
+% \sum_i|a_i - <w, u^*_i>|^2 = 0
+% $$
+% 时取极小, 也即 $a_i = <w, u^*_i>$, $i = 1, 2, \cdots, N$.
+
+% \hl{推论 5.25} 令 $(u_1, u_2, \cdots, u_n)$ 是线性无关组, 则任意向量 $w$ 的基本最佳逼近问题的解为
+% $\hat{\phi} = \sum_k <w, u^*_k> u^*_k$, 其中 $u^*_k$ 是 $u_k$ 的 Gram-Schmidt 正交化过程对应的输出. 
+% 而误差的范数为
+% $$
+% \|w - \hat{\phi}\|^2 := \min_{a_k} \|w - \sum_{k = 1}^n a_k u_k\|^2 
+% = \|w\|^2 - \sum_{k = 1}^n|<w, u^*_k>|^2.
+% $$
+
+% 这个就是定理 5.24 结论的重复叙述.
+
+% \hl{推论 5.26} 贝塞尔不等式, Bessel inequality. 如果 $(u^*_1, u^*_2, \cdots, u^*_N)$ 是标准正交系, 
+% 则对任意向量 $w$, 有
+% $$
+% \sum_{i = 1}^N |<w, u^*_i>|^2 \leq \|w\|^2.
+% $$
+% 就看 $w$ 在不在空间内了.
+
+% \hl{推论 5.27} Gram-Schmidt 正交化过程满足
+% $$
+% \|v_{n + 1}\|^2  = \|u_{n + 1}\|^2 - \sum_{k = 1}^n|<u_{n + 1}, u^*_k>|^2.
+% $$
+% 这是将 $v_{n + 1}$ 看作是 $u_{n + 1}$ 关于 $(u^*_1, u^*_2, \cdots, u^*_n)$ 做投影后的误差.
+
+% \hl{例题 5.28} 我们来考虑如何做最佳平方逼近. 比如将 $e^x$, 在 $[-1, 1]$ 上用直到 $2$ 次的多项式逼近. 
+% 或者说, 求
+% $$
+% \min_{a_i} \int^1_{-1}\left(e^x - \sum_{i = 1}^2a_i x^i\right)^2 dx.
+% $$
+% 我们直接给出 $[-1, 1]$ 上 $\rho = 1$ 的正交多项式系, 也就是 Legenfre 多项式, 由例题 5.19,
+% $$
+% u^*_1 = \frac{1}{\sqrt{2}}, u^*_2 = \sqrt{\frac{3}{2}}x, u^*_3 = \frac{1}{4}\sqrt{10}(3x^2 - 1).
+% $$ 
+% (直到 $2$ 次.) 然后对 $e^x$ 求在这些正交系上的表出系数, 或傅立叶展开系数:
+% $$
+% \begin{array}{rcl}
+%   a_1 &=& \int^1_{-1} \frac{1}{\sqrt{2}} e^x dx = \frac{1}{\sqrt{2}}\left(e - \frac{1}{e}\right) \\
+%   a_2 &=& \int^1_{-1} \sqrt{\frac{3}{2}}x e^x dx = \sqrt{6}\frac{1}{e}\\
+%   a_3 &=& \int^1_{-1} \frac{1}{4}\sqrt{10}(3x^2 - 1) e^x dx = \frac{\sqrt{10}}{2}\left(e - \frac{7}{e}\right)
+% \end{array}
+% $$
+% 最终结果是
+% $$
+% \begin{array}{rcl}
+%   \hat{\phi} &=& a_1 u^*_1 + a_2 u^*_2 + a_3 u^*_3 \\
+%   &=& \frac{1}{2e}(e^2 - 1) + \frac{3}{e} x + \frac{5}{4e} (e^2 - 7)(3 x^2 - 1)
+% \end{array}
+% $$
+% 一般意义下的最佳平方逼近也是容易的.
+
+\subsection{正规方程组}
+% 5.3 
+
+\hl{注释 5.18} 对于一个标准正交系, 我们可以很容易地通过计算给定函数 \( w \) 与列表元素的内积来找到最佳线性逼近, 
+如示例 5.34 所示。如果列表不是标准正交的, 而只是线性无关的, 则一种方法是通过正规方程组得到最佳逼近, 这些方程在本小节推导。
+
+\hl{定理 5.35} 设 \( u_{1}, u_{2}, \ldots, u_{n} \in X\) 是线性无关的, 并设 \( u_{i}^{*}\) 是由格拉姆-施密特过程对 \( u_{i}\) 归一化的。
+那么, 对于任何元素 \( w \),
+\[
+  \forall j=1,2, \ldots, n, \quad\left(w-\sum_{k=1}^{n}\langle w, u_{k}^{*}\rangle u_{k}^{*}\right) \perp u_{j}^{*},
+\]
+其中 ``\(\perp\)'' 表示正交。
+
+\begin{proof}
+如果 \( w \in X \), 我们有 \( w-\sum_{k=1}^{n}\langle w, u_{k}^{*}\rangle u_{k}^{*}=0\) , 
+因此（5.29）显然成立。对于另一种情况 \( w \notin X \)，设置 \( w=u_{n+1}\) , 应用（5.16），我们得到（5.29）。
+证毕。
+\end{proof}
+
+\hl{推论 5.36} 设 \( u_{1}, u_{2}, \ldots, u_{n} \in X\) 是线性无关的。如果 \(\hat{\varphi}=\sum_{k=1}^{n} a_{k} u_{k}\) 是到 \( w \) 的最佳线性逼近，则
+\[
+  \forall j=1,2, \ldots, n, \quad(w-\hat{\varphi}) \perp u_{j} .
+\]
+\begin{proof}
+因为 \(\hat{\varphi}=\sum_{k=1}^{n} a_{k} u_{k}\) 是到 \( w \) 的最佳线性逼近, 定理 5.30 意味着
+\[
+  \sum_{k=1}^{n} a_{k} u_{k}=\sum_{k=1}^{n}\langle w, u_{k}^{*}\rangle u_{k}^{*}.
+\]
+推论 5.22 和定理 5.35 完成了证明。
+\end{proof}
+
+\noindent \textbf{定义 5.37} 设 $u_1, u_2, \ldots, u_n$ 是内积空间中的一组元素。定义 $n \times n$ 矩阵
+\begin{align*}
+G &= G(u_1, u_2, \cdots, u_n) = \left( \langle u_i, u_j \rangle \right) \\
+& = \begin{bmatrix}
+\langle u_1, u_1 \rangle & \langle u_1, u_2 \rangle & \cdots & \langle u_1, u_n \rangle \\
+\langle u_2, u_1 \rangle & \langle u_2, u_2 \rangle & \cdots & \langle u_2, u_n \rangle \\
+\vdots & \vdots & \ddots & \vdots \\
+\langle u_n, u_1 \rangle & \langle u_n, u_2 \rangle & \cdots & \langle u_n, u_n \rangle
+\end{bmatrix} \\
+\end{align*}
+是 $u_1, u_2, \ldots, u_n$ 的Gram矩阵。它的行列式
+\[
+g = g(u_1, u_2, \ldots, u_n) = \det \left( \langle u_i, u_j \rangle \right)
+\]
+是Gram行列式。
+
+\noindent \textbf{引理 5.38.} 设 $w_i = \sum_{j=1}^n a_{ij} u_j$, 其中 $i = 1, 2, \ldots, n$. 
+令 $A = (a_{ij})$, 其共轭转置为 $A^H = (\overline{a_{ji}})$. 则有
+\[
+  G(w_1, w_2, \ldots, w_n) = A G(u_1, u_2, \ldots, u_n) A^H
+\]
+并且
+\[
+  g(w_1, w_2, \ldots, w_n) = |\det A|^2 g(u_1, u_2, \ldots, u_n).
+\]
+
+\begin{proof}
+$u_i$ 与 $w_j$ 的内积构成
+\begin{align*}
+\begin{bmatrix}
+\langle u_1, w_1 \rangle & \langle u_1, w_2 \rangle & \cdots & \langle u_1, w_n \rangle \\
+\langle u_2, w_1 \rangle & \langle u_2, w_2 \rangle & \cdots & \langle u_2, w_n \rangle \\
+\vdots & \vdots & \ddots & \vdots \\
+\langle u_n, w_1 \rangle & \langle u_n, w_2 \rangle & \cdots & \langle u_n, w_n \rangle
+\end{bmatrix}
+= &\begin{bmatrix}
+\langle u_1, u_1 \rangle & \langle u_1, u_2 \rangle & \cdots & \langle u_1, u_n \rangle \\
+\langle u_2, u_1 \rangle & \langle u_2, u_2 \rangle & \cdots & \langle u_2, u_n \rangle \\
+\vdots & \vdots & \ddots & \vdots \\
+\langle u_n, u_1 \rangle & \langle u_n, u_2 \rangle & \cdots & \langle u_n, u_n \rangle
+\end{bmatrix} 
+\begin{bmatrix}
+a_{11} & \cdots & a_{1n} \\
+a_{12} & \cdots & a_{2n} \\
+\vdots & \ddots & \vdots \\
+a_{1n} & \cdots & a_{nn}
+\end{bmatrix} \\
+=& G(u_1, u_2, \ldots, u_n) A^H。
+\end{align*}
+
+因此，(5.33) 成立，因为
+\begin{align*}
+G(w_1, w_2, \ldots, w_n) &= \begin{bmatrix}
+\langle w_1, w_1 \rangle & \langle w_1, w_2 \rangle & \cdots & \langle w_1, w_n \rangle \\
+\langle w_2, w_1 \rangle & \langle w_2, w_2 \rangle & \cdots & \langle w_2, w_n \rangle \\
+\vdots & \vdots & \ddots & \vdots \\
+\langle w_n, w_1 \rangle & \langle w_n, w_2 \rangle & \cdots & \langle w_n, w_n \rangle
+\end{bmatrix} \\
+&= \begin{bmatrix}
+a_{11} & \cdots & a_{1n} \\
+a_{21} & \cdots & a_{2n} \\
+\vdots & \ddots & \vdots \\
+a_{n1} & \cdots & a_{nn}
+\end{bmatrix} 
+\begin{bmatrix}
+\langle u_1, u_1 \rangle & \langle u_1, u_2 \rangle & \cdots & \langle u_1, u_n \rangle \\
+\langle u_2, u_1 \rangle & \langle u_2, u_2 \rangle & \cdots & \langle u_2, u_n \rangle \\
+\vdots & \vdots & \ddots & \vdots \\
+\langle u_n, u_1 \rangle & \langle u_n, u_2 \rangle & \cdots & \langle u_n, u_n \rangle
+\end{bmatrix} 
+\begin{bmatrix}
+\overline{a_{11}} & \cdots & \overline{a_{n1}} \\
+\overline{a_{12}} & \cdots & \overline{a_{n2}} \\
+\vdots & \ddots & \vdots \\
+\overline{a_{1n}} & \cdots & \overline{a_{nn}}
+\end{bmatrix} \\
+&= A G(u_1, u_2, \ldots, u_n) A^H。
+\end{align*}
+
+已知复共轭的性质为
+\[
+\overline{z + w} = \overline{z} + \overline{w}, \quad \overline{z w} = \overline{z} \, \overline{w}。
+\]
+因此，$\det A = \det A^T$ 和Leibniz行列式公式（定义 B.247）给出
+\[
+\det A = \det A^T = \sum_{\sigma \in S_n} \text{sgn}(\sigma) \prod_{i=1}^n a_{i, \sigma_i} = \det A^H。
+\]
+最后，由 (5.33) 的行列式和 $\det(AB) = \det A \det B$ 得出 (5.34)。
+\end{proof}
+
+\noindent \textbf{备注 5.19.} 引理 5.38 在证明以下定理中起到了关键作用。
+
+\noindent \textbf{定理 5.39.} 对于非零元素 $u_1, u_2, \ldots, u_n \in X$, 我们有
+\[
+  0 \leq g(u_1, u_2, \ldots, u_n) \leq \prod_{k=1}^n \|u_k\|^2,
+\]
+其中，当且仅当 $u_1, u_2, \ldots, u_n$ 线性相关时取左等号，只有当它们正交时取右等号。
+
+\begin{proof}
+假设 $u_1, u_2, \ldots, u_n$ 线性相关。那么可以找到常数 $c_1, c_2, \ldots, c_n$ 满足 $\sum_{i=1}^n c_i u_i = 0$, 且至少有一个 $c_j$ 非零。构造向量
+\[
+  w_k = \begin{cases}
+    \sum_{i=1}^n c_i u_i = 0, & k = j; \\
+    u_k, & k \neq j。
+  \end{cases}
+\]
+因为 $\langle w_j, w_k \rangle = 0$ 对每个 $k$ 都成立，所以 $g(w_1, w_2, \ldots, w_n) = 0$. 根据Laplace定理（定理 B.253），
+我们可以通过 $C = (c_{ij})$ 的 $j$ 行的代数余子式展开行列式：
+\[
+  \det(C) = \det \begin{bmatrix}
+    1 & 0 & \cdots & 0 & \cdots & 0 \\
+    0 & 1 & 0 & \cdots & 0 \\
+    \vdots & \vdots & \ddots & \vdots & \vdots & \vdots \\
+    c_1 & c_2 & \cdots & c_j & \cdots & c_n \\
+    \vdots & \vdots & \ddots & \vdots & \vdots & \vdots \\
+    0 & 0 & \cdots & 0 & 1
+  \end{bmatrix}
+= 0 + \cdots + 0 + c_j + 0 + \cdots + 0 = c_j \neq 0,
+\]
+其中，$i \neq j$ 的每个余子式矩阵 $M_i$ 的行列式都为零，因为 $M_i$ 的 $i_0$ 行是由零组成的一行，
+其中 $i_0 = i$ 当 $i < j$ 时，$i_0 = i - 1$ 当 $i > j$ 时。因此，$g(u_1, u_2, \ldots, u_n) = 0$.
+
+假设 $u_1, u_2, \ldots, u_n$ 线性无关。根据定理 5.20，我们可以找到常数 $a_{ij}$ 使得 $a_{kk} > 0$ 且如下向量是正交的：
+\[
+  u_k^* = \sum_{i=1}^k a_{ki} u_i.
+\]
+那么根据定义 5.37，$g(u_1^*, u_2^*, \ldots, u_n^*) = 1$. 
+此外，由于矩阵 $(a_{ij})$ 是上三角矩阵，我们有 $\det (a_{ij}) = \prod_{k=1}^n a_{kk}$. 由引理 5.38 可得
+\[
+  g(u_1, u_2, \ldots, u_n) = \prod_{k=1}^n \frac{1}{a_{kk}^2} > 0.
+\]
+
+由于向量列表 $(u_1, u_2, \ldots, u_n)$ 或线性相关或线性无关，前述论证表明 $g(u_1, u_2, \ldots, u_n) = 0$ 当且仅当 $u_1, u_2, \ldots, u_n$ 线性相关。
+
+假设 $u_1, u_2, \ldots, u_n$ 是正交的。根据定义 5.37，$G(u_1, u_2, \ldots, u_n)$ 是一个对角矩阵，且对角线上的元素为 $\|u_k\|^2$. 
+因此，$u_k$ 的正交性意味着
+\[
+  g(u_1, u_2, \ldots, u_n) = \prod_{k=1}^n \|u_k\|^2.
+\]
+\end{proof}
 
 \subsection{正规方程组, the normal equations}
 如果我们已经有一个标准正交系或者正交系, 那么最佳平方逼近只需要做内积就行了. 但是如果我们只有一组无关向量组, 
