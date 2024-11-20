@@ -7757,93 +7757,93 @@ a_{n1} & \cdots & a_{nn}
 \]
 \end{proof}
 
-\subsection{正规方程组, the normal equations}
-如果我们已经有一个标准正交系或者正交系, 那么最佳平方逼近只需要做内积就行了. 但是如果我们只有一组无关向量组, 
-那么一般先做 Gram-Schmidt 正交化是一个昂贵的过程, 在具体问题的时候, 并不建议这么操作, 而是采用正规方程组.
+% \subsection{正规方程组, the normal equations}
+% 如果我们已经有一个标准正交系或者正交系, 那么最佳平方逼近只需要做内积就行了. 但是如果我们只有一组无关向量组, 
+% 那么一般先做 Gram-Schmidt 正交化是一个昂贵的过程, 在具体问题的时候, 并不建议这么操作, 而是采用正规方程组.
 
-\hl{定理 5.29} 令 $u_1, u_2, \cdots, u_n \in X$ 线性无关, 而 $u^*_i$ 是 $u_i$ 对应的 Gram-Schmidt 
-正交化结果. 则对任意 $w$, 有
-$$
-\left(w - \sum_{k = 1}^n<w, u^*_k> u^*_k\right) \perp u^*_j , j = 1, 2, \cdots, n.
-$$
-这里 $\perp$ 是正交的意思, 所以这个定理只是推论 5.17 的另一种表述.
+% \hl{定理 5.29} 令 $u_1, u_2, \cdots, u_n \in X$ 线性无关, 而 $u^*_i$ 是 $u_i$ 对应的 Gram-Schmidt 
+% 正交化结果. 则对任意 $w$, 有
+% $$
+% \left(w - \sum_{k = 1}^n<w, u^*_k> u^*_k\right) \perp u^*_j , j = 1, 2, \cdots, n.
+% $$
+% 这里 $\perp$ 是正交的意思, 所以这个定理只是推论 5.17 的另一种表述.
 
-\hl{推论 5.30} 令 $u_1, u_2, \cdots, u_n \in X$ 线性无关, 如果 
-$$
-\hat{\phi} = \sum_{k = 1}^n a_k u_k
-$$
-是 $w$ 的最佳平方逼近, 则
-$$
-(w - \hat{\phi}) \perp u_j, j = 1, 2, \cdots, n.
-$$
-这一步也是显然的. 
+% \hl{推论 5.30} 令 $u_1, u_2, \cdots, u_n \in X$ 线性无关, 如果 
+% $$
+% \hat{\phi} = \sum_{k = 1}^n a_k u_k
+% $$
+% 是 $w$ 的最佳平方逼近, 则
+% $$
+% (w - \hat{\phi}) \perp u_j, j = 1, 2, \cdots, n.
+% $$
+% 这一步也是显然的. 
 
-现在我们可以准备处理一般基了. 
+% 现在我们可以准备处理一般基了. 
 
-\hl{定义 5.31} 令 $u_1, u_2, \cdots, u_n$ 是向量空间中的一列向量组, 那么 $n \times n$ 矩阵
-$$
-\begin{array}{rcl}
-  G &=& G(u_1, u_2, \cdots, u_n) = (<u_i, u_j>)\\
-  &=& \begin{array}{cccc}
-    <u_1, u_1> & <u_1, u_2> & \cdots & <u_1, u_n> \\
-    <u_2, u_1> & <u_2, u_2> & \cdots & <u_2, u_n> \\
-    \vdots & \vdots & \ddots & \vdots\\
-    <u_n, u_1> & <u_n, u_2> & \cdots & <u_n, u_n>
-  \end{array}  
-\end{array}
-$$
-称为向量组 $u_1, u_2, \cdots, u_n$ 的 Gram 矩阵, 它的行列式
-$$
-g = g(u_1, u_2, \cdots, u_n) = det(G)
-$$ 
-称为 Gram 行列式.
+% \hl{定义 5.31} 令 $u_1, u_2, \cdots, u_n$ 是向量空间中的一列向量组, 那么 $n \times n$ 矩阵
+% $$
+% \begin{array}{rcl}
+%   G &=& G(u_1, u_2, \cdots, u_n) = (<u_i, u_j>)\\
+%   &=& \begin{array}{cccc}
+%     <u_1, u_1> & <u_1, u_2> & \cdots & <u_1, u_n> \\
+%     <u_2, u_1> & <u_2, u_2> & \cdots & <u_2, u_n> \\
+%     \vdots & \vdots & \ddots & \vdots\\
+%     <u_n, u_1> & <u_n, u_2> & \cdots & <u_n, u_n>
+%   \end{array}  
+% \end{array}
+% $$
+% 称为向量组 $u_1, u_2, \cdots, u_n$ 的 Gram 矩阵, 它的行列式
+% $$
+% g = g(u_1, u_2, \cdots, u_n) = det(G)
+% $$ 
+% 称为 Gram 行列式.
 
-\hl{引理 5.32} 令
-$$
-w_i = \sum_{j = 1}^n a_{ij} u_j , j = 1, 2, \cdots, n.
-$$
-($w_i$, $i = 1, 2, \cdots, n$ 是 $\mbox{span}(u_1, u_2, \cdots, u_n)$ 空间的 $n$ 个向量.)
-记复矩阵 $A = (a_{ij})$ 的共轭转置为 $A^H = (\bar{a_{ji}})$, 则
-$$
-G(w_1, w_2, \cdots, w_n) = A G(u_1, u_2, \cdots, u_n) A^H,
-$$
-并且
-$$
-g(w_1, w_2, \cdots, w_n) = |det(A)|^2g(u_1, u_2, \cdots, u_n).
-$$
-这里 $|det(A)|$ 是 $A$ 的行列式 (是复数) 的模的平方. 该定理给出了向量在一般基表示和标准正交基表示下的关系.
+% \hl{引理 5.32} 令
+% $$
+% w_i = \sum_{j = 1}^n a_{ij} u_j , j = 1, 2, \cdots, n.
+% $$
+% ($w_i$, $i = 1, 2, \cdots, n$ 是 $\mbox{span}(u_1, u_2, \cdots, u_n)$ 空间的 $n$ 个向量.)
+% 记复矩阵 $A = (a_{ij})$ 的共轭转置为 $A^H = (\bar{a_{ji}})$, 则
+% $$
+% G(w_1, w_2, \cdots, w_n) = A G(u_1, u_2, \cdots, u_n) A^H,
+% $$
+% 并且
+% $$
+% g(w_1, w_2, \cdots, w_n) = |det(A)|^2g(u_1, u_2, \cdots, u_n).
+% $$
+% 这里 $|det(A)|$ 是 $A$ 的行列式 (是复数) 的模的平方. 该定理给出了向量在一般基表示和标准正交基表示下的关系.
 
-\hl{证明} 考虑
-$$
-<u_i, w_j> = <u_i, \sum_{k = 1}^n a_{jk} u_k> = \sum_{k = 1}^n \bar{a_{jk}} <u_i, u_k>,
-$$
-(这里要考虑复数的内积性质) 有
-$$
-(<u_i, w_j>) = (<u_i, u_j>) A^H = G(u_1, u_2, \cdots, u_n) A^H.
-$$
-然后 
-$$
-<w_i, w_j> = <\sum_{k = 1}^n a_{ik} u_k, w_j> = \sum_{k = 1}^n a_{ik} <u_k, w_j>,
-$$
-即
-$$
-(w_i, w_j) = A (u_i, w_j).
-$$
-两式联合即有
-$$
-(w_i, w_j) = A (u_i, u_j) A^H.
-$$
-直接对该式两边做行列式, 即得 (5.29).
+% \hl{证明} 考虑
+% $$
+% <u_i, w_j> = <u_i, \sum_{k = 1}^n a_{jk} u_k> = \sum_{k = 1}^n \bar{a_{jk}} <u_i, u_k>,
+% $$
+% (这里要考虑复数的内积性质) 有
+% $$
+% (<u_i, w_j>) = (<u_i, u_j>) A^H = G(u_1, u_2, \cdots, u_n) A^H.
+% $$
+% 然后 
+% $$
+% <w_i, w_j> = <\sum_{k = 1}^n a_{ik} u_k, w_j> = \sum_{k = 1}^n a_{ik} <u_k, w_j>,
+% $$
+% 即
+% $$
+% (w_i, w_j) = A (u_i, w_j).
+% $$
+% 两式联合即有
+% $$
+% (w_i, w_j) = A (u_i, u_j) A^H.
+% $$
+% 直接对该式两边做行列式, 即得 (5.29).
 
-引理 5.32 就是为了证明下面的定理:
+% 引理 5.32 就是为了证明下面的定理:
 
-\hl{定理 5.33.} 对于非零元素 $u_1, u_2, ..., u_n \in X$, 
-我们有
-\[
-0 \leq g(u_1 , u_2 , . . . , u_n ) \leq \prod_{k}^n ||u_k||^2,
-\] 
-其中, 当且仅当 $u_1, u_2, ..., u_n$ 线性相关且正交时, 左式等式成立, 
-而当且仅当它们两两正交时, 右式等式成立.
+% \hl{定理 5.33.} 对于非零元素 $u_1, u_2, ..., u_n \in X$, 
+% 我们有
+% \[
+% 0 \leq g(u_1 , u_2 , . . . , u_n ) \leq \prod_{k}^n ||u_k||^2,
+% \] 
+% 其中, 当且仅当 $u_1, u_2, ..., u_n$ 线性相关且正交时, 左式等式成立, 
+% 而当且仅当它们两两正交时, 右式等式成立.
 
 % 验证, 
 % $$
@@ -7871,6 +7871,391 @@ $$
 % 也无法计算. 我们只要确保误差函数最后是这样一个多项式就行了, 而要确定这样一个多项式, 我们只需确定 $[a, b]$
 % 区间上的 $n + 1$ 个 Chebyshev 多项式的零点就可以了. 再由 Chebyshev 多项式性质, 要找到这样一个多项式, 
 % 我们只需要在
+
+
+\subsection{离散最小二乘法 (DLS)}
+% 5.4 
+
+\noindent \textbf{备注 5.24.} 尽管连续版本的最小二乘逼近是我们讨论的第一个主题，但离散最小二乘问题可能是最小二乘逼近理论背后的推动力。
+
+\noindent \textbf{例子 5.43（使用离散最小二乘法处理牛顿第二定律的实验数据）.} 
+一个质量为 $M$ 的小车被一根通过滑轮连接到质量为 $m_j$ 的重物的缆绳沿着水平轨道拉动。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.75\textwidth]{images/cart_pulley_system.png}
+  \caption{系统示意图：质量为 $M$ 的小车通过滑轮被质量为 $m_j$ 的重物拉动。}
+\end{figure}
+  
+忽略轨道和滑轮系统的摩擦，假设牛顿第二定律成立，我们有
+\[ 
+  m_j g = (m_j + M) a_j = (m_j + M) \frac{d^2x}{dt^2}. 
+\]
+  
+以下实验验证牛顿第二定律。
+\begin{itemize}
+  \item[(i)] 对于固定的 $M$ 和 $m_j$，我们通过高速摄像机记录小车的位置，测量多个数据点 $(t_i, x_i)$.
+  \item[(ii)] 通过最小化总长度平方，拟合二次多项式 $p(t) = c_0 + c_1 t + c_2 t^2$,
+  \[ 
+    \min \sum_i (x_i - p(t_i))^2. 
+  \]
+  \item[(iii)] 取 $a_j = 2c_2$ 作为力 $F_j = m_j(g - a_j)$ 的实验加速度结果。
+  \item[(iv)] 改变重量 $m_j$ 并重复步骤 (i)-(iii) 多次，得到数据点 $(a_j, F_j)$.
+  \item[(v)] 通过最小化总长度平方，拟合线性多项式 $f(x) = c_0 + c_1 x$, 
+  \[ 
+    \min \sum_j (F_j - f(a_j))^2, 
+  \]
+  其中步骤 (ii) 和 (v) 中的表达式证明了 ``最小二乘'' 这个名字的合理性。
+\end{itemize}  
+  
+通过展示数据拟合结果 $c_1$ 非常接近 $M$ 来验证牛顿第二定律。这个验证过程既没有推导也没有证明牛顿第二定律。
+但我们声称我们没有发现牛顿第二定律的任何自相矛盾之处，也没有发现实验结果与牛顿第二定律之间的任何差异。
+
+\noindent \textbf{备注 5.25.} 实验结果总是包含不确定性。作为例子 5.43 的主要观点，
+最小二乘法是解决现实世界不确定性的有效工具，并且能够从嘈杂的实验数据中获得精确的方程。
+
+\subsubsection{高斯函数和狄拉克 $\delta$ 函数}
+% 5.4.1 
+
+\noindent \textbf{定义 5.44.} 高斯函数，或称高斯分布，是以下形式的函数
+\[ 
+  f(x) = a \exp\left(-\frac{(x-b)^2}{2c^2}\right), \tag{5.42}
+\]
+其中 $a \in \mathbb{R}^+$ 是曲线峰值的高度，$b \in \mathbb{R}$ 是峰值中心的位置，$c \in \mathbb{R}^+$ 
+是标准差或高斯均方根（RMS，root mean square）宽度。
+
+\noindent \textbf{备注 } 如果一维随机变量 $X$ 的密度函数为：
+\[ 
+  f(x) = \frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(x-\mu)^2}{2\sigma^2}} 
+\]
+
+其中 $\mu$ 和 $\sigma$ 为常数且 $\sigma > 0$, 则称服从参数为 $\mu, \sigma^2$ 的正态分布，
+记作 $X \sim N(\mu, \sigma^2)^{[1]}$, 读作 $X$ 服从 $N(\mu, \sigma^2)$. $\mu$ 为总体均数，$\sigma$ 为总体标准差。
+这里 $N$ 为 ``Normal distribution(正态分布)'' 一词的首字母。
+
+特别地，当 $\mu = 0, \sigma = 1$ 时，正态分布 $N(0,1)$ 称为标准正态分布，其密度函数为：
+\[ 
+  \varphi(x) = \frac{1}{\sqrt{2\pi}} e^{-\frac{x^2}{2}}, \quad x \in (-\infty, +\infty) 
+\]
+
+标准正态分布之所以重要，一个原因在于：任意的正态分布 $N(\mu, \sigma^2)$ 的计算很容易转化为标准正态分布 $N(0,1)$. 
+容易证明：若 $X \sim N(\mu, \sigma^2)$, 则 $Y = \frac{X-\mu}{\sigma} \sim N(0,1)$.
+
+\begin{figure}[h]
+  % 5.2
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/gaussian_function.png}
+  \caption{高斯函数具有特征性的对称钟形曲线；其标准差控制钟形的宽度}
+\end{figure}
+  
+\noindent \textbf{引理 5.45.} 高斯函数的积分是
+\[ 
+  \int_{-\infty}^{+\infty} a e^{-\frac{(x-b)^2}{2 c^2}} \, dx = a c \sqrt{2\pi}. \tag{5.43} 
+\]
+
+\begin{proof}
+通过结合两个一维高斯函数和极坐标变换的技巧，我们有
+\begin{align*}
+  \int_{-\infty}^{+\infty} e^{-x^2} \, dx &= \sqrt{\left(\int_{-\infty}^{+\infty} e^{-x^2} \, dx\right)\left(\int_{-\infty}^{+\infty} e^{-y^2} \, dy\right)} \\
+  &= \sqrt{\int_{-\infty}^{+\infty}\int_{-\infty}^{+\infty} e^{-(x^2+y^2)} \, dx \, dy} \\
+  &= \sqrt{\int_0^{2\pi}\int_0^{+\infty} e^{-r^2} r \, dr \, d\theta} \\
+  &= \sqrt{2\pi \cdot \left(-\frac{1}{2} e^{-r^2}\right)\bigg|_0^{+\infty}} = \sqrt{\pi},
+\end{align*}
+因此
+\[ 
+  \int_{-\infty}^{+\infty} a e^{-\frac{(x-b)^2}{2 c^2}} \, dx = \sqrt{2} a c \int_{-\infty}^{+\infty} e^{-y^2} \, dy = a c \sqrt{2\pi}, 
+\]
+其中它遵循变换 $x = b + \sqrt{2} c y$。
+\end{proof}
+
+所以作为分布，必须有 $a = \frac{1}{\sqrt{2 \pi}c}$.
+
+\noindent \textbf{定义 5.46 } 正态分布或高斯分布是一种连续概率分布，其形式为
+\[ 
+  f_{\mu,\sigma} = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right), \tag{5.44} 
+\]
+其中 $\mu$ 是均值或期望，$\sigma$ 是标准差。
+
+\noindent \textbf{备注 5.26 } 在概率论和统计学中，概率分布是一个函数，它给出了实验中不同可能结果发生的概率。
+该函数在其定义域上的积分必须等于 $1$；这由高斯分布满足，参见(5.43)和(5.44)。
+
+\noindent \textbf{定义 5.47 } 以 $\bar{x}$ 为中心的狄拉克 $\delta$ 函数 $\delta(x-\bar{x})$ 是
+\[ 
+  \delta(x-\bar{x}) = \lim_{\epsilon \to 0} \phi_{\epsilon}(x-\bar{x}) \tag{5.45}
+\]
+其中 $\phi_{\epsilon}(x-\bar{x}) = f_{\bar{x},\epsilon}$ 是一个正态分布，其均值位于 $\bar{x}$, 
+标准差为 $\epsilon$.
+
+\noindent \textbf{引理 5.48.} 狄拉克 $\delta$ 函数满足
+\[ 
+  \delta(x-\bar{x}) = \begin{cases} +\infty, & x=\bar{x}, \\ 0, & x\neq\bar{x}; \end{cases} \tag{5.46a} 
+\]
+\[ 
+  \int_{-\infty}^{+\infty} \delta(x-\bar{x}) dx = 1. \tag{5.46b}
+\]
+
+\begin{proof}
+  这些直接来自于定义 5.46 和 5.47 以及引理 5.45。
+\end{proof}
+
+\noindent \textbf{备注 5.27.} 因为 (5.46) 中的恒等式是其关键的定义属性，狄拉克 $\delta$ 函数更多地由引理 5.48 而不是定义 5.47 来定义。
+我们同样可以将狄拉克 $\delta$ 函数定义为极限
+\[ 
+  \delta(x-\bar{x}) = \lim_{\epsilon \to 0} \phi_{\epsilon}(x-\bar{x}) \text{ 其中 } \phi_{\epsilon} \text{ 是一个帽函数，} 
+\]
+\[ 
+  \phi_{\epsilon}(x) = \begin{cases} \frac{1}{\epsilon^2}(x+\epsilon), & x \in [-\epsilon,0], \\ -\frac{1}{\epsilon^2}(x-\epsilon), & x \in [0,\epsilon], \\ 0, & \text{其他情况.} \end{cases} 
+\]
+这个观察与狄拉克 $\delta$ 函数模拟位于 $\bar{x}$ 的具有有限质量的点源的动机相一致。例如，这个函数是模拟在比墨滴大得多的水库中的一滴墨水的一个很好的模型。
+
+\noindent \textbf{引理 5.49 ($\delta$ 的筛选性质).} 如果 $f: \mathbb{R} \to \mathbb{R}$ 是连续的，那么
+\[ 
+  \int_{-\infty}^{+\infty} \delta(x-\bar{x}) f(x) dx = f(\bar{x}). \tag{5.47} 
+\]
+
+\begin{proof}
+由于 $I_{\epsilon} := [\bar{x}-\epsilon, \bar{x}+\epsilon]$ 是一个紧区间，并且 $f(x)$ 在 $I_{\epsilon}$ 上连续，
+$f(x)$ 在 $I_{\epsilon}$ 上有界，假设 $f(x) \in [m, M]$. 
+$\phi_{\epsilon}$ 的非负性和积分中值定理 C.121 意味着
+\[ 
+(*): \quad \int_{-\infty}^{+\infty} \delta(x-\bar{x}) f(x) dx = \int_{\bar{x}-\epsilon}^{\bar{x}+\epsilon} \delta(x-\bar{x}) f(x) dx 
+\]
+在区间内是有界的
+\[ 
+  \left[ m \int_{\bar{x}-\epsilon}^{\bar{x}+\epsilon} \delta(x-\bar{x}) dx, M \int_{\bar{x}-\epsilon}^{\bar{x}+\epsilon} \delta(x-\bar{x}) dx \right]. 
+\]
+  
+由此可知
+\[ 
+  \lim_{\epsilon \to 0} \int_{\bar{x}-\epsilon}^{\bar{x}+\epsilon} \delta(x-\bar{x}) f(x) dx 
+  = f(\bar{x}) \lim_{\epsilon \to 0} \int_{\bar{x}-\epsilon}^{\bar{x}+\epsilon} \delta(x-\bar{x}) dx = f(\bar{x}). 
+\]
+  
+对 (*) 应用 $\lim_{\epsilon \to 0}$ 我们得到 (5.47)。
+\end{proof}
+
+\noindent \textbf{定义 5.50.} Heaviside函数或阶跃函数是
+\[ 
+  H(x) := \begin{cases} 0 & \text{如果 } x < 0 \\ 1 & \text{如果 } x \geq 0 \end{cases} 
+\]
+
+\noindent \textbf{备注 5.28.} Heaviside 函数是指数为 $0$ 的截断幂函数，即，$H(x) = x_{+}^{0}$.
+
+\noindent \textbf{引理 5.51.} 狄拉克 $\delta$ 函数和 Heaviside 函数的关系是
+\[ 
+  \int_{-\infty}^{x} \delta(t) dt = H(x). \tag{5.49}
+\]
+\begin{proof}
+这来自于定义 5.47 和 5.50 以及引理 5.48。
+\end{proof}
+
+\subsubsection{重用形式主义}
+% 5.4.2 
+
+\noindent \textbf{定义 5.52.} 定义一个函数 $\lambda: \mathbb{R} \rightarrow \mathbb{R}$
+\[ \lambda(t) = \begin{cases} 
+    0 & \text{如果 } t \in (-\infty, a), \\
+    \int_a^t \rho(\tau) d\tau & \text{如果 } t \in [a, b], \\
+    \int_a^b \rho(\tau) d\tau & \text{如果 } t \in (b, +\infty).
+  \end{cases} 
+\]
+然后一个相应的连续测度 $d\lambda$ 可以定义为
+\[ 
+  d\lambda = \begin{cases} 
+    \rho(t) dt & \text{如果 } t \in [a, b], \\
+    0 & \text{其他情况,}
+  \end{cases} \tag{5.51} 
+\]
+其中连续测度 $d\lambda$ 的支撑是区间 $[a, b]$.
+
+\noindent \textbf{备注 5.29 } 测度可以被看作是一个特殊的函数，它接受一个集合并返回一个数字。例如，
+一个积分可以被看作是接受一个区间（这是一个集合）并返回一个数字。
+
+\noindent \textbf{定义 5.53 } 与点集 $\{t_1, t_2, \ldots, t_N\}$ 相关的离散测度或狄拉克测度是一个只在点 $t_i$ 处非零且在这些点处取值 $\rho_i$ 的测度 
+$d\lambda$. 离散测度的支撑是集合 $\{t_1, t_2, \ldots, t_N\}$.
+
+\noindent \textbf{引理 5.54 } 对于一个函数 $u: \mathbb{R} \rightarrow \mathbb{R}$, 定义
+\[ 
+  \lambda(t) = \sum_{i=1}^N \rho_i H(t - t_i), \tag{5.52}
+\]
+我们有
+\[ 
+  \int_{\mathbb{R}} u(t) d\lambda = \sum_{i=1}^N \rho_i u(t_i). \tag{5.53}
+\]
+
+\begin{proof}
+根据 (5.52) 和引理 5.49 与 5.51，我们有
+\[ 
+  \int_{\mathbb{R}} u(t) d\lambda = \int_{\mathbb{R}} \sum_{i=1}^N \rho_i \delta(t - t_i) u(t) dt = \sum_{i=1}^N \rho_i u(t_i). 
+\]    
+\end{proof}
+
+\noindent \textbf{备注 5.30 } 根据定义 5.52 和引理 5.54，我们可以通过重用例子 5.34 和 5.41 中的程序来解决离散最小二乘问题，
+但是内积的定义应该改为
+\[ 
+  \langle u(t), v(t) \rangle = \sum_{i=1}^N \rho(t_i) u(t_i) v(t_i), 
+\]
+这直接来自于 (5.53)。
+
+\subsubsection{通过正规方程的 DLS}
+% 5.4.3 
+
+\textbf{例子 5.55 } 考虑图 5.3 中的销售记录。
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x$ & 1 & 2 & 3 & 4 \\ \hline
+$y$ & 256 & 201 & 159 & 61 \\ \hline
+$x$ & 5 & 6 & 7 & 8 \\ \hline
+$y$ & 77 & 40 & 17 & 25 \\ \hline
+$x$ & 9 & 10 & 11 & 12 \\ \hline
+$y$ & 103 & 156 & 222 & 345 \\ \hline
+\end{tabular}
+\caption{销售记录作为DLS的一个例子。}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/sales_record_plot.png}
+  \caption{销售记录作为DLS的一个例子。}
+\end{figure}
+
+从离散数据的图中可以看出，二次多项式可能是一个很好的拟合。因此，我们构建最小二乘问题，即寻找二次多项式的系数，以最小化
+\[ 
+  \sum_{i=1}^{12} \left(y_i - \sum_{j=0}^2 a_j x_i^j\right)^2. 
+\]
+
+重用例子 5.41 中的程序，我们有
+\[ 
+G(1, x, x^2) 
+  = \begin{bmatrix} 
+      \langle 1,1 \rangle & \langle 1,x \rangle & \langle 1,x^2 \rangle \\ 
+      \langle x,1 \rangle & \langle x,x \rangle & \langle x,x^2 \rangle \\ 
+      \langle x^2,1 \rangle & \langle x^2,x \rangle & \langle x^2,x^2 \rangle 
+    \end{bmatrix} = \begin{bmatrix} 12 & 78 & 650 \\ 78 & 650 & 6084 \\ 650 & 6084 & 60710 \end{bmatrix}, 
+\]
+\[ 
+  c 
+    = \begin{bmatrix} 
+        \langle y, 1 \rangle \\ 
+        \langle y, x \rangle \\ 
+        \langle y, x^2 \rangle 
+      \end{bmatrix} 
+    = \begin{bmatrix} 
+        \sum_{i=1}^{12} y_i \\ 
+        \sum_{i=1}^{12} y_i x_i \\ 
+        \sum_{i=1}^{12} y_i x_i^2 
+      \end{bmatrix} 
+    = \begin{bmatrix} 1662 \\ 11392 \\ 109750 \end{bmatrix}. 
+\]
+然后正规方程得到
+\[ 
+  a = G^{-1}c = \begin{bmatrix} 386.00 \\ -113.43 \\ 9.04 \end{bmatrix}. 
+\]
+
+相应的多项式在上述图中显示。
+
+\subsubsection{通过 QR 分解的 DLS}
+% 5.4.4 
+
+\noindent \textbf{定义 5.56 } 矩阵 $A \in \mathbb{R}^{n \times n}$ 是正交的，当且仅当
+\[ 
+  A^T A = I. 
+\]
+
+\noindent \textbf{定义 5.57 } 如果对于所有的 $i, j$, 当 $i > j$ 时，$a_{i, j} = 0$, 则矩阵 $A$ 是上三角的。
+
+类似地，如果对于所有的 $i, j$, 当 $i < j$ 时，$a_{i, j} = 0$, 则矩阵 $A$ 是下三角的。
+
+\noindent \textbf{定理 5.58 (QR分解) } 对于任何 $A \in \mathbb{R}^{m \times n}$, 
+存在一个正交矩阵 $Q \in \mathbb{R}^{m \times m}$ 和一个上三角矩阵 $R \in \mathbb{R}^{m \times n}$ 使得 $A = QR$.
+
+\begin{proof}
+重写 $A = [\xi_1, \xi_2, \cdots, \xi_n] \in \mathbb{R}^{m \times n}$ 并用 $r$ 表示 $A$ 的列秩。
+通过以下步骤构造一个秩为 $r$ 的矩阵
+\[ 
+  A_r = [u_1, u_2, \ldots, u_r]. 
+\]
+\begin{itemize}
+  \item[(S-1)] 设 $u_1 = \xi_{k_1}$，其中 $k_1$ 满足 $\xi_{k_1} \neq 0$ 且对于所有 $\ell < k_1$，有 $\xi_\ell = 0$.
+  \item[(S-2)] 对于每个 $j = 2, \ldots, r$, 设 $u_j = \xi_{k_j}$, 其中 $k_j$ 满足条件 $K_j = (\xi_{k_1}, \ldots, \xi_{k_j})$ 
+  是一组线性无关的列向量，并且对于所有 $\ell \in R_j := \{k_j - 1 + 1, \ldots, k_j - 1\}$, $\xi_\ell$ 可以表示为 $K_{j - 1}$ 中列向量的线性组合。
+\end{itemize}  
+  
+换句话说，(S-1) 意味着我们跳过前导零向量，(S-2) 表示从 $u_{j-1}$ 开始，我们选择第一个不在 $\text{span}(u_1, u_2, \ldots, u_{j-1})$ 中的向量作为 $u_j$.
+  
+根据推论 5.22，Gram-Schmidt 过程确定了一个唯一的矩阵 $A_r^+ = [u_1^*, u_2^*, \ldots, u_r^*] \in \mathbb{R}^{m \times r}$ 和一个唯一的上三角矩阵，使得
+\[ 
+  A_r = A_r^* 
+    \begin{bmatrix} b_{11} & b_{21} & \ldots & b_{r1} \\ 
+      & b_{22} & \ldots & b_{r2} \\ 
+      & & \ddots & \vdots \\ 
+      & & & b_{rr} 
+    \end{bmatrix}, 
+\]
+其中 $u_1^*, u_2^*, \ldots, u_r^*$ 是正交的。根据矩阵列秩的定义，我们有 $r \leq m$.
+  
+对于这个证明的剩余部分，我们将每个列向量插入到
+\[ 
+  X = \{\xi_1, \xi_2, \ldots, \xi_n\} \backslash \{u_1, u_2, \ldots, u_r\} 
+\]
+并证明 (5.54) 的 QR 形式得以保持。对于那些在 (S-1) 中的零列向量，我们有
+\begin{align*} A_{\xi} = &{\left[\xi_1 \ldots \xi_{k_1-1} u_1 u_2 \ldots u_r\right]} \\
+     = &A_r^r \begin{bmatrix} 0 & \ldots & 0 & b_{11} & b_{21} & \ldots & b_{r1} \\
+       0 & \ldots & 0 & b_{22}  &\ldots & \ldots & b_{r2} \\ 
+       \vdots & \ddots & \vdots & & \ddots && \vdots \\ 
+       0 & \ldots & 0 & & && b_{rr} \end{bmatrix}. 
+\end{align*}
+  
+对于 (S-2) 中的每个 $\xi_{\ell}$, 其中 $\ell \in R_j$, 我们有
+\begin{align*} 
+  &[u_1, u_2, \ldots, u_{j-1}, \xi_{\ell}] \\ 
+    = &[u_1^*, u_2^*, \ldots, u_{j-1}^*] \begin{bmatrix} b_{11} & \ldots & b_{j-1,1} & c_{\ell,1} \\ 
+      & \ddots & \vdots & \vdots \\ && b_{j-1,j-1} & c_{\ell,j-1} \end{bmatrix}, 
+\end{align*} 
+
+其中 $\xi_{\ell} = c_{\ell, 1} u_1^* + \ldots + c_{\ell, j-1} u_{j-1}^*$. 
+以 (5.55) 作为归纳基础，以 (5.56) 作为归纳步骤，很容易通过归纳证明我们有 $A = A_r^* R$, 其中 $R$ 是一个上三角矩阵。
+  
+如果 $r = m$, 定义 5.56 和 5.11 完成了证明。否则 $r < m$, 证明通过线性代数中一个众所周知的事实完成，
+即一组正交向量可以扩展为一个正交基。
+\end{proof}
+
+\noindent \textbf{引理 5.59 } 正交矩阵保持其作用的向量的 $2$-范数。
+\begin{proof}
+定义 5.56 得到
+\[ 
+  \forall x \in \text{dom}(Q), \|Q x\|_2^2 = x^T Q^T Q x = x^T x = \|x\|_2^2.
+\]  
+\end{proof}
+
+\noindent \textbf{定理 5.60 } 考虑一个超定线性系统 $Ax = b$, 其中 $A \in \mathbb{R}^{m \times n}$ 且 $m \geq n$. 离散线性最小二乘问题
+\[ 
+  \min_{x \in \mathbb{R}^n} \|Ax - b\|_2^2 
+\]
+由满足
+\[ 
+  R_1 x^* = c, \tag{5.57} 
+\]
+的 $x^*$ 解决，其中 $R_1 \in \mathbb{R}^{n \times n}$ 且 $c \in \mathbb{R}^n$ 来自 $A$ 的 QR 分解：
+\[ 
+  Q^T A = R = \begin{bmatrix} R_1 \\ 0 \end{bmatrix}, \quad Q^T b = \begin{bmatrix} c \\ r \end{bmatrix}. \tag{5.58} 
+\]
+此外，最小值是 $\|r\|_2^2$.
+
+\begin{proof}
+对于任何 $x \in \mathbb{R}^n$，我们有
+\[ 
+  \|Ax - b\|_2^2 = \|Q^T Ax - Q^T b\|_2^2 = \|R_1 x - c\|_2^2 + \|r\|_2^2, 
+\]
+其中第一步遵循引理 5.59。
+\end{proof}
+
+\noindent \textbf{备注 5.31.} 在解决离散最小二乘问题时，QR 分解算法的条件数是 $\text{cond} R_1$. 
+相比之下，基于正规方程的算法的条件数通常是 $(\text{cond} R_1)^2$.
+
 \subsection{不适定系统(ill-posed linear systems)}
 
 \hl{定义5.55} 如果一个数学物理问题(i)存在解, (ii)解是唯一的, 并且(iii)问题有一个小的条件数, 
