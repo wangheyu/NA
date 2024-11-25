@@ -8258,20 +8258,21 @@ G(1, x, x^2)
 
 \subsection{不适定系统(ill-posed linear systems)}
 
-\hl{定义5.55} 如果一个数学物理问题(i)存在解, (ii)解是唯一的, 并且(iii)问题有一个小的条件数, 
+\hl{定义5.61} 如果一个数学物理问题(i)存在解, (ii)解是唯一的, 并且(iii)问题有一个小的条件数, 
 则它是适定的(well-posed); 否则它是不适定的(ill-posed).
 
-这个定义来自 Hadamard [1923], 它本意是指求解微分方程中遇到的一种困难. 这里我们看到, 病态问题不是纯数学的, 
+历史上，良态性的概念起源于柯西问题的解决；这里我们采用哈达玛 [1923] 在定义 5.61 中的定义。它将被专门化用于数值求解常微分方程。
+它本意是指求解微分方程中遇到的一种困难. 这里我们看到, 病态问题不是纯数学的, 
 而是和数值条件数, 也就是和算法实现有关. 数学上的存在唯一性, 并不能保证算法的良好性质, 从而能成功应用在工程上. 
 
-\hl{引理5.56} (线性系统的可解性) 线性系统 $Ax = b$, 其中 $A \in \mathbb{C}^{m \times n}$, 
+\hl{引理  5.62} (线性系统的可解性) 线性系统 $Ax = b$, 其中 $A \in \mathbb{C}^{m \times n}$, 
 当且仅当 $b$ 在 $A$ 的值域中时才有解. 或等价地说, $b$ 与 $A$ 的共轭转置的零空间正交, 即
-\[ 
-  \forall z \in \{y \in \mathbb{C}^m : A^* y = 0\}, \quad \langle b, z \rangle = 0,
-\]
+\begin{equation}
+  \forall z \in \{y \in \mathbb{C}^m : A^* y = 0\}, \quad \langle b, z \rangle = 0, \tag{5.59}
+\end{equation}
 在这种情况下, 线性系统的一个特解是
 \[ 
-x^{\oplus} := \sum_{j=1}^{r} \frac{1}{\sigma_j} \langle b, v_j \rangle u_j, 
+x^{\oplus} := \sum_{j=1}^{r} \frac{1}{\sigma_j} \langle b, v_j \rangle u_j, \tag{5.60}
 \]
 其中 $r$ 是 $A$ 的秩, $(\sigma_j , u_j , v_j )$ 是 $A$ 的奇异系统, 参见定义 B.214. 
 注意这里 $A$ 是 $\mathbb{C}^n \to \mathbb{C}^m$ 的线性映射, 所以 $A* = A^H$.
@@ -8289,7 +8290,7 @@ x^{\oplus} := \sum_{j=1}^{r} \frac{1}{\sigma_j} \langle b, v_j \rangle u_j,
   = \sum_{j=1}^{r} \frac{1}{\sigma_j} \langle b, v_j \rangle A u_j 
   = Ax^{\oplus}, 
   \]
-其中第一步来自于(B.81b), 第二步来自于(B.81a), 最后一步来自于(5.56). 
+其中第一步来自于(B.86b), 第二步来自于(B.86a), 最后一步来自于(5.60). 
 \end{proof}
 
 奇异值是与矩阵相关的一组非负实数, 它们提供了矩阵的一些重要数学特性的度量. 
@@ -8297,14 +8298,35 @@ x^{\oplus} := \sum_{j=1}^{r} \frac{1}{\sigma_j} \langle b, v_j \rangle u_j,
 的特征值的非负平方根, 或者等价地, 是 $AA^*$ 的特征值的非负平方根. 
 这些奇异值通常按照从大到小的顺序排列. 
 
-更具体地, 如果我们对矩阵 $A$ 进行奇异值分解 (SVD), 我们可以得到:
+奇异值分解（Singular Value Decomposition，简称SVD）是一种将任意矩阵分解为一系列特定矩阵乘积的方法。
+奇异值分解在数据压缩、降维、信号处理、统计学和许多其他领域都有广泛的应用。下面是奇异值分解的基本概念和算法步骤：
+
+对于一个给定的矩阵 \( A \in \mathbb{R}^{m \times n} \)，奇异值分解可以表示为：
 \[ 
-A = U\Sigma V^*, 
+  A = U \Sigma V^T 
 \]
-其中 $U$ 是一个 $m \times m$ 的酉矩阵, $V$ 是一个 $n \times n$ 的酉矩阵, 
-$\Sigma$ 是一个 $m \times n$ 的对角矩阵. 
-对角矩阵 $\Sigma$ 的对角线元素即为 $A$ 的奇异值, 记为
-$\sigma_1, \sigma_2, \ldots, \sigma_p$, 其中 $p = \min(m, n)$.
+
+其中：
+\begin{itemize}
+  \item \( U \in \mathbb{R}^{m \times m} \) 是一个正交矩阵，其列向量称为左奇异向量。
+  \item \( V \in \mathbb{R}^{n \times n} \) 也是一个正交矩阵，其列向量称为右奇异向量。
+  \item \( \Sigma \in \mathbb{R}^{m \times n} \) 是一个对角矩阵，对角线上的元素是非负的奇异值，且按从大到小的顺序排列，其余元素都是 $0$。
+\end{itemize}
+
+观念上，你可以联系 QR 分解，认为奇异值分解是 QR 分解的完整对角化。但实际上，我们不这么计算，因为我们需要奇异值从大到小排列。
+
+\noindent \textbf{算法步骤}
+\begin{enumerate}
+  \item 计算 \( A \) 的协方差矩阵：首先计算 \( A \) 的协方差矩阵 \( A^T A \) 和 \( A A^T \).
+  \item 求解特征值和特征向量：
+    \begin{itemize}
+      \item  对于 \( A^T A \), 求解其特征值和特征向量，这些特征向量构成了矩阵 \( V \), 而特征值的平方根就是 \( A \) 的奇异值。
+      \item 对于 \( A A^T \), 求解其特征值和特征向量，这些特征向量构成了矩阵 \( U \).
+    \end{itemize}
+  \item 构造对角矩阵 \( \Sigma \)：创建一个对角矩阵 \( \Sigma \), 其对角线上的元素是 \( A \) 的奇异值，这些奇异值是 \( A^T A \) 的非负平方根特征值。
+  \item 构造 \( U \) 和 \( V \) 矩阵：使用 \( A A^T \) 的特征向量作为 \( U \) 的列，\( A^T A \) 的特征向量作为 \( V \) 的列。
+  \item 组合 \( U \), \( \Sigma \), 和 \( V^T \)：将这三个矩阵组合起来，得到 \( A \) 的奇异值分解。
+\end{enumerate}
 
 奇异值反映了矩阵 $A$ 在不同方向上的拉伸因子, 最大的奇异值对应于 $A$ 拉伸最多的方向, 
 而最小的奇异值对应于 $A$ 拉伸最少的方向. 如果矩阵 $A$ 的奇异值中有任何一个为零, 
@@ -8318,10 +8340,9 @@ $\sigma_1, \sigma_2, \ldots, \sigma_p$, 其中 $p = \min(m, n)$.
 注意, 奇异值算法的通常代价是 $O(mn^2)$ ($m \geq n$). 但是如果 $m >> n$, 
 通常意味着我们只要求出主要特征值就可以了, 这时采用适当的算法能大大降低计算代价. 
 
-
 \subsubsection{无解和多解情形}
 
-\hl{定理5.57} 假设引理 5.56 中的线性系统 $Ax = b$ 没有解. 那么 (5.56) 
+\hl{定理5.63} 假设引理 5.62 中的线性系统 $Ax = b$ 没有解. 那么 (5.60) 
 中的 $x^{\oplus}$ 解决了最小化残差 $2$-范数的问题, 即
 \[ 
 x^{\oplus} = \arg\min_{x \in \mathbb{C}^n} \|Ax - b\|_2. 
@@ -8353,49 +8374,115 @@ Ax - Ax^{\oplus} \in \text{span}(v_1, v_2, \ldots, v_r).
 这就完成了证明.
 \end{proof}
 
-\hl{定理5.58} 
+\hl{定理5.64} 
 假设线性系统 $Ax = b$ 有多个解. 那么它的一般解是 $x^{\oplus} + y$, 
 其中 $x^{\oplus}$ 由 (5.56) 给出, 而 $y$ 是 $A$ 的零空间中的任意向量. 此外, $x^{\oplus}$ 是具有最小 $2$-范数的解.
 
 这个结论比较显然, 在零空间中任意取一个向量, 加到 $x^{\oplus}$ 上, 仍然是解. 这里的关键是已经做了正交分解. 
 正交基的一个直观意义是, 在每一个基上的投影, 就是这个基的表出系数, 或者分量. 
 
+\begin{proof}
+根据引理 5.62，我们有
+\[
+  \left\{
+  \begin{array}{l}
+  x^{\oplus} \in \operatorname{span}(u_1, u_2, \ldots, u_r) \\
+  \text{null} \, A = \operatorname{span}(u_{r+1}, u_{r+2}, \ldots, u_n)
+  \end{array}
+  \right.
+\]
+
+因此，对于所有 \( y \in \text{null} \, A \), 有 \(\langle x^{\oplus}, y \rangle = 0\), 并且根据毕达哥拉斯定理 B.190，我们得到
+\[
+  \|x^{\oplus} + y\|_2 = \|x^{\oplus}\|_2 + \|y\|_2.
+\]
+\end{proof}
+
+证明完成于这样一个事实：线性系统的所有解都是形式 \( x^{\oplus} + y \).
+
+这里的  $\mathrm{null} A $ 表示矩阵 \( A \) 的零空间，即所有满足 \( Ax = 0 \) 的向量 \( x \) 的集合。
+而 \( \operatorname{span} \) 表示向量的张成空间，即由这些向量线性组合所形成的向量空间。\( \| \cdot \|_2 \) 表示向量的 \( L_2 \) 范数，也就是欧几里得范数。
+
 \subsubsection{广义逆矩阵, Moore-Penrose pseudoinverse}
 
-这里建立最小二乘问题和广义逆矩阵的联系. 
+\noindent \textbf{备注 5.35 } 根据定理 5.63 和 5.64 中 \(x^{\oplus}\) 的唯一性，我们可以定义，关于最小化某个 $2$-范数，
+对于一个线性系统，它要么没有解，要么有多个解，有一个唯一的解。这引出了伪逆的概念。
 
-\hl{定义5.59} 矩阵 $A \in \mathbb{F}^{m \times n}$ 
-(其中$\mathbb{F} = \mathbb{R}~\mbox{或}~\mathbb{C}$) 的摩尔-彭若斯逆 (Moore-Penrose inverse),
-或伪逆 (pseudo-inverse), 或广义逆 (generalized inverse) 是由下式给出的矩阵
-$A^+ \in \mathbb{F}^{n \times m}$:
-\[ 
-A^+ y = \sum_{j=1}^{r} \frac{1}{\sigma_j} \langle y, v_j \rangle u_j, 
+\noindent \textbf{定义 5.65 } 矩阵 \(A \in F^{m \times n}\) 的 Moore-Penrose 逆或伪逆或广义逆，其中 \(F = \mathbb{R}, \mathbb{C}\), 
+是由矩阵 \(A^{+} \in F^{n \times m}\) 给出的，定义为
+\[
+  \forall y \in F^{m}, \quad A^{+} y = \sum_{j=1}^{r} \frac{1}{\sigma_{j}} \langle y, v_{j} \rangle u_{j}, \tag{5.62}
 \]
-其中 $r$ 是 $A$ 的秩, $(\sigma_j, u_j, v_j)$ 是 $A$ 的奇异系统, 参见定义B.214. 
+其中 \(r\) 是 \(A\) 的秩，\((\sigma_{j}, u_{j}, v_{j})\) 是 \(A\) 的奇异系统，参见定义 B.234。
 
-定理 5.60 是显然的. 引理 5.61 就是我们上节课讨论的广义逆和现在的结论的关系. 
+\noindent \textbf{定理 5.66 } 定义 5.65 中的伪逆具有以下性质。
+
+\begin{itemize}
+  \item[(PDI-1)] \(AA^{+}\) 将 \(A\) 的所有列映射到它们自身：
+  \[
+    AA^{+}A = A;
+  \]
+  \item[(PDI-2)] \(A^{+}\) 表现得像一个弱逆：
+  \[
+    A^{+}AA^{+} = A^{+};
+  \]
+  \item[(PDI-3)] \(AA^{+}\) 和 \(A^{+}A\) 都是 Hermitian（自共轭）：
+  \[
+    (AA^{+})^{*} = AA^{+}, (A^{+}A)^{*} = A^{+}A.
+  \]  
+\end{itemize}
+
+\noindent \textbf{引理 5.67 } 如果 \(A\) 有线性独立的列，那么 \(A^{*}A\) 是可逆的，我们有
+\[
+  A^{+} = (A^{*}A)^{-1}A^{*}, \tag{5.63}
+\]
+这便是一个左逆，即 \(A^{+}A = I\). 同样地，如果 \(A\) 有线性独立的行，那么 \(AA^{*}\) 是可逆的，并且
+\[
+  A^{+} = A^{*}(AA^{*})^{-1}, \tag{5.64}
+\]
+这便是一个右逆，即 \(AA^{+} = I\).
+
+\noindent \textbf{备注 5.36 } 左逆通常对应于最小二乘问题，而右逆对应于具有多个解的线性系统。
 
 \subsubsection{谱截断 (spectral cutoff ) 处理不适定问题}
 
-在处理不适定的数学问题时, 特别是当涉及到求解线性系统或进行数值分析时, 
-谱截断是一种常用的正则化技术. 这种技术基于矩阵的奇异值分解 (SVD).
+\noindent \textbf{例子 5.68 } 解线性系统 \(Ax = b\) 的条件数主要由小的奇异值决定。如果我们将 \(b\) 扰动为 \(\hat{b} = b + \epsilon v_j\), 
+其中 \(\epsilon \in \mathbb{C}\), 根据引理 5.62，解将从 \(x\) 变为 \(\hat{x} = x + \frac{\epsilon}{\sigma_j} u_j\).
 
-矩阵 $A$ 的 SVD 可以表示为 $A = U\Sigma V^*$, 其中 $\Sigma$ 是一个对角矩阵, 
-其对角线元素即为 $A$ 的奇异值, $U$ 和 $V$ 是酉矩阵. 在奇异值分解中, 
-奇异值按照从大到小的顺序排列. 如果矩阵 $A$ 的条件数很大, 即最大奇异值和最小奇异值的比值很大, 
-那么 $A$ 就被认为是不良条件的.
+% \[
+% \text{根据引理 5.62，解将从 } x \text{ 变为 } \hat{x} = x + \frac{\epsilon}{\sigma_j} u_j.
+% \]
 
-看例 5.62, 解线性系统 $Ax = b$ 的条件数主要由小的奇异值决定. 
-如果我们将 $b$ 扰动为 $\hat{b} = b + \epsilon v_j$, 对于某个 
-$\epsilon \in \mathbb{C}$, 根据引理 5.56, 解会从 $x$ 变为 
-$\hat{x} = x + \frac{\epsilon}{\sigma_j} u_j$. 
-因此, 基于绝对误差的条件数是
-\[ 
-\frac{\|\hat{x} - x\|_2}{\|\hat{b} - b\|_2} = \frac{1}{\sigma_j}. 
+因此，基于绝对误差的条件数是
+\[
+  \frac{\|\hat{x} - x\|_2}{\|\hat{b} - b\|_2} = \frac{1}{\sigma_j}.
 \]
-因此, 如果一个可解的线性系统的矩阵有小的奇异值, 那么这个系统是不良条件的. 
 
-\hl{定义5.63} 谱截断是一种通过在解 (5.56) 中忽略小奇异值项来稳定不良条件线性系统的方法. 
+因此，如果一个可解的线性系统的矩阵具有小的奇异值，那么它是病态的。
+
+这里的条件数是衡量线性系统解对输入数据变化敏感度的一个指标。条件数越大，意味着输入数据的微小变化可能导致解的较大变化，
+这样的系统被称为病态的。相反，条件数较小的系统对输入数据的变化不敏感，解更稳定。在本例中，
+条件数与矩阵 \(A\) 的最小奇异值的倒数成正比，奇异值越小，条件数越大，系统越病态。
+
+% 在处理不适定的数学问题时, 特别是当涉及到求解线性系统或进行数值分析时, 
+% 谱截断是一种常用的正则化技术. 这种技术基于矩阵的奇异值分解 (SVD).
+
+% 矩阵 $A$ 的 SVD 可以表示为 $A = U\Sigma V^*$, 其中 $\Sigma$ 是一个对角矩阵, 
+% 其对角线元素即为 $A$ 的奇异值, $U$ 和 $V$ 是酉矩阵. 在奇异值分解中, 
+% 奇异值按照从大到小的顺序排列. 如果矩阵 $A$ 的条件数很大, 即最大奇异值和最小奇异值的比值很大, 
+% 那么 $A$ 就被认为是不良条件的.
+
+% 看例 5.62, 解线性系统 $Ax = b$ 的条件数主要由小的奇异值决定. 
+% 如果我们将 $b$ 扰动为 $\hat{b} = b + \epsilon v_j$, 对于某个 
+% $\epsilon \in \mathbb{C}$, 根据引理 5.56, 解会从 $x$ 变为 
+% $\hat{x} = x + \frac{\epsilon}{\sigma_j} u_j$. 
+% 因此, 基于绝对误差的条件数是
+% \[ 
+% \frac{\|\hat{x} - x\|_2}{\|\hat{b} - b\|_2} = \frac{1}{\sigma_j}. 
+% \]
+% 因此, 如果一个可解的线性系统的矩阵有小的奇异值, 那么这个系统是不良条件的. 
+
+\hl{定义5.63} 谱截断是一种通过在解 (5.60) 中忽略小奇异值项来稳定不良条件线性系统的方法. 
 
 谱截断方法的基本思想是在奇异值分解的基础上, 舍弃那些较小的奇异值, 只保留较大的奇异值. 
 具体来说, 设定一个截断阈值 $\tau$, 将所有小于 $\tau$ 的奇异值置为零, 
@@ -8408,11 +8495,33 @@ $\tilde{A} = U\tilde{\Sigma} V^*$, 其中 $\tilde{\Sigma}$ 是经过截断的对
 在实际应用中, 通常需要结合问题的具体背景和数据特性来确定 $\tau$ 的值. 
 
 \hl{定义5.64} 给定线性系统 $Ax = b$ 的一个扰动右侧项 $\hat{b}$, 
-不符原则是一种提出近似解$\hat{x}$的策略，使得
-\[ ||A\hat{x} - \hat{b}||_2 = C||b - \hat{b}||_2, \]
+差异原则 (discrepancy principle) 是一种提出近似解$\hat{x}$的策略，使得
+\[ 
+  \|A\hat{x} - \hat{b}\|_2 = C\|b - \hat{b}\|_2,  \tag{5.65}
+\]
 其中$C \geq 1$是某个合适的常数。
 
-根据不符原则(discrepancy principle)来截断奇异值, 通常遵循以下步骤:
+
+\noindent \textbf{例子 5.71 } 通过差异原则对谱截断，我们通过以下方式近似解 (5.60)：
+\[
+  x_p := \left\{
+  \begin{array}{ll}
+    0 & \text{如果 } p = 0; \\
+    \sum_{j=1}^p \frac{1}{\sigma_j} \langle \hat{b}, v_j \rangle u_j & \text{如果 } p = 1, \ldots, r,
+  \end{array}
+  \right. \tag{5.66}
+\]
+其中 \(p\) 由扰动误差 \(\|\hat{b} - b\|_2\) 决定，以满足 (5.65)。一个常见的选择是 \(C = 1\).
+
+\noindent \textbf{备注 5.38 } 从定义 5.69 和 5.70 自然引出的问题是：\(p\) 的存在是否得到保证？\(p\) 是如何确定的？
+
+在这些定义和例子中，差异原则提供了一种方法来确定在给定扰动水平下，线性系统的解应该包含多少个奇异值。
+这种方法有助于在解的精度和计算复杂度之间取得平衡。通过选择适当的 \(C\) 值，可以控制解的精度。而 \(p\) 的确定则依赖于扰动误差的大小，
+以及差异原则的要求。
+
+
+
+根据差异原则(discrepancy principle)来截断奇异值, 通常遵循以下步骤:
 
 \begin{enumerate}
   \item {\bf 奇异值分解}: 首先对矩阵 $A$ 进行奇异值分解 (SVD), 
@@ -8422,7 +8531,7 @@ $\tilde{A} = U\tilde{\Sigma} V^*$, 其中 $\tilde{\Sigma}$ 是经过截断的对
   \item {\bf 选择奇异值}: 从最大的奇异值 $\sigma_1$ 开始, 
   逐个检查每个奇异值 $\sigma_j$, 找到一个截断点 $p$, 使得对于所有 $j > p$, 
   奇异值 $\sigma_j$ 都小于 $\epsilon$ 或者使得截断后的解 $x_p$ 与扰动后的数据
-  $\hat{b}$ 之间的残差满足不符原则. 即, 找到 $p$ 使得
+  $\hat{b}$ 之间的残差满足差异原则. 即, 找到 $p$ 使得
   \[ 
   \|A x_p - \hat{b}\|_2 \approx \epsilon 
   \]
@@ -8444,11 +8553,11 @@ $\tilde{A} = U\tilde{\Sigma} V^*$, 其中 $\tilde{\Sigma}$ 是经过截断的对
 这里 3 和 4 是一起完成的. 使用不符原则进行奇异值截断的目的是平衡解的精确度和稳定性, 
 同时减少由于数据中的噪声或误差导致的不良条件问题. 
 
-例 5.65 就是这样的. 
+% 例 5.65 就是这样的. 
 
 自然而然地引出的问题是: $p$ 的存在是否有保证? 
 
-\hl{定理5.66} 假设线性系统 $Ax = b$, 其中 $A \in \mathbb{C}^{m \times n}$ 
+\hl{定理5.72} 假设线性系统 $Ax = b$, 其中 $A \in \mathbb{C}^{m \times n}$ 
 是可解的, 并且 $b$ 的一个扰动 $\hat{b}$ 满足
 \[ 
 \|\hat{b} - b\|_2 \leq \epsilon \leq \|\hat{b}\|_2. 
@@ -8457,7 +8566,7 @@ $\tilde{A} = U\tilde{\Sigma} V^*$, 其中 $\tilde{\Sigma}$ 是经过截断的对
 \[ 
 \|A x_p - \hat{b}\|_2 \leq \epsilon, 
 \]
-其中 $x_p$ 在 (5.62) 中定义. 谱截断的不符原则在以下意义上是收敛的:
+其中 $x_p$ 在 (5.62) 中定义. 谱截断的差异原则在以下意义上是收敛的:
 \[ 
 \lim_{p \to \infty} x_p = A^+ b. 
 \]
@@ -8472,7 +8581,7 @@ f(p) := \|Ax_p - \hat{b}\|^2 - \epsilon^2
 \[ 
 f(p) = \sum_{j = p + 1}^{m} \left| \langle \hat{b}, v_j \rangle \right|^2 - \epsilon^2, 
 \]
-其中 $v_j$ 是 $A$ 的一个右奇异向量. 然后 (5.63) 得到
+其中 $v_j$ 是 $A$ 的一个右奇异向量. 然后 (5.67) 得到
 \[ 
 f(0) = \|\hat{b}\|^2 - \epsilon^2 \geq 0 
 \]
@@ -8480,7 +8589,7 @@ f(0) = \|\hat{b}\|^2 - \epsilon^2 \geq 0
 \[ 
 f(r) = -\epsilon^2 < 0. 
 \]
-如果 $r < m$, 线性系统的可解性条件和引理 5.56 得到
+如果 $r < m$, 线性系统的可解性条件和引理 5.62 得到
 \[ 
 \forall j = r + 1, \ldots, m, \quad \langle b, v_j \rangle = 0. 
 \]
@@ -8489,24 +8598,184 @@ f(r) = -\epsilon^2 < 0.
 f(r) = \sum_{j=r+1}^{m} \left| \langle \hat{b} - b, v_j \rangle \right|^2 - \epsilon^2 
 \leq \|\hat{b} - b\|^2 - \epsilon^2 \leq 0, 
 \]
-最后一步由 (5.63) 得到. 由 (5.66), $f$ 是单调递减的, 
-并且第一个结论 (5.64) 由 $f(0) \geq 0$和$f(r) \leq 0$ 得到. 
+最后一步由 (5.67) 得到. 由 (5.70), $f$ 是单调递减的, 
+并且第一个结论 (5.68) 由 $f(0) \geq 0$和$f(r) \leq 0$ 得到. 
 
-至于第二个结论, 由 (5.64) 得到
+至于第二个结论, 由 (5.68) 得到
 \[ 
 \|Ax_p - b\|^2 \leq \|Ax_p - \hat{b}\|^2 + \|\hat{b} - b\|^2 \leq 2\epsilon. 
 \]
-然后由 (5.65)
+然后由 (5.69)
 \[ 
 \forall v \in \text{span}(v_1, \ldots, v_r), \quad A^+Av = v, 
 \]
-这是引理 5.61 的结果. 
+这是 B.86a 和 (5.62) 的结果. 
 \end{proof}
 
-在实际计算中, 通常通过计算 (5.62) 中的和直到 (5.66) 的右侧第一次变为零或负数来确定 $p$. 
+在实际计算中, 通常通过计算 (5.66) 中的和直到 (5.70) 的右侧第一次变为零或负数来确定 $p$. 
+
+\subsubsection{Tikhonov 正则化}
+% 5.5.4 Tikhonov 正则化
+
+\noindent \textbf{备注 5.40 } 谱截断需要知道 \(A^*A\) 的完整谱，这可能在计算上很昂贵。相比之下，
+Tikhonov （吉洪诺夫） 正则化可以在不知道 \(A\) 的奇异值分解（SVD）的情况下进行。
+
+\noindent \textbf{定义 5.73 } Tikhonov 正则化是一种方法，用于通过正则化线性系统来近似病态线性系统 \(Ax = b\) 的解：
+\[
+  \alpha x + A^*Ax = A^*b, \tag{5.71}
+\]
+
+其中 \(\alpha > 0\) 被称为正则化参数。
+
+\noindent \textbf{定理 5.74 } 假设矩阵 \(A \in \mathbb{C}^{m \times n}\) 有秩 \(r\). 
+那么对于任何 \(b \in \mathbb{C}^m\), Tikhonov 正则化线性系统 (5.71) 有唯一解
+\[
+  x_\alpha := \sum_{j=1}^r \frac{\sigma_j}{\alpha + \sigma_j^2} \langle b, v_j \rangle u_j, \tag{5.72}
+\]
+其中 \((\sigma_j, u_j, v_j)\) 是 \(A\) 的奇异系统，参见定义 B.234。此外，Tikhonov 正则化满足
+\[
+  \lim_{\alpha \to 0} (\alpha I + A^*A)^{-1}A^*b = A^+b. \tag{5.73}
+\]
+
+\begin{proof}
+矩阵 \(B := \alpha I + A^*A\) 是严格正定的，因此是非奇异的。此外，\(Bu_j = (\alpha + \sigma_j^2)u_j\) 且 \(B^* = B\) 
+意味着 \((\alpha + \sigma_j^2, u_j, u_j)\) 是 \(B\) 的一个奇异系统。应用引理 5.62 到 (5.71)，我们有
+\[
+  x = \sum_{j=1}^r \frac{1}{\alpha + \sigma_j^2} \langle A^*b, u_j \rangle u_j 
+  = \sum_{j=1}^r \frac{1}{\alpha + \sigma_j^2} \langle b, Au_j \rangle u_j = x_\alpha,
+\]
+其中最后一步遵循 (B.86a) 和 (5.72)。最后，(5.73) 直接从 (5.62) 和 (5.72) 得出。    
+\end{proof}
+
+\noindent \textbf{备注 5.41} 自然地，从定理 5.74 引出的问题是：\(\alpha\) 的存在性和唯一性是否得到保证？如果是，如何找到它？
+为了回答这些问题，我们首先展示 Tikhonov 正则化线性系统等价于一个惩罚最小二乘问题。
+
+\noindent \textbf{定理 5.75 } 对于任何 \(b \in \mathbb{C}^m\), Tikhonov 正则化线性系统 (5.71) 的解 \(x_\alpha\) 在 (5.72) 
+中等价于 \(\left\|A x - b\right\|_2^2 + \alpha \|x\|_2^2\) 的唯一极小化点，即，
+\[
+  \left\|A x_\alpha - b\right\|_2^2 + \alpha \left\|x_\alpha\right\|_2^2 = \inf_{x \in \mathbb{C}^n} \left\{\|A x - b\|_2^2 + \alpha \|x\|_2^2\right\}.
+\]
+\begin{proof}
+定义 \(z_\alpha := \alpha x_\alpha + A^* A x_\alpha - A^* b\). 余弦定理（定理 B.175）意味着
+\[
+  \|A x - b\|_2^2 + \alpha \|x\|_2^2 
+  = 2 \operatorname{Re} \langle x - x_\alpha, z_\alpha \rangle + \|A x_\alpha - b\|_2^2 
+  + \alpha \|x_\alpha\|_2^2 + \|A x - A x_\alpha\|_2^2 + \alpha \|x - x_\alpha\|_2^2.
+\]
+因此，(5.71) 的解 \(x_\alpha\) 满足 \(z_\alpha = 0\)，并且相应地 (5.74) 成立。
+  
+相反，设 \(x_\alpha\) 是 (5.74) 的解，并假设 \(z_\alpha \neq 0\). 那么对于 \(x := x_\alpha - \epsilon z_\alpha\) 其中 \(\epsilon \in \mathbb{R}\), 
+(5.75) 产生
+\[
+  \|A x - b\|_2^2 + \alpha \|x\|_2^2 = \|A x_\alpha - b\|_2^2 + \alpha \|x_\alpha\|_2^2 - 2 \epsilon a + \epsilon^2 b,
+\]
+其中 \(a := \|z_\alpha\|_2^2\) 且 \(b := \|A z_\alpha\|_2^2 + \alpha \|z_\alpha\|_2^2\)。选择 \(\epsilon = \frac{a}{b}\) 给出
+\[
+  \|A x - b\|_2^2 + \alpha \|x\|_2^2 < \|A x_\alpha - b\|_2^2 + \alpha \|x_\alpha\|_2^2,
+\]
+这与起点相矛盾。
+\end{proof}
+
+\noindent \textbf{备注 5.42 } 根据定理 5.75，Tikhonov 正则化保持残差 \(\left\|A x_\alpha - b\right\|_2\) 较小，
+并通过惩罚项同时防止 \(\left\|x_\alpha\right\|_2\) 过大。
+
+\noindent \textbf{例子 5.76 } 在实际应用中，线性系统的右手边常常带有一些不确定性，比如说，\(\|\hat{b} - b\|_2 < \epsilon\). 
+然后 Tikhonov 正则化通过满足
+\[
+  B x_\alpha = A^* \hat{b},
+\]
+的 \(x_\alpha\) 来近似解 \(x = A^+ b\)，其中 \(B := \alpha I + A^* A\)。因此总的绝对误差是
+\[
+  x_\alpha - x = B^{-1} A^* (\hat{b} - b) + \left(B^{-1} A^* b - A^+ b\right),
+\]
+其中第一个右手边项是由右手边数据引起的误差，第二个是由正则化引起的误差。一方面，\(\alpha\) 应该小以保持正则化误差小。另一方面，引理 4.68 意味着
+\[
+  \operatorname{cond}_2 B = \frac{\alpha + \sigma_1^2}{\alpha + \sigma_n^2}.
+\]
+因此 \(\alpha\) 应该大以使数据误差小；否则线性系统 \(B x = A^* (\hat{b} - b)\) 的条件数会很大。注意，即使条件数基于绝对误差，
+如例子 5.68 中，这个结论仍然有效。总之，\(\alpha\) 的选择必须在准确性和稳定性之间做出妥协。
+
+\noindent \textbf{备注 5.43 } 我们现在准备通过使用定义 5.70 中的差异原则，在准确性和稳定性之间取得平衡，来回答备注 5.41 中的问题。
+
+\noindent \textbf{定理 5.77 } 假设线性系统 \(Ax = b\) 其中 \(A \in \mathbb{C}^{m \times n}\) 是可解的，
+并且 \(b\) 的一个扰动 \(\hat{b}\) 满足
+\[
+  \|\hat{b} - b\|_2 \leq \epsilon < \|\hat{b}\|_2. \tag{5.76}
+\]
+那么存在一个唯一的 \(\alpha = \alpha(\epsilon)\) 使得
+\[
+  \|A x_\alpha - \hat{b}\|_2 = \epsilon, \tag{5.77}
+\]
+其中 \(x_\alpha\) 是
+\[
+  (\alpha I + A^*A)x = A^*\hat{b}. \tag{5.78}
+\]
+的解。
+
+此外，Tikhonov 正则化的差异性原则是收敛的，即，
+\[
+  \lim_{\epsilon \to 0} x_\alpha = A^+b. \tag{5.79}
+\]
+
+\begin{proof}
+根据 (5.72)，函数 \(f: (0, +\infty) \to \mathbb{R}\) 定义为
+\[
+  f(\alpha) := \|A x_\alpha - \hat{b}\|_2^2 - \epsilon^2
+\]
+
+可以表示为
+\[
+  f(\alpha) = \sum_{j=1}^r \left|\frac{\alpha}{\alpha + \sigma_j^2} \langle \hat{b}, v_j \rangle\right|^2 + \sum_{j=r+1}^m \left|\langle \hat{b}, v_j \rangle\right|^2 - \epsilon^2,
+\]
+其中 \(v_j\) 是 \(A\) 的左奇异向量。由于 \(f\) 是连续且严格单调递增的，它也满足
+\[
+  \lim_{\alpha \to 0} f(\alpha) = \sum_{j=r+1}^m \left|\langle \hat{b}, v_j \rangle\right|^2 - \epsilon^2 = \sum_{j=r+1}^m \left|\langle \hat{b} - b, v_j \rangle\right|^2 - \epsilon^2 \leq \|\hat{b} - b\|_2^2 - \epsilon^2 \leq 0,
+\]
+\[
+  \lim_{\alpha \to +\infty} f(\alpha) = \sum_{j=1}^m \left|\langle \hat{b}, v_j \rangle\right|^2 - \epsilon^2 = \|\hat{b}\|_2^2 - \epsilon^2 > 0.
+\]
+因此，\(f\) 必须恰好有一个根 \(\alpha\) 满足 (5.77)。
+  
+然后 (5.77) 和三角不等式产生
+\[
+  \|\hat{b}\|_2 - \epsilon = \|\hat{b}\|_2 - \|A x_\alpha - \hat{b}\|_2 \leq \|A x_\alpha\|_2.
+\]
+  
+另一方面，\(x_\alpha\) 作为 (5.78) 的解给出
+\[
+  \alpha \|A x_\alpha\|_2 = \|AA^*(\hat{b} - A x_\alpha)\|_2 \leq \|AA^*\|_2 \epsilon.
+\]
+  
+根据 (5.76)，我们有 \(\|\hat{b}\|_2 \geq \|b\|_2 - \epsilon\)，这与上述两个不等式一起给出
+\[
+  \alpha \leq \frac{\|AA^*\|_2 \epsilon}{\|b\|_2 - 2\epsilon}.
+\]
+  
+因此 \(\lim_{\epsilon \to 0} \alpha = 0\). 然后 (5.79) 从 (5.76)，(5.62) 和 (5.72) 得出。
+\end{proof}
+
+\noindent \textbf{备注 5.44 } 正如 Kress [1998] 所指出的，正则化参数很少从 (5.77) 获得。
+相反，我们从某个 \(f(\alpha) > 0\) 的 \(\alpha\) 开始，并反复将其减少一个常数因子，直到 \(f(\alpha)\) 变为负数。
+
+以下是图中内容的中文翻译，并以LaTeX格式输出：
+
+\noindent \textbf{备注 5.45 } 机器学习是一个充满病态问题的研究领域的例子。通常，为一个问题提供的信息和数据集不足以找到最佳解决方案；
+这对应于定理 5.64 的情况。如果我们不断增加给定数据的数量，问题最终将成为一个最小二乘问题，这对应于定理 5.63 的（简单而愉快）情况。
+不幸的是，这种策略通常不可行，因为额外的数据要么不可用，要么收集成本太高。从另一个角度来看，可能的函数数量总是大于给定数据的数量；
+毕竟，前者是无限的，而后者总是有限。
+
+对于机器学习任务，我们通过补充一些关于我们试图建模的物理过程特征的假设（称为归纳偏好）来克服这种病态问题。因此，
+机器学习算法在归纳推理过程中利用了给定的数据集和归纳偏好。作为一个例子，定义 5.1 可以从这个角度重新解释：子空间 \(X\) 和 \(X\) 
+的一组基函数的选择构成了最佳逼近问题的归纳偏好。
+
+与最佳逼近问题的一个关键区别是，机器学习算法的性能不是通过它在先验给定的数据集上拟合的准确性来衡量的，而是主要通过它对未见数据集的泛化能力来衡量。
+因此，在设计这样的算法时，我们应该避免两个潜在的陷阱。一方面，如果归纳偏好太强，或者预测模型函数太简单，模型在给定数据上的表现就会很差，
+这通常意味着在未见数据上的表现也会很差。这种情况被称为欠拟合（数据），因为预测器未能捕捉到现有数据中的显著特征。另一方面，如果归纳偏好太弱，
+或者预测模型函数太复杂，模型可能会准确拟合给定数据，但在未见数据上的表现很差。这种情况被称为过拟合（数据），
+模型实际上将数据中的噪声误认为是现实过程的模式。对于实际问题，现有数据的错误是不可避免的，而且往往不可忽略，因此很容易过拟合数据。
+防止过拟合的一种方法是采用类似于 Tikhonov 正则化的思想，而惩罚项 \(\alpha \|x\|\) 迫使训练过程（即确定模型参数向量 \(x\)）倾向于简单的模型函数。
 
 \section{数值积分和数值微分}
-
 
 % \noindent \textbf{定义 6.1.} 加权求积公式 \( I_n(f) \) 是一个线性泛函
 % \[
