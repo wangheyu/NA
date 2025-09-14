@@ -1,6 +1,15 @@
-.gitignore
 *.pdf
-*.aux
 *.log
+*.aux
 *.gz
+.vscode
+.ipynb_checkpoints
+*.o
+*.out
 test
+exam
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.xdv

@@ -1,0 +1,346 @@
+%!Tex Program = xelatex
+%\documentclass[a4paper]{article}
+\documentclass[a4paper]{ctexart}
+\usepackage{xltxtra}
+%\setmainfont[Mapping=tex-text]{AR PL UMing CN:style=Light}
+%\setmainfont[Mapping=tex-text]{AR PL UKai CN:style=Book}
+%\setmainfont[Mapping=tex-text]{WenQuanYi Zen Hei:style=Regular}
+%\setmainfont[Mapping=tex-text]{WenQuanYi Zen Hei Sharp:style=Regular}
+%\setmainfont[Mapping=tex-text]{AR PL KaitiM GB:style=Regular} 
+%\setmainfont[Mapping=tex-text]{AR PL SungtiL GB:style=Regular} 
+%\setmainfont[Mapping=tex-text]{WenQuanYi Zen Hei Mono:style=Regular} 
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{enumitem}  
+\usepackage{tikz}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{数值分析}
+\author{王何宇}
+\date{}
+
+\newcommand{\remark}[1]
+{\noindent {\bf Remark {#1}}}
+
+\newcommand{\definition}[1]
+{\noindent {\bf Definition {#1}}}
+
+\newcommand{\hl}[1]
+{\noindent {\bf {#1}}}
+\begin{document}
+\maketitle
+\pagestyle{empty}
+
+% 用 Newton 法寻找函数
+% $$
+% f(x) = \frac{2}{x + 1} - 1
+% $$
+% 的零点。
+
+% (i) 分别用 $x_0 = 3$ 和 $x_0 = 4$ 计算一步 Newton 迭代。给出具体的计算过程和对应的 $x_1$.
+% (ii) 请问上述两个初值是否收敛到函数零点，为什么？
+% (iii) 给出收敛初值的范围.
+% (iv) 证明结论 (iii). 
+
+
+\noindent 1. Use the Newton method to find the zero of the function 
+\[ 
+f(x) = \frac{2}{x+1} - 1. 
+\]
+\begin{enumerate}
+    \item[i] Perform one step of the Newton iteration with \( x_0 = 3 \) 
+    and \( x_0 = 4 \). Provide the detailed calculation process 
+    and the corresponding \( x_1 \).
+    \item[ii] Determine whether the above two initial values 
+    converge to the zero of the function, and explain why.
+    \item[iii] Give the range of initial values that converge.
+    \item[iv] Prove the conclusion in (iii). 
+\end{enumerate}
+
+
+\noindent 2. Given that the function \( f(x) \) satisfies 
+the following conditions at points \( x_0 \) and \( x_1 \):
+\[ 
+    f(x_0) = f_0, f(x_1) = f_1, f'(x_0) = f'_0, f'(x_1) = f'_1 
+\]
+\begin{enumerate}
+    \item[i] Provide a numerical calculation formula for \( f'(x) \) 
+    that uses only function values and has a \( p \)-th order error 
+    of \( O(h^2) \). (where \( h = x_1 - x_0 \))
+    \item[ii] Provide a numerical calculation formula for \( f''(x) \).
+    \item[iii] Provide a numerical calculation formula for \( f'''(x) \) 
+    and give the \( p \)-th order error estimate. 
+    (Hint: Use Hermite interpolation polynomial)
+    \item[iv] Provide a numerical calculation formula for 
+    \( f^{(4)}(x) \), then give and prove the \( p \)-th order error estimate.
+\end{enumerate}
+
+
+\noindent 3. Given the parametric equations \( (x(t), y(t)) \), 
+\( t \in [0, 2\pi] \) to draw a unit circle, 
+passing through the known points \( (1,0) \), \( (0,1) \), \( (-1,0) \), 
+and \( (0,-1) \).
+
+\begin{enumerate}
+    \item[i] Approximate \( x(t) \) and \( y(t) \) 
+    using Lagrange interpolation polynomials: Take
+    \[
+    t_{i+1} = t_i + \frac{\pi}{2}, \quad t_0 = 0, \quad i = 1, 2, 3, 4.
+    \]
+    Construct Lagrange interpolation polynomials \( P_x(t) \) and \( P_y(t) \) 
+    through \( (t_i, x(t_i)) \) and \( (t_i, y(t_i)) \), respectively. 
+    Please write out the expression for \( P_x(t) \).
+    \item[ii] Please write out the interpolation remainder.
+    % Please provide the supremum (least upper bound) for the error of
+    % %  Please provide an error estimate for \( P_x(t) \) 
+    % % and indicate when \( t \) is such that the error
+    % \[
+    % e_L := |P_x(t) - x(t)|.
+    % \]
+    \item[iii] Further approximate the unit circle's parametric equations 
+    \( x(t) \) and \( y(t) \) using periodic splines. 
+    Let the corresponding cubic spline functions for \( x(t) \) and 
+    \( y(t) \) be \( S_x(t) \) and \( S_y(t) \), respectively. 
+    Please set \( d_i = S'_y(t_i) \) as unknowns and provide 
+    the system of linear equations for solving \( d_i \).
+    (Note: It is known that \( S_y(t_i) = y(t_i) \))
+    \item[iv] Please indicate when \( t \) is such that the error
+    \[
+    e_S := \sqrt{(S_x(t) - x(t))^2 + (S_y(t) - y(t))^2}
+    \]
+    is maximized.
+\end{enumerate}
+
+\noindent 4. Please provide the best square approximation polynomial for 
+\( f(x) = \sin(x) \) on the interval \([- \frac{\pi}{2}, \frac{\pi}{2}]\):
+
+\begin{itemize}
+    \item[i] Please write out the expression 
+    for the best linear approximation polynomial \( P_1(x) \).
+    \item[ii] Please write out the normal equations 
+    for the best quadratic approximation polynomial \( P_2(x) \) of \( f(x) \) 
+    in the basis \( \{1, x, x^2\} \).
+    \item[iii] Please orthogonalize the basis \( \{1, x, x^2\} \) 
+    using the Gram-Schmidt method. Write out the specific steps.
+    \item[iv] Find the best quadratic approximation polynomial \( P_2(x) \) 
+    of \( f(x) \) using the basis from question iii.
+\end{itemize}
+
+\noindent 5. For \( f(x) = \cos(x) \), 
+compute the numerical integral over the interval \([0, \pi]\):
+\begin{enumerate}
+    \item[i] Please provide the formula for calculating the integral 
+    of \( f(x) \) using the trapezoidal rule, 
+    and compute the integral value.
+    \item[ii] Please provide the formula for calculating the integral 
+    of \( f(x) \) using Simpson's rule, 
+    compute the integral value, and estimate the error.
+    \item[iii] It is known that on the interval \([-1, 1]\), 
+    the Legendre polynomials are given by:
+    \[
+       P_0(x) = 1, 
+       \quad P_n(x) = \frac{1}{2^n n!} \frac{d^n}{dx^n} \left( (x^2 - 1)^n \right), 
+       \quad n = 1, 2, \ldots
+    \]
+    Please construct the Gauss-Legendre quadrature formula for \( n = 2 \), 
+    and compute the integral of \( f(x) \) over \([0, \pi]\). 
+    (Hint: Legendre polynomials have the property: \((1 - x^2) P_n'(x) = n[P_{n-1}(x) - xP_n(x)]\).)
+    \item[iv] Verify the algebraic accuracy of the formula obtained in question 3.
+\end{enumerate}
+
+\noindent 6. Given the improved Euler's method formula as:
+\[
+y_{n+1} = y_n + \frac{h}{2} [f(x_n, y_n) + f(x_{n+1}, y_{n+1})].
+\]
+\begin{enumerate}
+    \item[i] Please use this format to calculate the initial value problem:
+    \[
+    \frac{dy}{dx} = y - x, \quad y(0) = 1,
+    \]
+    and provide the numerical solution for \( y(1) \), taking \( h = 0.1 \).
+    \item[ii] Please provide the local truncation error 
+    for this format and indicate the order of the method.
+    \item[iii] Please calculate the region of absolute stability for this format.
+\end{enumerate}
+
+\noindent 7. Given the boundary value problem:
+\[
+-\Delta u = \pi^2 \sin(\pi x) \sin(\pi y), 
+\quad u|_{\partial \Omega} = \sin(\pi x) \sin(\pi y),
+\]
+where 
+\( \Omega = \left[\frac{1}{2}, \frac{3}{2}\right] \times \left[\frac{1}{2}, 
+\frac{3}{2}\right] \).
+\begin{enumerate}
+    \item[i] Please provide the truncation error for this difference scheme.
+    \item[ii] Please use the five-point difference scheme 
+    to calculate the numerical solution of \( u(x, y) \), taking \( h = 0.25 \). 
+    Provide the node numbering and list the system 
+    of linear equations without solving.
+\end{enumerate}
+
+
+\noindent 8. There is an old computer with a floating-point system 
+\( \mathcal{F} \) with base \( \beta = 2 \), precision \( p = 3 \), 
+and exponent range \( [L = -1, U = 2] \).
+
+\begin{enumerate}
+    \item[i] What is the largest floating-point number in \( \mathcal{F} \)? 
+    What is the positive subnormal floating-point number closest to $0$?
+    \item[ii] How many normalized floating-point numbers can be represented 
+    in \( \mathcal{F} \)? Write the next floating-point number after $1$.
+    \item[iii] In \( \mathcal{F} \), 
+    \[
+        fl\left(\frac{a}{b}\right) = \frac{a}{b}(1 + \delta), 
+        \quad |\delta| < \epsilon_u.
+    \]
+    Here, \( a \) and \( b \) are floating-point numbers in \( \mathcal{F} \), 
+    and \( \epsilon_u \) is the machine precision. 
+    Write out the specific value of \( \epsilon_u \).
+    \item[iv] In the IEEE system, it is always specified that \( L = 1 - U \). 
+    Please analyze the purpose of doing this.
+\end{enumerate}
+
+% 8. 现有一台古老的计算机，它的浮点数系统 $\mathcal{F}$ 的基数 $\beta = 2$, 精度 $p = 3$, 
+% 指数区间 $[L = -1, U = 2]$.
+
+% \begin{enumerate}
+%     \item[i] 请问 $\mathcal{F}$ 的最大浮点数是几？最接近 $0$ 的非规格浮点数是几？
+%     \item[ii] 请问 $\mathcal{F}$ 中总共有多少规格化浮点数可以表示? 写出 $1$ 之后的下一个浮点数.
+%     \item[iii] 在 $\mathcal{F}$ 中, 
+%     $$
+%     fl(\frac{a}{b}) = \frac{a}{b}(1 + \delta), |\delta| < \epsilon_u.
+%     $$   
+%     这里, $a, b$ 是 $\mathcal{F}$ 中的浮点数, $\epsilon_u$ 是机器精度. 写出具体的 $\epsilon_u$ 数值.
+% \end{enumerate}
+% 已知边值问题
+% $$
+% -\Delta u = \pi^2\sin \pi x\sin \pi y, 
+% \quad u|_{\partial \Omega} = \sin \pi x \sin \pi y,
+% $$
+% 这里 $\Omega = [\frac{1}{2}, \frac{3}{2}] \times [\frac{1}{2}, \frac{3}{2}]$.
+
+% 1. 请给出该差分格式的截断误差.
+
+% 2. 请用五点差分格式计算 $u(x, y)$ 的数值解, 取 $h = 0.25$. 给出节点编号, 
+% 列出线性方程组, 不必计算.
+
+% 已知改进 Euler 法的公式为
+% $$
+% y_{n+1} = y_n + \frac{h}{2} [f(x_n, y_n) + f(x_{n+1}, y_{n + 1})].
+% $$
+
+% 1. 请用该格式计算初值问题:
+% $$
+% \frac{dy}{dx} = y - x, y(0) = 1,
+% $$
+% 给出 $y(1)$ 的数值解, 取 $h = 0.1$.
+
+% 2. 请给出该格式的局部截断误差, 并指出这是几阶方法.
+
+% 3. 请计算该格式的绝对稳定域.
+
+
+
+
+% \newpage 
+% 对 $f(x) = \cos x$, 在区间 $[0, \pi]$ 上计算数值积分. 
+
+% 1. 请给出用梯形公式计算 $f(x)$ 积分的公式, 并计算积分值.
+
+% 2. 请给出用 Simpson 公式计算 $f(x)$ 积分的公式, 计算积分值, 并估计误差.
+
+% 3. 已知在 $[-1, 1]$ 区间上, Legendre 多项式为:
+% $$
+% P_0(x) = 1, P_n(x) = \frac{1}{2^n n!} \frac{d^n}{dx^n} (x^2 - 1)^n, 
+% n = 1, 2, \ldots.
+% $$
+% 请构建 $n = 2$ 的 Gauss-Legendre 积分公式, 
+% 计算 $f(x)$ 在 $[0, \pi]$ 上的积分值. 
+% (提示: Legendre 多项式有性质: $(1 - x^2)P_n'(x) = n[P_{n - 1}(x) - xP_n(x)]$.)
+
+% 4. 验证第3问得到的公式的代数精度.
+
+% 请在区间 $[-\frac{\pi}{2}, \frac{\pi}{2}]$ 上给出 
+% $f(x) = \sin(x)$ 的最佳平方逼近多项式: 
+
+% 1. 请写出最佳一次逼近多项式 $P_1(x)$ 的表达式.
+
+% 2. 请在基 $1, x, x^2$ 下写出 $f(x)$ 的最佳二次逼近多项式 $P_2(x)$ 的正规方程组.
+
+% 3. 请用 Gram-Schmidt 正交化方法将 $1, x, x^2$ 正交化. 写出具体步骤.
+
+% 4. 求出 $f(x)$ 在此基下的最佳二次逼近多项式 $P_2(x)$.
+
+% 用参数方程 $(x(t), y(t))$, $t \in [0, 2 \pi]$ 绘制单位圆, 
+% 通过已知点 $(1, 0)$, $(0, 1)$, $(-1, 0)$ 和 $(0, -1)$. 
+
+% 1. 用 Lagrange 插值多项式逼近 $x(t)$ 和 $y(t)$: 取
+% \[
+%     t_{i + 1} = t_i + \frac{\pi}{2}, t_0 = 0, i = 1, 2, 4.
+% \]
+% 过 $(t_i, x(t_i))$ 和 $(t_i, y(t_i))$ 做 Lagrange 插值多项式 $P_x(t)$ 和 $P_y(t)$, 
+% 请写出 $P_x(t)$ 的表达式.
+
+% 2. 请给出 $P_x(t)$ 的误差
+% $$
+% e_L := |P_x(t) - x(t)|
+% $$ 
+% 的上界. 
+
+% 3. 再用周期样条逼近单位圆的参数方程 $x(t)$ 和 $y(t)$, 
+% 令对应 $x(t)$ 和 $y(t)$ 的三次样条函数分别为 $S_x(t)$ 和 $S_y(t)$, 
+% 请以 $d_i = S_y'(t_i)$ 为未知量, 给出求解 $d_i$ 的线性方程组. 
+
+% 4. 请指出 $t$ 等于多少时, 误差
+% $$
+% e_S := \sqrt{(S_x(t) - x(t))^2 + (S_y(t) - y(t))^2}
+% $$
+% 最大.
+
+
+% 已知函数 $f(x)$ 在 $x_0$ 和 $x_1$ 点满足
+% \[
+% f(x_0) = f_0, f(x_1) = f_1, f'(x_0) = f'_0, f'(x_1) = f'_1.
+% \]
+% \begin{enumerate}
+%     \item[i] 给出 $f'(x)$ 的数值计算公式，要求只使用函数值，且 $p-$ 阶误差为 $O(h^2)$. 
+%     ($h = x_1 - x_0$)
+%     \item[ii] 给出 $f''(x)$ 的数值计算公式.
+%     \item[iii] 给出 $f^{3}(x)$ 的数值计算公式，并给出误差 $p-$ 阶估计.  
+%     (提示：使用 Hermite 插值多项式)
+%     \item[iv] 给出 $f^{(4)}(x)$ 的数值计算公式，给出并证明误差 $p-$ 阶估计.
+% \end{enumerate}
+
+\end{document}
+
