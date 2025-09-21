@@ -568,10 +568,11 @@ f(\alpha) = f(x_n) + (\alpha - x_n) f'(x_n) + \frac{(\alpha - x_n)^2}{2} f''(\xi
 \[
 x_{n+1} - \alpha = (x_n - \alpha)^2 \cdot \frac{f''(\xi)}{2f'(x_n)} \tag{*}
 \]
-由 \(f'(\alpha) \ne 0\) 的连续性可知，存在 \(\delta_1, \delta_2 > 0\)，使得在集合 \(B_1 = [\alpha - \delta_1, \alpha + \delta_1]\) 中，\(f'(x)\) 有界且不为零。
+由 \(f'(\alpha) \ne 0\) 的连续性可知，存在 \(\delta \in (0, \delta)\)，使得在集合 
+\(\mathcal{B}_1 = [\alpha - \delta_1, \alpha + \delta_1]\) 中，\(f'(x)\) 有界且不为零。
 设：
 \[
-M := \frac{\max_{x \in B_1} |f''(x)|}{2 \min_{x \in B_1} |f'(x)|}
+M := \frac{\max_{x \in \mathcal{B}_1} |f''(x)|}{2 \min_{x \in \mathcal{B}_1} |f'(x)|}
 \]
 若初始点 \(x_0\) 满足：
 \begin{itemize}
@@ -586,7 +587,7 @@ M := \frac{\max_{x \in B_1} |f''(x)|}{2 \min_{x \in B_1} |f'(x)|}
 \[
 |x_n - \alpha| \le \frac{1}{M} (M |x_0 - \alpha|)^{2^n}
 \]
-这证明了二次收敛性。若 \(f''(\alpha) = 0\)，收敛速率可能高于二次。 
+即 $x_n$ 收敛至 $\alpha$. 这证明了二次收敛性。若 \(f''(\alpha) = 0\)，收敛速率可能高于二次。 
 \end{proof}
 
 \begin{remark}
@@ -832,7 +833,7 @@ x_{n+1} - \alpha = (x_n - \alpha)(x_{n-1} - \alpha) \cdot \frac{f''(\zeta_n)}{2 
 \end{lemma}
 
 \begin{proof}
-定义割差为：
+定义差商为：
 \begin{equation}
     % eq 1.17
 f[a,b] = \frac{f(a) - f(b)}{a - b}.
@@ -878,9 +879,10 @@ p = \frac{1 + \sqrt{5}}{2} \approx 1.618.
 \end{theorem}
 
 \begin{proof}
-由于 \( f' \) 连续，且 \( f'(\alpha) \ne 0 \)，可得存在 \( \delta_1 > 0 \)，使得对所有 \( x \in B_1 \subseteq \mathcal{B} \)，有 \( f'(x) \ne 0 \).
-
-设 \( B_1 = [\alpha - \delta_1, \alpha + \delta_1] \)，定义 \( E_i = |x_i - \alpha| \),
+由于 \( f' \) 连续，且 \( f'(\alpha) \ne 0 \)，可得存在 \( \delta_1 \in (0, \delta) \)，
+使得对所有 \( x \in \mathcal{B}_1 \subseteq \mathcal{B} \)，有 \( f'(x) \ne 0 \).
+其中 \( \mathcal{B}_1 = [\alpha - \delta_1, \alpha + \delta_1] \). 
+定义 \( E_i = |x_i - \alpha| \),
 \[
 M = \frac{\displaystyle \max_{x \in B_1} |f''(x)|}{\displaystyle 2 \min_{x \in B_1} |f'(x)|}
 \]
@@ -896,25 +898,28 @@ ME_{n+1} \leq ME_n ME_{n-1}.
     \item \( \max(ME_1, ME_0) = \eta < 1 \).
 \end{enumerate}
 
-则根据上述递推关系，可由归纳法证明：存在 \(\eta\) 使得所有 \( ME_n < \eta \)。记 \( ME_0 \leq \eta \),
+则根据上述递推关系，可由归纳法证明：存在 \(\eta\) 使得所有 \( ME_n < \eta \). 记 \( ME_0 \leq \eta \),
  \( ME_1 \leq \eta \), 
- \( ME_2 \leq ME_1 ME_0 \leq \eta^2 \), 以此类推，得：
+ \( ME_2 \leq ME_1 ME_0 \leq \eta^2 \), 
+ \( ME_3 \leq ME_2 ME_1 \leq \eta^3 \), $\cdots$, 
+ \( ME_{n + 1} \leq ME_n ME_{n - 1} \leq \eta^{F_n + F_{n - 1}} = \eta^{F_n} \), 
+ 以此类推，得：
 \[
-E_n \leq B_n := \frac{1}{M} \eta^n,
+E_n \leq B_n := \frac{1}{M} \eta^n.
 \]
-其中 \( \{q_n\} \) 是从 \( q_0 = 1, q_1 = 1 \) 开始的斐波那契数列。由定理 \ref{eq::golden_ratio} 可得：
+由定理 \ref{thm::binet} 可得：
 \[
-q_n \sim \frac{1.618^{n+1}}{\sqrt{5}},
+q_n \to \frac{1.618^{n+1}}{\sqrt{5}},
 \]
 从而 \( \lim_{n \to \infty} E_n = 0 \).
 
 为了估计收敛速率，首先研究上界 \( \{B_n\} \) 的下降速度：
 
 \begin{equation*}
-\frac{B_{n+1}}{E_0^\eta} = \left( \frac{1}{M} \right)^\eta \eta^{q_{n+1}} = M^{r_0 - 1} \eta^{-r_1 - r_0 q_n} \leq M^{r_0 - 1} \eta^{-1},
+\frac{B_{n+1}}{B^{r_0}_n} = \frac{\left(\frac{1}{M}\right)\eta^{F_{n+1}}}{\left(\frac{1}{M}\right)^{r_0}\eta^{r_0F_{n}}} 
+= M^{r_0 - 1} \eta^{F_{n + 1} - r_0 F_n} \leq M^{r_0 - 1} \eta^{-1},
 \end{equation*}
-
-其中 \( q_{n+1} - r_0 q_n = r_1^{n+1} \to -1 \)。
+注意由推论 \ref{cor::fib_recurrence}  \( F_{n+1} - r_0 F_n = r_1^{n} \to -1 \). 
 
 为证明收敛速率，我们定义：
 \begin{equation}
