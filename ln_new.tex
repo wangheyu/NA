@@ -46,7 +46,7 @@
 
 \lstset{style=mystyle}
 
-\newfontfamily\yuanti{cwTeXYen} 
+%\newfontfamily\yuanti{cwTeXYen} 
 
 % 创建一个特定的定理样式和计数器  
 \newtheorem{theorem}{定理}  
@@ -1118,7 +1118,8 @@ f^n(x) := f(f(\cdots f(x))) = x,
     % 1.34
 \textbf{不动点迭代} 是通过如下形式迭代寻找不动点的方法：
 \begin{equation}
-    % eq 1.10
+    % eq 1.29
+    \label{eq::fixed_point_iteration}
 x_{n+1} = g(x_n), \quad n \in \mathbb{N}.
 \end{equation}
 \end{definition}
@@ -1128,20 +1129,37 @@ x_{n+1} = g(x_n), \quad n \in \mathbb{N}.
 牛顿法就是一种不动点迭代。
 \end{example}
 
+$$
+x_{n + 1} = x_n - \frac{f(x_n)}{f'(x_n)},
+$$
+所以牛顿法的迭代函数为
+$$
+g(x) = x - \frac{f(x)}{f'(x)}.
+$$
+它的不动点就是原方程 \( f(x) = 0 \) 的根。
+
+
+
 \begin{exercise}
     % 1.36
     \label{exe::fixed_point_behavior}
-设 \( f(x) = x^2 - a \), 求平方根问题可转化为寻找不动点的问题。对于 \( a = 1 \), 考虑如下三种迭代函数：
-\begin{itemize}
-    \item \( g_1(x) = \frac{1}{2}(x + \frac{a}{x}) \)（收敛）
-    \item \( g_2(x) = x^2 + a \)（发散）
-    \item \( g_3(x) = \frac{1}{2}(x + a) \)（振荡）
-\end{itemize}
-解释这些行为。
+
+为计算某个正实数 \( a \) 的平方根，我们可以将问题表述为求函数  
+\[f(x) = x^2 - a\]  
+的根。  
+当 \( a = 1 \), 初始猜测值 \( x_0 = 2 \), 且有以下三种选择：  
+\[g_1(x) := x^2 + x - a,\]  
+\[g_2(x) := \frac{a}{x},\]  
+以及  
+\[g_3(x) := \frac{1}{2}\left(x + \frac{a}{x}\right),\]  
+
+这三种形式都是和 $f(x) = 0$ 等价的形式，但可以验证 \( g_1 \) 发散，\( g_2 \) 振荡，\( g_3 \) 收敛。
+本节中的定理将解释其原因。
 \end{exercise}
 
 \begin{definition}
     % 1.37
+    \label{def::contraction}
 若函数 \( f : [a, b] \to [a, b] \) 存在 \( \lambda \in [0, 1) \) 使得对任意 \( x, y \in [a, b] \) 有：
 \begin{equation}
 |f(x) - f(y)| \leq \lambda |x - y|,
@@ -1163,26 +1181,38 @@ x_{n+1} = g(x_n)
 \]
 对于任意初始值 \( x_0 \in [a, b] \) 都收敛于 \( \alpha \)，且有误差估计：
 \begin{equation}
+    % eq 1.31
+    \label{eq::contraction_error}
 |x_n - \alpha| \leq \frac{\lambda^n}{1 - \lambda} |x_1 - x_0|.
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-由引理 \ref{lem::fixed_point}，存在至少一个不动点。若存在两个不动点 \( \alpha, \beta \), 则：
+由引理 \ref{lem::fixed_point} 知，$g$ 在区间 $[a,b]$ 上至少有一个不动点。设存在两个不同的不动点 $\alpha$ 与 $\beta$, 则
 \[
-|\alpha - \beta| = |g(\alpha) - g(\beta)| \leq \lambda |\alpha - \beta| < |\alpha - \beta|
+|\alpha-\beta|=|g(\alpha)-g(\beta)|\le \lambda |\alpha-\beta|,
 \]
-矛盾，故不动点唯一。
+这推出 $|\alpha-\beta|\le 0$, 亦即这两个不动点必相同。
 
-由定义有：
+由定义 \ref{def::contraction}，$x_{n+1}=g(x_n)$, 从而所有 $x_n$ 都落在 $[a,b]$ 中。
+为证明收敛性，注意到
 \[
-|x_{n+1} - \alpha| = |g(x_n) - g(\alpha)| \leq \lambda |x_n - \alpha|
+|x_{n+1}-\alpha| = |g(x_n)-g(\alpha)| \le \lambda |x_n-\alpha|.
 \]
-归纳得：
+由归纳法并结合三角不等式，得到
 \[
-|x_n - \alpha| \leq \lambda^n |x_0 - \alpha|
+\begin{aligned}
+|x_n-\alpha|
+&\le \lambda^n |x_0-\alpha| \\
+&\le \lambda^n\bigl(|x_1-x_0|+|x_1-\alpha|\bigr) \\
+&\le \lambda^n\bigl(|x_1-x_0|+\lambda |x_0-\alpha|\bigr),
+\end{aligned}
 \]
-三角不等式推导可得误差估计。
+从而推出
+\[
+|x_0-\alpha| \le \frac{1}{1-\lambda}\,|x_1-x_0|,
+\]
+并与式 (\ref{eq::contraction_error}) 一致。
 \end{proof}
 
 \begin{remark}
@@ -1193,39 +1223,53 @@ x_{n+1} = g(x_n)
 有时判断一个函数是否为压缩映射是困难的。另一种方法是检查该函数的导数的绝对值是否 \textbf{处处小于 $1$}.
 \end{remark}
 
+
 \begin{theorem}
     % 1.40
     \label{thm::fixed_point_convergence}
-设 \( g : [a, b] \to [a, b] \), 且 \( g \in C^1[a, b] \), 记
+设 $g:[a,b]\to [a,b]$。若 $g\in C^{1}[a,b]$ 且
 \[
-\lambda = \max_{x \in [a, b]} |g'(x)| < 1,
+\lambda=\max_{x\in [a,b]}|g'(x)|<1,
 \]
-则 \( g \) 在 \([a, b]\) 上有唯一不动点 \(\alpha\)，且迭代
-\[
-x_{n+1} = g(x_n)
-\]
-收敛于 \(\alpha\), 误差估计同理成立，同时：
+则 $g$ 在区间 $[a,b]$ 内有唯一的不动点 $\alpha$。此外，对任意初值 $x_0\in [a,b]$，不动点迭代式 (\ref{eq::fixed_point_iteration}) 都收敛到 $\alpha$, 
+误差估计 (\ref{eq::contraction_error}) 成立，并且
 \begin{equation}
-\lim_{n \to \infty} \frac{x_{n+1} - \alpha}{x_n - \alpha} = g'(\alpha).
+    % eq 1.32
+    \label{eq::fixed_point_derivative}
+\lim_{n\to\infty}\frac{x_{n+1}-\alpha}{x_n-\alpha}=g'(\alpha).
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-由均值定理 \( g(x_n) - g(\alpha) = g'(\xi)(x_n - \alpha) \), 其中 \( \xi \in (x_n, \alpha) \). 取极限，得结论。
+由中值定理（定理 C.91）可知，对所有 $x,y\in [a,b]$, 有
+\[
+|g(x)-g(y)|\le \lambda |x-y|.
+\]
+定理 \ref{thm::contraction} 给出了除式 (\ref{eq::fixed_point_derivative}) 之外的全部结论。
+式 (\ref{eq::fixed_point_derivative}) 由
+\[
+x_{n+1}-\alpha=g(x_n)-g(\alpha)=g'(\xi)\,(x_n-\alpha),
+\]
+以及 $\lim_{n\to\infty}x_n=\alpha$ 与 $\xi$ 介于 $x_n$ 和 $\alpha$ 之间这一事实得到。
 \end{proof}
+
 
 \begin{corollary}
     % 1.41
-    \label{cor::fixed_point_derivative}
-设 \( \alpha \) 是函数 \( g : \mathbb{R} \to \mathbb{R} \) 的不动点，
-\( g \in C^1(B_0) \), 其中 \( B_0 = [\alpha - \delta, \alpha + \delta] \), 若 \( |g'(\alpha)| < 1 \), 则：
-
-存在 \( \delta_0 > 0 \), 使得若 \( x_0 \in B_0 \) 且 \( \max_{x \in B_0} |g'(x)| < 1 \), 则定理 \ref{thm::contraction} 成立。
+    \label{cor::fixed_point_derivative_old}
+设 $\alpha$ 是函数 $g:\mathbb{R}\to\mathbb{R}$ 的一个不动点，且 $|g'(\alpha)|<1$, 并且 $g\in C^{1}(\mathcal{B})$, 其中
+\[
+\mathcal{B}=[\alpha-\delta, \alpha+\delta]
+\]
+对某个 $\delta>0$. 若初值 $x_0$ 取得足够接近 $\alpha$, 则定理 \ref{thm::contraction} 的结论成立。
 \end{corollary}
 
 \begin{proof}
-选择 \( \lambda \in (|g'(\alpha)|, 1) \), 选取 \( \delta_0 \) 使得 \( g \) 在 \( B_0 \subseteq [\alpha - \delta_0, \alpha + \delta_0] \) 
-上满足 \( |g'(x)| \leq \lambda \), 由定理 \ref{thm::fixed_point_convergence} 得证。
+取 $\lambda$ 使得 $|g'(\alpha)|<\lambda<1$. 再取 $\delta_0\le \delta$, 使得在
+\[
+\mathcal{B}_0=[\alpha-\delta_0, \alpha+\delta_0]
+\]
+上有 $\max_{x\in \mathcal{B}_0}|g'(x)|\le \lambda<1$. 于是 $g(\mathcal{B}_0)\subset \mathcal{B}_0$. 应用定理 \ref{thm::fixed_point_convergence} 即得证。
 \end{proof}
 
 \begin{remark}
@@ -1233,46 +1277,35 @@ x_{n+1} = g(x_n)
 \end{remark}
 
 
-
 \begin{corollary}
     % 1.42
-    \label{cor::fixed_point_higher_order}
-设函数 \( g : [a, b] \to [a, b] \) 有不动点 \( g(\alpha) = \alpha \in [a, b] \). 若不动点迭代
+    \label{cor::fixed_point_higher_order_old}
+设 $g:[a,b]\to [a,b]$ 且在 $[a,b]$ 中有不动点 $g(\alpha)=\alpha$. 若
 \begin{equation}
-    % eq 1.29
-x_{n+1} = g(x_n)
-\end{equation}
-以 \( p \) 阶精度（其中 \( p > 1,\, p \in \mathbb{N} \)）收敛于 \(\alpha\)，则需满足：
-
-\begin{equation}
-    % eq 1.30
 \left\{
 \begin{aligned}
-&g \in C^p[a, b], \\
-&\forall k = 1, 2, \ldots, p - 1,\quad g^{(k)}(\alpha) = 0, \\
-&g^{(p)}(\alpha) \ne 0
+& g\in C^{p}[a,b],\\
+& \forall k=1,2,\dots,p-1,\quad g^{(k)}(\alpha)=0,\\
+& g^{(p)}(\alpha)\ne 0,
 \end{aligned}
 \right.
 \end{equation}
-
-且初始点 \( x_0 \) 足够接近 \(\alpha\).
+并且初值 $x_0$ 取在足够接近 $\alpha$ 的位置，则不动点迭代式 (\ref{eq::fixed_point_iteration}) 以 $p$ 阶精度（$p>1,\ p\in\mathbb{N}$）收敛到 $\alpha$.
 \end{corollary}
 
 \begin{proof}
-由推论 \ref{cor::fixed_point_derivative} 可知 \( g'(\alpha) = 0 \), 又由于 \( g' \) 连续，存在 \( \delta > 0 \), 
-使得不动点迭代在区间 \( [\alpha - \delta, \alpha + \delta] \) 内唯一收敛至 \(\alpha\).
-
-由 \( g \) 在 \(\alpha\) 处的泰勒展开，有：
-\begin{equation*}
-\begin{array}{rcl}
-    E_{\text{abs}}(x_{n+1}) &:=& |x_{n+1} - \alpha| = |g(x_n) - g(\alpha)| \\
-&=& \left| \sum_{i=1}^{p-1} \frac{(x_n - \alpha)^i}{i!} g^{(i)}(\alpha) + \frac{(x_n - \alpha)^p}{p!} g^{(p)}(\xi) \right|
-\end{array}
-\end{equation*}
-其中 \( \xi \in [a, b] \). 由于 \( g^{(p)} \) 在 \([a, b]\) 上连续，根据定理 C.70，可得其有界。因此存在常数 \( M \), 使得
-\begin{equation}
-E_{\text{abs}}(x_{n+1}) < M E_{\text{abs}}^p(x_n).
-\end{equation}
+由推论 \ref{cor::fixed_point_derivative_old} 得 $g'(\alpha)=0$. 由 $g'$ 的连续性，存在 $\delta>0$, 
+使得不动点迭代在区间 $[\alpha-\delta,\alpha+\delta]$ 内唯一地收敛到 $\alpha$. 对 $g$ 在 $\alpha$ 处作泰勒展开，可得
+\[
+E_{\mathrm{abs}}(x_{n+1}) := |x_{n+1}-\alpha|
+=|g(x_n)-g(\alpha)|
+=\left|\sum_{i=1}^{p-1}\frac{(x_n-\alpha)^i}{i!}\,g^{(i)}(\alpha)
++\frac{(x_n-\alpha)^p}{p!}\,g^{(p)}(\xi)\right|
+\]
+其中某个 $\xi\in[a,b]$. 由于 $g^{(p)}$ 在 $[a,b]$ 上连续，由定理 C.70 知 $g^{(p)}$ 在 $[a,b]$ 上有界。故存在常数 $M$ 使得
+\[
+E_{\mathrm{abs}}(x_{n+1}) \le M\,E_{\mathrm{abs}}(x_n)^p.
+\]
 \end{proof}
 
 \begin{example}
@@ -1295,9 +1328,9 @@ F(\sqrt{R}) = \frac{\sqrt{R}(R + 3R)}{3R + R} = \sqrt{R}
 
 其次，\( F(x) \) 的导数如下表：
 
-\begin{table}
-\centering
-\caption{函数 \( F(x) \) 的导数}
+% \begin{table}
+% \centering
+% \caption{函数 \( F(x) \) 的导数}
 \begin{tabular}{@{}c|c|c@{}}
 \toprule
 \( n \) & \( F^{(n)}(x) \) & \( F^{(n)}(\sqrt{R}) \) \\
@@ -1307,9 +1340,9 @@ F(\sqrt{R}) = \frac{\sqrt{R}(R + 3R)}{3R + R} = \sqrt{R}
 3 & \( \dfrac{-48R(9x^4 - 18Rx^2 + R^2)}{(3x^2 + R)^4} \) & \( \dfrac{-48R(-8R^2)}{(4R)^4} = \dfrac{3}{2R} \ne 0 \) \\
 \bottomrule
 \end{tabular}
-\end{table}
+% \end{table}
 
-由推论 \ref{cor::fixed_point_higher_order} 可知，该方法具有三阶收敛性。
+由推论 \ref{cor::fixed_point_higher_order_old} 可知，该方法具有三阶收敛性。
 \end{example}
 
 \begin{remark}
