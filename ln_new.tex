@@ -1349,6 +1349,133 @@ F(\sqrt{R}) = \frac{\sqrt{R}(R + 3R)}{3R + R} = \sqrt{R}
 关于度量空间中压缩映射不动点的更一般结论，参见定理 D.118。关于求解非线性方程的更多方法，读者可参阅 Atkinson 所著的教材 \cite[第二章]{Atkinson1989Introduction}.
 \end{remark}
 
+\section{多项式插值}
+% sec 2
+
+\begin{definition}
+% 2.1
+    插值（Interpolation）是在一组已知离散数据点的取值范围内构造新的数据点，通常通过生成一条插值函数（interpolating function），其图像经过所有已知数据点。
+\end{definition}
+
+\begin{example}
+% exp 2.2
+    插值函数可以是分段常数、分段线性、多项式、样条，或其他非多项式函数。    
+\end{example}
+
+\begin{remark}
+    % rem 2.1
+用“契约”（contract）的语言表述，插值问题的输入是一系列插值条件对 $(x_i,f_i)$（$i=0,1,\dots,n$）, 输出为一个函数 $p$, 
+满足后置条件 $p(x_i)=f_i$. 此外，我们还需要控制插值的不确定性，即确定在同时插值这些输入数据的两条平滑函数之间的最大差异。    
+\end{remark}
+
+\subsection{范德蒙行列式}
+
+\begin{definition}
+给定 $n$ 个参数 $t_1, t_2, \dots, t_n$, 相应的 $n\times n$ 范德蒙矩阵（Vandermonde matrix）$V$ 的第 $(i, j)$ 个元素为
+\[
+v_{i,j}=t_j^{\,i-1};
+\]
+以矩阵形式写为
+\begin{equation}
+    % eq 2.1
+    \label{eq::vandermonde}
+V(t_1,t_2,\dots,t_n)=
+\begin{bmatrix}
+1 & 1 & \cdots & 1 \\
+t_1 & t_2 & \cdots & t_n \\
+\vdots & \vdots & \ddots & \vdots \\
+t_1^{\,n-1} & t_2^{\,n-1} & \cdots & t_n^{\,n-1}
+\end{bmatrix}.
+\end{equation}
+\end{definition}
+
+\begin{lemma}
+    % lem 2.3
+    \label{lem::vandermonde}
+大小为 $(n+1)\times(n+1)$ 的范德蒙矩阵的行列式可表示为
+\begin{equation}
+    % eq 2.2
+    \label{eq::vandermonde_determinant}
+\det V(x_0,x_1,\dots,x_n)=
+\prod_{i>j}(x_i-x_j).
+\end{equation}    
+\end{lemma}
+
+\begin{proof}
+考虑函数
+\begin{equation}
+    % eq 2.3
+U(x)=\det V(x_0,x_1,\dots,x_{n-1},x)
+=\begin{vmatrix}
+1 & 1 & \cdots & 1 & 1\\
+x_0 & x_1 & \cdots & x_{n-1} & x\\
+\vdots & \vdots & \ddots & \vdots & \vdots\\
+x_0^{\,n} & x_1^{\,n} & \cdots & x_{n-1}^{\,n} & x^{n}
+\end{vmatrix}.
+\end{equation}
+显然，由行列式定义，$U(x)\in \mathbb{P}_n$, 并且在 $x_0,x_1,\ldots,x_{n-1}$ 处为零，因为将这些值代入 $x$ 会使行列式出现两列相同的列。
+
+由此可得，$U(x)$ 是一个 $n$ 次多项式，并且 $x_0,x_1,\ldots,x_{n-1}$ 是它的 $n$ 个不同的根。因此，存在常数 $A$, 使得
+\begin{equation}
+    % eq 2.4
+    \label{eq::vandermonde_polynomial}
+U(x)=A\prod_{i=0}^{n-1}(x-x_i),
+\end{equation}
+其中常数 $A$ 仅依赖于 $x_0,x_1,\ldots,x_{n-1}$. 同时，对式中最后一列按代数余子式展开可知，$x^{n}$ 的系数等于 $\det V(x_0,x_1,\ldots,x_{n-1})$. 
+于是
+\begin{equation}
+    % eq 2.5
+U(x)=\det V(x_0,x_1,\ldots,x_{n-1})\prod_{i=0}^{n-1}(x-x_i),
+\end{equation}
+从而得到递推关系
+\begin{equation}
+    % eq 2.6
+\det V(x_0,x_1,\ldots,x_n)=\det V(x_0,x_1,\ldots,x_{n-1})\prod_{i=0}^{n-1}(x_n-x_i).
+\end{equation}
+基于 $U(x_0,x_1)=x_1-x_0$ 的归纳法即可得到式 (\ref{eq::vandermonde_determinant}).
+\end{proof}
+
+\begin{remark}
+（引理 \ref{lem::vandermonde} 的另一种证明）
+对任意 $i=1,2,\ldots,n$ 与 $j<i$, 在范德蒙矩阵 (\ref{eq::vandermonde}) 中将 $x_i$ 用 $x_j$ 代换，可得 $\det V=0$. 
+这样的代换总数为
+\[
+1+2+\cdots+n=\frac{n(n+1)}{2}.
+\]
+另一方面，$\det V$ 可被看作关于变量 $x_0,x_1,\ldots,x_n$ 的多项式。因此
+\[
+\prod_{i>j}(x_i-x_j)
+\]
+是 $\det V$ 的一个因子。由行列式的定义，$\det V$ 中每个多项式项的总次数也为
+\[
+1+2+\cdots+n=\frac{n(n+1)}{2}.
+\]
+注意到单项式 $x_1 x_2^{2}\cdots x_n^{n}$ 的系数为 $1$, 从而证明完成。
+\end{remark}
+
+\begin{theorem}[多项式插值的唯一性]
+给定互不相同的点 $x_0,x_1,\ldots,x_n\in\mathbb{C}$ 以及对应的函数值 $f_0,f_1,\ldots,f_n\in\mathbb{C}$. 
+记 $\mathbb{P}_n$ 为次数不超过 $n$ 的多项式的集合。则存在唯一的多项式 $p_n(x)\in\mathbb{P}_n$, 使得
+\begin{equation}
+\forall i=0,1,\ldots,n,\qquad p_n(x_i)=f_i.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+设一个多项式 $\sum_{i=0}^{n} a_i x^{i}$, 其中有 $n+1$ 个待定系数 $a_i$. 条件 \ref{eq::vandermonde_polynomial} 导出如下含有 $n+1$ 个方程的线性方程组：
+\begin{equation}
+a_0 + a_1 x_i + a_2 x_i^{2} + \cdots + a_n x_i^{n} = f_i,\qquad i=0,1,\ldots,n.
+\end{equation}
+由引理 \ref{lem::vandermonde} 可知，该方程组的行列式为
+\begin{equation*}
+\prod_{i>j}(x_i-x_j).
+\end{equation*}
+由于各点互异，结合克拉默法则（定理 B.258）即得所求的唯一解。
+\end{proof}
+
+\begin{remark}
+我们将在后续研究中利用插值多项式的唯一性。    
+\end{remark}
 
 \bibliography{na.bib}
 \bibliographystyle{plain}
