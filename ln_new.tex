@@ -1612,30 +1612,18 @@ $$
 
 \subsection{Lagrange 公式}
 \begin{remark}
-定理 \ref{thm::polynomial_interpolation} 使用了待定系数法来寻求插值多项式. 得到一个线性方
-程组, 但系数矩阵是 Vandermonde 矩阵. 我们已经讨论了它的问题.
-
 插值问题的理论模型是在空间 $\mathbb{P}_n$ 中寻找一个目标多项式:
 $$
-p_n(x) = \sum_{k = 0}^n a_k x^k
+p_n(x) = \sum_{j = 0}^n a_j x^j
 $$
 满足
 $$
 p_n(x_i) = y_i.
 $$
-这里 $a_k$, $k = 0, 1, \cdots, n$ 是待定系数.
+这里 $a_j$, $j = 0, 1, \cdots, n$ 是待定系数.
 
-从线性代数的角度观察这个问题, 那么问题就是, 我们实际上选取了
-$\mathbb{P}_n$ 的一组基:
-$$
-\left\{1, x, x^2, \cdots, x^n\right\}
-$$
-来表出插值多项式 $p_n(x)$, 而表出系数就是我们的待定系数 $a_k$.
-
-在这个模型下, 我们得到线性方程组的系数矩阵, 实际上就是我们的所选取这组
-基的表出矩阵. 如果这个矩阵不够好, 那么我们可以尝试选取一组更好的基来表出.
-
-现在问题抽象成, 对 $\mathbb{P}_n$ 的一组基:
+从线性代数的角度观察这个问题, 
+对 $\mathbb{P}_n$ 的一组基:
 $$
 \left\{
 \phi_0, \phi_1, \cdots, \phi_n,
@@ -1643,72 +1631,48 @@ $$
 $$
 则
 $$
-p_n(x) = \sum_{k = 0}^n a_k \phi_k(x),
+p_n(x) = \sum_{j = 0}^n a_j \phi_j(x),
 $$
 需满足
 $$
-p_n(x_i) = \sum_{k = 0}^n a_k \phi_k(x_i) = y_i.
+p_n(x_i) = \sum_{j = 0}^n a_j \phi_j(x_i) = y_i.
 $$
+现在系数矩阵是 $\left[\phi_j(x_i)\right]$. 
 
-现在系数矩阵是 $\left[\phi_i(x_j)\right]$. 它可以是对角阵么? 也就是能不能有:
+如果我们选取了
+$\mathbb{P}_n$ 的一组基:
 $$
-a_i\phi_i(x_i) = y_i,
+\left\{1, x, x^2, \cdots, x^n\right\}
 $$
-而
-$$
-\phi_i(x_j) = 0, j \neq i.
-$$
-现在我们要问, $\phi_i$ 是什么? 它是 $\mathbb{P}_n$ 的一组基中的一个,
-因此它是最高不超过 $n$ 次的多项式. 我们希望它有 $n$ 个零点 $x_j$, $j \neq i$,
-即它有单因子
-$$
-\phi_i(x) = h(x) \prod_{j \neq i}(x - x_j).
-$$
-注意 $\prod_{j \neq i}(x - x_j)$ 已经是 $n$ 次多项式了, 因此 $h(x)$
-其实是一个常数 $h$. 现在我们用上最后一个条件:
-$$
-a_i\phi_i(x_i) = y_i,
-$$
-有
-$$
-a_i \cdot h \prod_{j \neq i}(x_i - x_j) = y_i,
-$$
-这里我们手中还有一个自由参数 $h$, 怎么选取能最优? 
-不如就令
-$$
-h = \prod_{j \neq i}\frac{1}{(x_i - x_j)} ?
-$$
-这样就有
-$$
-\phi_i(x) = \prod_{j \neq i}\frac{x - x_j}{x_i - x_j}, 
-$$
-而且 $\phi_i(x_i) = 1$, 进而有 $a_i = y_i$.
+来表出插值多项式 $p_n(x)$, 
+其实就是定理 \ref{thm::polynomial_interpolation} 得到的一个线性方
+程组, 但系数矩阵是 Vandermonde 矩阵. 
 
-发生肾么事了? 我们理一理啊:
 
-我们现在有 $\mathbb{P}_n$ 的一组基
+而如果取 $\mathbb{P}_n$ 的另一组基
 $$
-\left\{\phi_i(x) = \prod_{j \neq i}\frac{x - x_j}{x_i - x_j}
-\right\}, i = 0, 1, \cdots, n.
+\left\{\phi_j(x) = \prod_{j \neq i}\frac{x - x_j}{x_i - x_j}
+\right\}, j = 0, 1, \cdots, n.
 $$
 满足
 $$
-\phi_i(x_j) = \left\{
+\phi_j(x_i) = \left\{
 \begin{array}{ll}
-  1,& j = i \\
-  0,& j \neq i.
+  1,& i = j \\
+  0,& i \neq j.
 \end{array}
 \right.
 $$
-这组基, 我们称它为 Lagrange 插值基函数. 一般我们用 $l_k(x), k = 0, 1, \cdots, n$
+这组基, 我们称它为 Lagrange 插值基函数. 一般我们用 $l_j(x), j = 0, 1, \cdots, n$
 表示(和书上公式 \ref{eq::lagrange_basis} 对上了). 在这组基下, 插值多项式
 $$
-p_n(x) = \sum_{k = 0}^n a_k \l_k(x)
+p_n(x) = \sum_{j = 0}^n a_j l_j(x)
 $$
-满足 $p_n(x_k) = f_k$, $k = 0, 1, \cdots, n$,
-则直接有 $a_k = f_k$. 于是我们可以直接写出
+满足 $p_n(x_i) = y_i$, $i = 0, 1, \cdots, n$,
+则在这组基下，待定系数对应的线性方程组的系数矩阵是单位矩阵. 也就是说,
+直接有 $a_i = y_i$. 于是我们可以直接写出
 $$
-p_n(x) = \sum_{k = 0}^n f_k l_k(x).
+p_n(x) = \sum_{j = 0}^n y_j l_j(x).
 $$
 这里注意, 由定理 \ref{thm::polynomial_interpolation}, 插值多项式是唯一的. 因此我们实际上只是给出了一个
 得到 $p_n(x)$ 的更好的算法, 这个算法就是 Lagrange 插值公式. 也就是书上
@@ -1733,7 +1697,7 @@ p_n(x)=\sum_{k=0}^{n} f_k\,\ell_k(x),
 特别地，当 $n=0$ 时，$\ell_0\equiv 1$.
 \end{definition}
 
-例子 \ref{exp::lagrange} 搞一下. 很方便啊. 
+可以验证两点式。
 
 \begin{example}
     % exp 2.11
@@ -1742,6 +1706,8 @@ p_n(x)=\sum_{k=0}^{n} f_k\,\ell_k(x),
 拉格朗日公式生成了 $p_2 (x) = 3x^2 - 16x + 21$.
     
 \end{example}
+
+我们还可以把 Lagrange 多项式写的更紧凑一些：
 
 \begin{lemma}
     % lem 2.12
@@ -1769,6 +1735,7 @@ p_n(x)=\sum_{k=0}^{n} f_k\,\ell_k(x),
 当以 $x_k$ 代入 $x$ 时，这 $n+1$ 项除一项外全部为零，结论成立。
 \end{proof}
 \end{lemma}
+（验证一下。）
 
 \begin{remark}
 定理 \ref{thm::polynomial_interpolation} 与定理 \ref{thm::cauchy_remainder} 表明：
@@ -1814,7 +1781,7 @@ Jupyer 画个图... Lagrange.pdf
 对每个 $q(x)\in\mathbb{P}_n$, 都有 $p_n(q;x)\equiv q(x)$. 
 对常值函数 $f(x)\equiv 1$ 进行拉格朗日插值即得上式第一式。
 
-类似地，令 $q_j(u):=(u-x)^j$, 其中 $x$ 为自由参数。于是对任意 $j=1,\ldots,n$, 有
+类似地，令 $q_j(u):=(u-x)^j$, 其中 $x$ 为自由参数。于是对任意 $j=1,\ldots,n$, 有 （对 $u$ 做自变量插值）
 \begin{equation*}
 p_n(q_j;u)\equiv q_j(u)\quad \Rightarrow \quad \sum_{k=0}^{n}(x_k-x)^j\,\ell_k(u)\equiv (u-x)^j,
 \end{equation*}
@@ -1839,7 +1806,7 @@ p_n(q_j;u)\equiv q_j(u)\quad \Rightarrow \quad \sum_{k=0}^{n}(x_k-x)^j\,\ell_k(u
 
 
 \begin{remark}
-(柯西关系的另一种证明)
+(柯西关系的另一种证明 ？？？)
 设存在某个 $x=x_c$ 使得上述第二式不成立。对每个 $j=1,\ldots,n$, 
 对多项式 $q(x)=(x-u)^j$ 作拉格朗日插值，得到
 \begin{equation*}
@@ -1848,6 +1815,728 @@ p_n(q_j;u)\equiv q_j(u)\quad \Rightarrow \quad \sum_{k=0}^{n}(x_k-x)^j\,\ell_k(u
 令 $u=x_c$ 即得矛盾。    
 \end{remark}
 
+\subsection{Newton 公式}
+% subsec 2.4
+
+\begin{remark}
+Lagrange 插值公式非常漂亮, 理论上也很完美. 但它也有几个槽点:
+
+\begin{enumerate}
+\item 它的计算形式, 稳定性不是很好, 因此插值的次数不能太高, 比如不要超过 $20$;
+\item Lagrange 插值公式是依赖插值数据 $(x_i, f_i)$ 的, 一旦数据发生变
+  化, 则插值公式都需要重写. 之前的计算也全部白费. 一个常见的场景是, 我
+  们取了 $6$ 个点的数据进行计算, 发现精度不够, 于是希望增加到 $7$ 个,
+  然而我们需要重新计算全部基函数, 之前的计算也都全部无用. 
+\end{enumerate}
+
+应该说, Newton 公式并不是因为上述原因才产生的, 但它确实能解决上述问题.
+这又是一个新的插值算法(多项式本身是唯一的).
+
+我们注意到公式 (\ref{eq::lagrange_symmetric}) 给出的 $\pi_n(x)$ 其实是 $\mathbb{P}_n$ 空间的一组基: 
+$$
+\forall p_n(x) \in \mathbb{P}_n, p_n(x) = \sum_{k = 0}^n a_k \pi_k(x).
+$$
+%也就是课本的公式 \ref{eq::newton_interpolation}.
+
+这一组基的特点是,
+$$
+\left\{\pi_0, \pi_1, \cdots, \pi_k\right\}
+$$
+即前 $k + 1$ 项, 就是子空间 $\mathbb{P}_k$ 的全部基. 那就意味着当空间从
+$\mathbb{P}_n$ 扩展到$\mathbb{P}_{n + 1}$ 时, 全部增加的部分($x^{n + 1}项$),
+都只和基函数 $\pi_{n + 1}$ 有关. 换言之, 当我们要求更高的插值精度, 也就是希望将插值函数从
+$p_n(x)$ 提高到 $p_{n + 1}(x)$, 其实我们只要增加一项
+$a_{n + 1}\pi_{n + 1}(x)$ 就行了, 或者说, 确定一下 $a_{n + 1}$ 是多少就可以了.
+
+我们来讨论 $a_k$, $k = 0, 1, \cdots, a_n$
+的具体形式:
+
+首先, 如果我们只有一个数据 $(x_0, f_0)$, 那我们只能构建一个零次多项式:
+$$
+p_0(x) = a_0 \pi_0(x) = a_0. 
+$$
+它满足
+$$
+p_0(x_0) = a_0 = f_0.
+$$
+于是 $a_0$ 自然就有了.
+
+接下去我们多了一个数据 $(x_1, f_1)$, 我们希望将 $p_0(x)$ 改进成一个一次多项式 $p_1(x)$:
+$$
+p_1(x) = a_0 \pi_0(x) + a_1 \pi_1(x) = p_0(x) + a_1 (x - x_0),
+$$
+我们注意到之间的计算结果 $p_0(x)$ 被自然包含入 $p_1(x)$, 而且
+$$
+p_1(x_0) = p_0(x_0) = f_0
+$$
+完全相容. 现在我们只需要考虑
+$$
+p_1(x_1) = f_0 + a_1 \pi_x(x_1) = f_0 + a_1 (x_1 - x_0) = f_1,
+$$
+也即
+$$
+a_1 = \frac{f_1 - f_0}{x_1 - x_0}.
+$$
+于是我们又得到了 $p_1(x)$.
+
+令
+$$
+a_0 = f[x_0] := f(x_0), a_1 = f[x_0, x_1] := \frac{f_1 - f_0}{x_1 - x_0},
+$$
+以及
+$$
+a_k = f[x_0, x_1, \cdots, x_k],
+$$
+那我们怎么去探求它的一般形式呢? 以后我们称呼这种形式为 $f$ 关于点 $x_0, x_1, \cdots, x_k$
+的 $k-$阶差商. 也有人把方括号放前面. 它可以理解为上述基下的插值多项式系数 $a_k$.
+\end{remark}
+
+\begin{definition}
+    % def 2.14
+    \label{def::newton_interpolating}
+(差商和牛顿公式) 牛顿公式用于插值在不同点 
+$x_0, x_1, \cdots , x_n$ 上的值 $f_0 , f_1 , \cdots , f_n$，公式为
+\begin{equation}
+    % eq 2.14
+    \label{eq::newton_interpolation}
+p_n(x) = \sum_{k=0}^{n} a_k \pi_k(x), 
+\end{equation}
+其中 $\pi_k$ 在 (\ref{eq::lagrange_symmetric}) 中定义，第 $k$ 个差商 $a_k$ 定义为 $p_k (f ; x)$ 中 $x^k$ 的系数，
+并记作 $f [x_0 , x_1 , \cdots , x_k ]$ 或 $[x_0 , x_1 , \cdots , x_k ]f$.
+特别地，有 $f [x_0 ] = f (x_0)$.
+\end{definition}
+
+\begin{remark}
+差商 $a_i$ 是明确定义的：插值条件可以表示为一个上三角线性系统，
+\[
+\begin{bmatrix}
+ \pi_0(x_0) & 0 & \cdots & 0 \\
+ \pi_0(x_1) & \pi_1(x_1) & \cdots & 0 \\
+ \vdots & \vdots & \ddots & \vdots \\
+ \pi_0(x_n) & \pi_1(x_n) & \cdots & \pi_n(x_n) \\
+\end{bmatrix} \begin{bmatrix}
+ a_0 \\
+ a_1 \\
+ \vdots \\
+ a_n \\
+\end{bmatrix} = \begin{bmatrix}
+ f (x_0) \\
+ f (x_1) \\
+ \vdots \\
+ f (x_n) \\
+\end{bmatrix},
+\]
+由此，通过前向替换，可以唯一确定 $a_i$，这要归功于 (\ref{eq::lagrange_symmetric}) 
+引出的 $\pi_i(x_i) \neq 0$ 对于每个 $i = 0, 1, \cdots , n$ 都成立。
+也要强调，在牛顿公式 (\ref{eq::newton_interpolation}) 中，每个 $\pi_k$ 对应 $k$ 个点，而每个 $a_k$ 对应 $k + 1$ 个点。
+
+前向替换得到 $a_0 = f (x_0 )$ 和
+\[
+a_1 = \frac{f (x_1) - f (x_0)}{x_1 - x_0},
+\]
+这与定理 \ref{thm:DD-recursion} 一起，证明了 ``差商''这个名字的合理性。    
+\end{remark}
+
+在推出差商一般式之前，我们先观察一下差商的性质：
+
+\begin{corollary}
+    % cor 2.15
+    \label{thm:DD-recursion_permutation}
+(差商的对称性)
+设 $(i_0,i_1,i_2,\ldots,i_k)$ 是 $(0,1,2,\ldots,k)$ 的一个排列。则
+\begin{equation}
+    % eq 2.15
+    \label{eq::newton_permutation}
+f[x_0,x_1,\ldots,x_k]=f[x_{i_0},x_{i_1},\ldots,x_{i_k}].
+\end{equation}
+
+\begin{proof}
+插值多项式与插值节点的编号无关。其余部分由定理 \ref{thm::polynomial_interpolation} 中插值多项式的唯一性立即得到。
+\end{proof}
+\end{corollary}
+
+\begin{corollary}
+    % cor 2.16
+    \label{cor::newton_explicit}
+第 $k$ 个差商可表示为
+\begin{equation}
+    % eq 2.16
+    \label{eq::newton_explicit}
+f[x_0,x_1,\ldots,x_k]
+=\sum_{i=0}^{k}\frac{f_i}{\displaystyle\prod_{\substack{j=0\\ j\ne i}}^{k}(x_i-x_j)}
+=\sum_{i=0}^{k}\frac{f_i}{\pi_{k+1}'(x_i)},
+\end{equation}
+其中 $\pi_{k+1}(x)$ 定义见式（\ref{eq::lagrange_symmetric}）。
+\begin{proof}
+由定理 \ref{thm::polynomial_interpolation} 的唯一性可知，式（\ref{eq::lagrange}）与式（\ref{eq::newton_interpolation}）所给出的两个多项式相同。
+于是第一个等式由式（\ref{eq::lagrange_basis}）与定义 \ref{def::newton_interpolating} 得到，而第二个等式由引理 \ref{lem::lagrange_symmetric} 得到。
+\end{proof}
+\end{corollary}
+
+
+\begin{remark}
+推论 \ref{thm:DD-recursion_permutation} 告诉我们, 对 $k-$阶差商, 交换这些结点的次序, 是没有关系的. 因为不论什么次序,
+这 $k + 1$ 个结点唯一确定了插值多项式.
+
+而和 Lagrange 插值公式对比一下, 不难得到引理 2.16 的结论.
+
+% 最后, 定理 \ref{thm:DD-recursion} 给出了 $k-$阶差商的递推公式, 这里的证明思路是:
+
+% 记 $p_{k - 1}^{(1)}(x)$ 是 $(x_i, f_i)$, $i = 0, 1, \cdots, k - 1$ 下的插值多项式；
+% 而 $p_{k - 1}^{(2)}(x)$ 是 $(x_i, f_i)$, $i = 1, \cdots, k$ 下的插值多项式；令
+% $$
+% p_k(x) = p_{k - 1}^{(1)}(x)
+% + \frac{x - x_0}{x_k - x_0}\left(p_{k - 1}^{(2)}(x) - p_{k - 1}^{(1)}(x)\right),
+% $$
+% 则
+% $$
+% p_k(x_0) = p_{k - 1}^{(1)}(x_0) = f_0,
+% $$
+% 而
+% $$
+% p_k(x_i) = p_{k - 1}^{(1)}(x_i), i = 1, 2, \cdots, k - 1,
+% $$
+% 因为对这些 $x_i$, 都有
+% $$
+% p_{k - 1}^{(1)}(x_i) = p_{k - 1}^{(2)}(x_i) = f_i,
+% $$
+% 插值节点上取值肯定相同. 最后, 有
+% $$
+% p_k(x_k) = p_{k - 1}^{(2)}(x_k) = f_k.
+% $$
+% 综合有, $k$ 次多项式 $p_k(x)$ 在 $x_0, x_1, \cdots, x_k$ 这 $k + 1$
+% 个点上的取值都是确定的, 所以它就是过这 $k + 1$ 个点的唯一的一个插值多项式. 观察它的 $x^k$ 次项,
+% 即得结论.
+    
+\end{remark}
+
+
+\begin{theorem}
+    % thm 2.17
+    \label{thm:DD-recursion}
+差商满足如下递推关系：
+\begin{equation}
+    % eq 2.17
+    \label{eq::DD-recursion}
+f[x_0,x_1,\ldots,x_k]
+=\frac{\,f[x_1,x_2,\ldots,x_k]-f[x_0,x_1,\ldots,x_{k-1}]\,}{x_k-x_0}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+由定义 \ref{def::newton_interpolating}，$f[x_1,x_2,\ldots,x_k]$ 是某个次数为 $k-1$ 的插值多项式（记为 $P_2(x)$）中 $x^{k-1}$ 的系数。
+类似地，令 $P_1(x)$ 为其 $x^{k-1}$ 的系数等于 $f[x_0,x_1,\ldots,x_{k-1}]$ 的插值多项式。
+
+这里厘清一下，$P_1(x)$ 是关于 $(x_0, f_0), (x_1, f_1), \cdots, (x_{k - 1}, f_{k - 1})$ 的 $k - 1$ 次插值多项式，
+其最高项系数是 $f[x_0, x_1, \cdots, x_{k - 1}]$; 而 $P_2(x)$ 是关于 $(x_1, f_1), (x_2, f_2), \cdots, (x_k, f_k)$ 的 $k - 1$ 次插值多项式,
+其最高项系数是 $f[x_1, x_2, \cdots, x_k]$. 
+
+构造多项式
+\[
+P(x)=P_1(x)+\frac{x-x_0}{x_k-x_0}\,\bigl(P_2(x)-P_1(x)\bigr).
+\]
+显然 $P(x_0)=P_1(x_0)$。又由插值条件，$P_2(x_i)=P_1(x_i)$（$i=1,2,\ldots,k-1$），
+从而 $P(x_i)=P_1(x_i)$（$i=1,2,\ldots,k-1$）。最后 $P(x_k)=P_2(x_k)$. 
+
+因此，上式所定义的 $P(x)$ 正是给定 $k+1$ 个数据点的插值多项式。
+即 $P(x)$ 是关于 $(x_i,f_i)$, $i=0,1,\ldots,k$ 的插值多项式。最高项系数即为 $f[x_0,x_1,\ldots,x_k]$.
+
+特别地，$P(x)$ 中 $x^k$ 的系数来自
+$\displaystyle \frac{x}{x_k-x_0}\bigl(P_2(x)-P_1(x)\bigr)$
+这一项。其系数等于
+\[
+\frac{f[x_1,\ldots,x_k]-f[x_0,\ldots,x_{k-1}]}{x_k-x_0}.
+\]
+由定义 \ref{def::newton_interpolating} 可知这正是 $f[x_0,x_1,\ldots,x_k]$, 于是得到所需递推关系。
+\end{proof}
+
+\begin{remark}
+递推关系式（\ref{thm:DD-recursion}）是定义 \ref{def::newton_interpolating} 以及插值多项式增量式构造的直接推论。
+反之，也可以由 $f[x_0]=f(x_0)$ 与（\ref{thm:DD-recursion}）来定义差商，并据此推导出定义 \ref{def::newton_interpolating} 中的牛顿公式。    
+\end{remark}
+
+\begin{remark}
+定理 \ref{thm:DD-recursion} 可用于构造差商表（divided differences table）。    
+\end{remark}
+
+\begin{definition}
+    % def 2.18
+    \label{def::DD-table}
+(差商表) 差商表是一个三角形表格，左边一列是插值节点 $x_i$，其余列是差商。
+在差商表上的第 $k$ 个差商 ($k \in N^+$) 
+\[
+\begin{array}{cccc}
+x_0 & & & \\
+x_1 & f [x_0, x_1] & & \\
+x_2 & f [x_1, x_2] & f [x_0 , x_1, x_2] & \\
+x_3 & f [x_2, x_3] & f [x_1 , x_2, x_3] & f [x_0 , x_1 , x_2 , x_3 ] \\
+\vdots & \vdots & \vdots & \vdots \\
+\end{array}
+\]
+计算方法是，将左边的条目与上面的条目之差，除以左边的 $x$ 值与通过向上对角线找到的 
+$f$ 值对应的 $x$ 值之差。我们可以通过余项估计，不断增加这张表的长度，直到我们得到指定的精度。
+这个过程一般称为自适应。期间，每个差商系数只需算一次，不需要重复计算。
+\end{definition}
+
+\begin{remark}
+要构造差商表，先把插值条件抄入表格的前两列；然后用递推公式（\ref{eq::DD-recursion}）由前两列计算第三列，
+再由第三列与第一列计算第四列，如此往复。除了其插值多项式具有可增量构造这一优点外，牛顿公式还非常高效，因为递推过程在每一列都会重复利用先前的结果。    
+\end{remark}
+
+
+\begin{example}(用牛顿公式求插值多项式并估计值)
+    % exp 2.18
+    \label{exp::newton_interpolation}
+已知
+\[
+(x,f(x)):\quad (0,6),\ (1,-3),\ (2,-6),\ (3,9).
+\]
+由定义 \ref{def::DD-table}（差商表）可得差商表主对角线与首列为
+\begin{equation}
+% eq 2.18
+\begin{array}{c|cccc}
+x & f[x_i] & f[x_i,x_{i+1}] & f[x_i,x_{i+1},x_{i+2}] & f[x_i,\ldots,x_{i+3}]\\ \hline
+0 & 6\\
+1 & -3 & -9\\
+2 & -6 & -3 & 3\\
+3 & 9 & 15 & 9 & 2
+\end{array}
+\end{equation}
+
+据此，用牛顿形式得到插值多项式
+\begin{equation}
+    % eq 2.19
+    \label{eq::newton_example}
+\begin{aligned}
+p_3(x)
+&=f[x_0]+f[x_0,x_1](x-x_0)+f[x_0,x_1,x_2](x-x_0)(x-x_1)\\
+&\quad +f[x_0,x_1,x_2,x_3](x-x_0)(x-x_1)(x-x_2)\\
+&=6-9x+3x(x-1)+2x(x-1)(x-2).
+\end{aligned}
+\end{equation}
+因此
+\[
+f\!\left(\tfrac{3}{2}\right)\approx p_3\!\left(\tfrac{3}{2}\right)=-6.
+\]
+\end{example}
+
+\begin{exercise}
+    % ex 2.20
+    \label{exe::newton_interpolation}
+重做例 \ref{exp::lagrange}，但使用牛顿公式。
+\end{exercise}
+
+\begin{remark}
+    % 2.15
+练习 \ref{exe::newton_interpolation} 展示了牛顿公式相较于拉格朗日公式的一个优点：采用牛顿公式更便于以增量方式完成插值。
+\end{remark}
+我们这里总结一下。作为一个数学问题，能否通过给定的 $n + 1$ 个点构建一个 $n$ 次多项式，
+给出存在唯一性已经是一个完美的正面回答。甚至这个结论还是构造性的 (Cramer 法则)。
+
+然而，当我们试图在计算机中实现时，有限精度是一个现实的困难。在这种背景下，
+计算过程和解的形式，不再是一个微不足道的问题。
+
+\begin{itemize}
+  \item 如果我们采用 $1$, $x$, $\ldots$, $x^n$ 作为插值多项式的基，
+  那么我们的待定系数问题会导致一个 Vandermonde 矩阵，这个矩阵是病态的，
+  几乎无法实际求解 $n$ 稍大的问题;
+  \item 如果我们采用 $l_k$, $k = 0, 1, \cdots, n$ 作为插值多项式的基，
+  那么我们的待定系数问题会导致一个对角矩阵，使得我们实际上不必求解方程组;
+  \item 如果我们采用 $\pi_k(x)$ 作为插值多项式的基，
+  那么我们的插值多项式的计算形式就是 Newton 插值公式，它是一个递推公式，
+  因此可以构建自适应算法。
+\end{itemize}
+
+显然，由于它们在数学上的解实际是同一个，因此 Cauchy 关系导致的余项形式，也是相同的。
+但是 Newton 插值公式也从形式上给出了一个更加对称和优雅的余项形式。
+
+\begin{remark}
+    % rem 2.15
+定理 \ref{thm:DD-recursion} 的最简单非平凡情况导致（注意这是精确的！）
+\[
+f[x, x_0] = \frac{f[x] - f[x_0]}{x - x_0}. \Rightarrow
+\]
+\[
+(\ast) : f [x] = f [x_0 ] + (x - x_0 )f [x, x_0 ].
+\]
+定理 \ref{thm:DD-recursion} 和推论 \ref{thm:DD-recursion} 得到
+\[
+f [x, x_0 , \cdots , x_{n-1}] = f [x_0 , \cdots , x_n ] + (x - x_n )f [x, x_0 , \cdots , x_n].
+\]
+（即将一个自由的 $x$ 加入到差商节点中去）设 $n = 1$，我们有
+\[
+f [x, x_0 ] = f [x_0 , x_1] + (x - x_1 )f [x, x_0 , x_1].
+\]
+将上述等式代入 $(\ast)$，我们得到
+\[
+f [x] = f [x_0 ] + (x - x_0 )f [x_0 , x_1 ] + (x - x_0)(x - x_1)f [x, x_0, x_1].
+\]
+这是一个递推关系，重复上述步骤 $n - 1$ 次，我们得到以下定理。
+    
+\end{remark}
+
+\begin{theorem}
+    % thm 2.21
+    \label{thm::newton_remainder}
+对于不同的点 $x_0 , x_1 , \cdots , x_n$, 和 $x$, 我们有
+\begin{equation}
+    % eq 2.20
+    \label{eq::newton_remainder}
+    \begin{array}{rcl}
+  f (x) &=& f [x_0 ] + f [x_0 , x_1 ](x - x_0 ) + \cdots + f [x_0, x_1, \cdots , x_{n-1} ] \prod_{i=0}^{n-1} (x - x_i ) \\
+  &+& f [x_0, x_1, \cdots , x_n , x] \prod_{i=0}^{n} (x - x_i ). 
+    \end{array}
+\end{equation}
+    
+\end{theorem}
+
+（相当于 Newton 插值多项式给出了一个新的余项形式:
+\[
+  f [x_0, x_1, \cdots , x_n , x] \prod_{i=0}^{n} (x - x_i ).
+\]
+这个证明也非常直接：
+）
+
+\begin{proof}
+取另一个点 $z \neq x_i$. 
+应用牛顿公式到 $x_0 , x_1 , \cdots , x_n , z$, 得到一个插值多项式
+\begin{eqnarray*}
+Q(x) &=& f [x_0] + f [x_0 , x_1](x - x_0) + \cdots + f [x_0 , x_1 , \cdots , x_n] 
+\prod_{i=0}^{n-1} (x - x_i )\\
+&+& f [x_0 , x_1 , \cdots , x_n , z] \prod_{i=0}^{n} (x - x_i ).
+\end{eqnarray*}
+插值条件 $Q(z) = f(z)$ 得到
+\begin{eqnarray*}
+f(z) = Q(z) &=& f [x_0 ] + f [x_0 , x_1 ](z - x_0) + \cdots + f [x_0 , x_1 , \cdots , x_n ] 
+\prod_{i=0}^{n-1} (z - x_i )\\
+&+& f [x_0 , x_1 , \cdots , x_n , z] \prod_{i=0}^{n} (z - x_i ).
+\end{eqnarray*}
+将虚拟变量 $z$ 替换为 $x$，得到 (\ref{eq::newton_remainder}).
+
+上述论证假设 $x \neq x_i$. 我们现在考虑 $x = x_j$ 的情况. 将 (\ref{eq::newton_remainder}) 重写为 
+$f(x) = p_n(f; x) + R(x)$，其中 $R(x)$ 显然是 (\ref{eq::newton_remainder}) 中的最后一项。我们需要展示
+\[
+\forall j = 0, 1, \cdots , n, \quad p_n(f ; x_j ) + R(x_j ) - f (x_j ) = 0,
+\]
+其中 $p_n (f ; x_j )$ 是 $p_n(f ; x)$ 在 $x = x_j$ 处的值；
+这显然成立，因为 $x_j$ 决定了 $p_n(f ; x_j ) = f (x_j )$ 和 $R(x_j ) = 0$，满足插值条件。
+
+\end{proof}
+
+这个定理利用差商形式给出了 Newton 插值公式, 注意它的余项表示也很有特色. 
+当然, 推论 \ref{cor::newton_remainder} 和 \ref{cor::newton_limit} 的结论是显然的. 我们自始至终只有一个插值多项式. 
+
+\begin{corollary}
+    % cor 2.22
+    \label{cor::newton_remainder}
+设 $f\in C^{n}[a,b]$，且 $f^{(n+1)}(x)$ 在区间 $(a,b)$ 的每一点都存在。若 $a=x_0<x_1<\cdots<x_n=b$ 且 $x\in[a,b]$，则存在 $\xi(x)\in(a,b)$ 使得
+\begin{equation}
+f[x_0,x_1,\cdots,x_n,x]=\frac{1}{(n+1)!}\,f^{(n+1)}\bigl(\xi(x)\bigr).
+\end{equation}
+\begin{proof}
+这由定理 \ref{thm::newton_remainder} 与 \ref{thm::cauchy_remainder} 直接推出。
+\end{proof}
+\end{corollary}
+
+\begin{corollary}
+    % cor 2.23
+    \label{cor::newton_limit}
+若 $x_0<x_1<\cdots<x_n$，且 $f\in C^{n}[x_0,x_n]$，则有
+\begin{equation}
+\lim_{x_n\to x_0} f[x_0,x_1,\cdots,x_n]=\frac{1}{n!}\,f^{(n)}(x_0).
+\end{equation}
+\begin{proof}
+在上一个推论中令 $x=x_{n+1}$，并将 $n+1$ 替换为 $n$；当 $x_n\to x_0$ 时有 $\xi\to x_0$，于是结论成立。
+\end{proof}
+\end{corollary}
+
+\begin{remark}
+我们可以把定理 \ref{thm::newton_remainder} 看作泰勒展开的一个推广。本节其余部分将讨论牛顿公式的一个有用特例。
+\end{remark}
+
+\begin{definition}
+    % def 2.24
+    \label{def::shift_operators}
+(移位算子) 设 $V$ 是所有双向序列的线性空间。定义两个线性算子 $E$ 和 $B$ 如下：
+一个双向序列是一个映射: 
+$$
+f : \mathbb{Z} \to \mathbb{R},
+$$
+
+又可以写作 $f_i, i \in \mathbb{Z}$. 它和我们熟悉的序列的区别是, $i \in
+\mathbb{Z}$ 而不是 $i \in \mathbb{N}$.
+    
+\end{definition}
+
+\begin{remark}
+    % rem 2.17
+很容易验证，所有双边序列组成一个线性空间 $V$.
+\end{remark}
+
+\begin{definition}
+    % def 2.25
+    \label{def::difference_operators}
+前移算子 $E$ 与后移算子 $B$ 是定义在双边序列的线性空间 $V$ 上的线性算子 $V\to V$, 其作用为
+\begin{equation}
+    % eq 2.23
+(Ef)(i)=f(i+1), \qquad (Bf)(i)=f(i-1).
+\end{equation}
+前向差分算子 $\Delta$ 与后向差分算子 $\nabla$ 是 $V\to V$ 的线性算子，定义为
+\begin{equation}
+    % eq 2.24
+    \label{eq::difference_operators}
+\Delta=E-I, \qquad \nabla=I-B,
+\end{equation}
+其中 $I$ 是 $V$ 上的恒等算子。
+\end{definition}
+
+\begin{remark}
+    % rem 2.18
+容易证明 $E$ 与 $B$ 都是 $V$ 上的可逆线性算子，且 $EB=BE=I$。因此，$E$、$B$ 与 $I$ 的各种复合是可交换的。
+\end{remark}
+
+定义
+\ref{def::difference_operators} 给出了两个定义在 $V$ 上的算子, $E$ 和 $B$. 显然 $f_i$ 是有序的,
+所以 $Ef$ 和 $Bf$ 的作用分别是后一个和前一个. 进而, 算子
+$$
+(\Delta f)(i) = ((E - I) f)(i) = (E f)(i) - (I f)(i) = f_{i + 1} - f_i;
+$$
+而
+$$
+(\nabla f)(i) = ((I - B) f)(i) = (I f)(i) - (B f)(i) = f_i - f_{i - 1}.
+$$
+
+比如，一个双向序列：$f(i) = f_i = i^2$, $i \in \mathbb{Z}$, 那么这个序列是
+\[
+\cdots, f_{-2} = 4, f_{-1} = 1, f_0 = 0, f_1 = 1, f_2 = 4, \cdots
+\]
+而
+\[
+(Ef)_i = f_{i + 1} = (i + 1)^2,
+\]
+即
+\[
+\cdots, Ef_{-2} = 1, Ef_{-1} = 0, Ef_0 = 1, Ef_1 = 4, Ef_2 = 9, \cdots
+\]
+而
+\[
+(Bf)_i = f_{i - 1} = (i - 1)^2,
+\]
+即
+\[
+\cdots, Bf_{-2} = 9, Bf_{-1} = 4, Bf_0 = 1, Bf_1 = 0, Bf_2 = 4, \cdots
+\]
+
+算子运算可以叠加. 比如:
+$$
+\begin{array}{rcl}
+  (\Delta^3 f)(i) &=& (\Delta \Delta \Delta f)(i) \\
+  &=& (\Delta \Delta) (f_{i + 1} - f_i) \\
+  &=& \Delta ((f_{i + 2} - f_{i + 1}) - (f_{i + 1} - f_i)) \\
+  &=& \Delta (f_{i + 2} - 2 f_{i + 1} + f_i) \\
+  &=& f_{i + 3} - f_{i + 2} - 2(f_{i + 2} - f_{i + 1}) + f_{i + 1} - f_i \\
+  &=& f_{i + 3} - 3 f_{i + 2} + 3 f_{i + 1} - f_i.
+\end{array}
+$$
+
+\begin{example}
+    % exp 2.26
+    \label{exp::difference_operators}
+(差分算子) 设 $n \in \mathbb{N}$. 则第 $n$ 阶前向差分与第 $n$ 阶后向差分定义为
+设双边序列 $f$ 的记号 $f_i:=f(i)$. 则第 $n$ 阶前向差分与第 $n$ 阶后向差分定义为
+\begin{equation}
+    % eq 2.25
+\Delta^{n} f_i := (\Delta^{n} f)(i), \qquad \nabla^{n} f_i := (\nabla^{n} f)(i).
+\end{equation}
+特别地，当 $n=1$ 时，有
+\begin{equation}
+    % eq 2.26
+    \label{eq::first_difference}
+\Delta f_i = f_{i+1}-f_i, \qquad \nabla f_i = f_i - f_{i-1}.
+\end{equation}
+\end{example}
+
+\begin{theorem}
+    % thm 2.27
+    \label{thm::difference_relation}
+前向差分与后向差分满足
+\begin{equation}
+    % eq 2.27
+\forall\, n\in\mathbb{N}^+,\qquad \Delta^{n} f_i = \nabla^{n} f_{i+n}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+可由简单的归纳法证明。
+\end{proof}
+
+\begin{remark}
+    % rem 2.19
+    (对定理 \ref{thm::difference_relation} 的另一种证明)
+由 $\Delta=E-I=E(I-B)=E\nabla$，得
+\begin{equation}
+\Delta^{n}=(E\nabla)^{n}=E^{n}\nabla^{n}.
+\end{equation}
+因此
+\begin{equation}
+(\Delta^{n}f)_i=\bigl[E^{n}(\nabla^{n}f)\bigr]_i=(\nabla^{n}f)_{i+n}.
+\end{equation}
+\end{remark}
+
+\begin{remark}
+根据定理 \ref{thm::difference_relation}，以下我们只研究前向差分；关于后向差分的类似结论可由定理 \ref{thm::difference_relation} 推出。
+\end{remark}
+
+\begin{theorem}
+    % thm 2.28
+    \label{thm::difference_explicit}
+前向差分可以写成显式形式
+\begin{equation}
+    % eq 2.28
+\Delta^{n} f_i=\sum_{k=0}^{n}(-1)^{\,n-k}\binom{n}{k}\,f_{i+k}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+当 $n=1$ 时，上式化为 $\Delta f_i=f_{i+1}-f_i$. 其余情形可用归纳法，并利用恒等式
+\begin{equation}
+    % eq 2.29
+\binom{n}{k}+\binom{n}{k-1}=\binom{n+1}{k}.
+\end{equation}
+设结论对 $n$ 成立。对 $n+1$, 有
+\begin{align*}
+\Delta^{n+1}f_i
+&=\Delta\Delta^{n}f_i
+=\Delta\!\left(\sum_{k=0}^{n}(-1)^{\,n-k}\binom{n}{k}f_{i+k}\right)\\
+&=\sum_{k=0}^{n}(-1)^{\,n-k}\binom{n}{k}f_{i+k+1}
+-\sum_{k=0}^{n}(-1)^{\,n-k}\binom{n}{k}f_{i+k}\\
+&=\sum_{k=1}^{n}(-1)^{\,n+1-k}\binom{n}{k-1}f_{i+k}
++\;f_{i+n+1}\\
+&\qquad+\sum_{k=1}^{n}(-1)^{\,n+1-k}\binom{n}{k}f_{i+k}
++(-1)^{\,n+1}f_i\\
+&=\sum_{k=0}^{n+1}(-1)^{\,n+1-k}\binom{n+1}{k}\,f_{i+k},
+\end{align*}
+其中第二行由式（\ref{eq::first_difference}）得到；
+第三行把每个求和各拆出一项并在第一个求和中更换了哑变量；第四行使用了上面的二项式恒等式以及 $(-1)^{\,n+1}f_i$ 与 $f_{i+n+1}$ 
+分别对应首末两项这一事实。证毕。
+\end{proof}
+
+\begin{remark}
+    % rem 2.21
+    (对定理 \ref{thm::difference_explicit} 的另一种证明)
+由式（\ref{eq::difference_operators}）以及二项式定理可得
+\begin{equation}
+\Delta^{n}=(E-I)^{n}=\sum_{k=0}^{n}\binom{n}{k}E^{k}(-I)^{\,n-k}
+=\sum_{k=0}^{n}(-1)^{\,n-k}\binom{n}{k}\,E^{k}.
+\end{equation}
+\end{remark}
+
+\begin{remark}
+    % rem 2.22
+在例 \ref{exp::difference_operators} 以及定理 \ref{thm::difference_relation}、\ref{thm::difference_explicit} 中，
+对取值 $f_i$ 的位置并无任何限制。然而，对等距网格而言，差商会退化为前向差分；这正是引入定义 \ref{def::difference_operators} 的最初动机。
+\end{remark}
+
+\begin{theorem}
+    % thm 2.29
+    \label{thm::difference_divided}
+在等距网格 $x_i=x_0+ih$ 上，取值序列 $f_i=f(x_i)$ 满足
+\begin{equation}
+    % eq 2.30
+    \label{eq::difference_divided}
+\forall n\in\mathbb{N}^+,\qquad
+f[x_0,x_1,\ldots,x_n]=\frac{\Delta^{n}f_0}{n!\,h^{n}}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+当然式（\ref{eq::difference_divided}）也可用归纳法证明。这里给出一个更有信息量的证明。对（\ref{eq::lagrange_symmetric}）中定义的
+$\pi_{n+1}(x)$，有
+$\pi'_{n+1}(x_k)=\prod_{i=0,\, i\ne k}^{n}(x_k-x_i)$。
+由 $x_k-x_i=(k-i)h$ 得
+\begin{equation}
+    % eq 2.31
+    \label{eq::pi_derivative}
+\pi'_{n+1}(x_k)=\prod_{i=0,\,i\ne k}^{n}(k-i)h
+=h^{n}k!(n-k)!(-1)^{\,n-k}.
+\end{equation}
+于是
+\begin{align*}
+f[x_0,x_1,\ldots,x_n]
+&=\sum_{k=0}^{n}\frac{f_k}{\pi'_{n+1}(x_k)}
+=\sum_{k=0}^{n}\frac{(-1)^{\,n-k}f_k}{h^{n}k!(n-k)!}\\
+&=\frac{1}{h^{n}n!}\sum_{k=0}^{n}(-1)^{\,n-k}\binom{n}{k}f_k
+=\frac{\Delta^{n}f_0}{h^{n}n!},
+\end{align*}
+其中第一步由推论 \ref{cor::newton_explicit}，第二步来自（\ref{eq::pi_derivative}），最后一步由定理 \ref{thm::difference_explicit} 得到。证毕。
+\end{proof}
+
+\begin{theorem}
+    % thm 2.30
+    \label{thm::newton_forward}
+    (牛顿前向差分公式)
+设 $p_n(f;x)\in\mathbb{P}_n$ 在等距网格 $x_i=x_0+ih$ 的点 $x_0,x_1,\ldots,x_n$ 插值 $f(x)$，且 $f_i=f(x_i)$. 则
+\begin{equation}
+    % eq 2.32
+    \label{eq::newton_forward}
+\forall s\in\mathbb{R},\qquad
+p_n(f;x_0+sh)=\sum_{k=0}^{n}\binom{s}{k}\,\Delta^{k}f_0,
+\end{equation}
+其中 $\Delta^0 f_0=f_0$, 并且
+\begin{equation}
+    % eq 2.33
+    \label{eq::generalized_binomial}
+\binom{s}{k}=\frac{s(s-1)\cdots(s-k+1)}{k!}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+在定理 \ref{thm::newton_remainder} 中取 $f(x)=p_n(f;x)$, 再应用定理 \ref{thm::difference_divided}，可得
+\begin{equation*}
+p(x)=f_0+\sum_{k=1}^{n}\frac{\Delta^{k}f_0}{k!\,h^{k}}
+\prod_{i=0}^{k-1}(x-x_i);
+\end{equation*}
+余项为零，因为对次数为 $n$ 的多项式，任何 $(n+1)$ 次的差商都为零。令
+$x=x_0+sh,\; x_i=x_0+ih$，并利用（\ref{eq::generalized_binomial}），即得所求。证毕。
+\end{proof}
+
+\begin{remark}
+式（\ref{eq::generalized_binomial}）可看作把 $\binom{n}{k}$ 中对 $n$ 的取整推广到实数的一个形式。
+\end{remark}
+
+\begin{remark}
+与定理 \ref{thm::difference_divided} 不同，定理 \ref{thm::newton_forward} 的公式中没有 $h$. 这源于变量替换 $x=x_0+sh$.
+\end{remark}
+
+很熟悉的形式啊. 归纳一下就能得到定理 \ref{thm::difference_explicit} . 定理 \ref{thm::difference_explicit} 突出对 $f$ 的作用.
+其实完全可以写成只讨论算子作用的形式:
+$$
+\Delta^n = (E - I)^n = \sum_{k = 0}^n (-1)^{n - k}{n \choose k}E^k.
+$$
+
+利用这些算子形式, 我们可以把等距节点 $x_i = x_0 + ih$, $h \in
+\mathbb{R}$ 上的差商写成:
+$$
+f[x_0, x_1, \cdots, x_n] = \frac{\Delta^n f_0}{n! h^n}.
+$$
+这里 $f_i = f(x_i)$.
+
+进而, 对等距节点上的 Newton 插值公式就可以写成:
+$$
+p_n(x) = \sum_{k = 0}^n {s \choose k} \Delta^k f_0,
+$$
+这里
+$$
+s = \frac{x - x_0}h, x \in \mathbb{R}.
+$$
+而
+$$
+{s \choose k} = \frac{s(s - 1)\cdots(s - k + 1)}{k!}
+$$
+是广义二项展开.
+
+当然, 实际使用中, $x$ 应该是内插点, 或者非常靠近 $x_0$ 或 $x_n$ 的外
+插点.
+
+因为我们日常的数学用表, 一般都是等距的. 现在 Newton 公式更加适合查表了么？
 
 
 \bibliography{na.bib}
