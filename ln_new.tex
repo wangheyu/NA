@@ -1353,7 +1353,7 @@ F(\sqrt{R}) = \frac{\sqrt{R}(R + 3R)}{3R + R} = \sqrt{R}
 % sec 2
 
 \begin{definition}
-% 2.1
+% def 2.1
     插值（Interpolation）是在一组已知离散数据点的取值范围内构造新的数据点，通常通过生成一条插值函数（interpolating function），其图像经过所有已知数据点。
 \end{definition}
 
@@ -1371,6 +1371,7 @@ F(\sqrt{R}) = \frac{\sqrt{R}(R + 3R)}{3R + R} = \sqrt{R}
 \subsection{范德蒙行列式}
 
 \begin{definition}
+    % def 2.3
 给定 $n$ 个参数 $t_1, t_2, \dots, t_n$, 相应的 $n\times n$ 范德蒙矩阵（Vandermonde matrix）$V$ 的第 $(i, j)$ 个元素为
 \[
 v_{i,j}=t_j^{\,i-1};
@@ -1390,7 +1391,7 @@ t_1^{\,n-1} & t_2^{\,n-1} & \cdots & t_n^{\,n-1}
 \end{definition}
 
 \begin{lemma}
-    % lem 2.3
+    % lem 2.4
     \label{lem::vandermonde}
 大小为 $(n+1)\times(n+1)$ 的范德蒙矩阵的行列式可表示为
 \begin{equation}
@@ -1416,22 +1417,18 @@ x_0^{\,n} & x_1^{\,n} & \cdots & x_{n-1}^{\,n} & x^{n}
 显然，由行列式定义，$U(x)\in \mathbb{P}_n$, 并且在 $x_0,x_1,\ldots,x_{n-1}$ 处为零，因为将这些值代入 $x$ 会使行列式出现两列相同的列。
 
 由此可得，$U(x)$ 是一个 $n$ 次多项式，并且 $x_0,x_1,\ldots,x_{n-1}$ 是它的 $n$ 个不同的根。因此，存在常数 $A$, 使得
-\begin{equation}
-    % eq 2.4
-    \label{eq::vandermonde_polynomial}
+\begin{equation*}
 U(x)=A\prod_{i=0}^{n-1}(x-x_i),
-\end{equation}
+\end{equation*}
 其中常数 $A$ 仅依赖于 $x_0,x_1,\ldots,x_{n-1}$. 同时，对式中最后一列按代数余子式展开可知，$x^{n}$ 的系数等于 $\det V(x_0,x_1,\ldots,x_{n-1})$. 
 于是
-\begin{equation}
-    % eq 2.5
+\begin{equation*}
 U(x)=\det V(x_0,x_1,\ldots,x_{n-1})\prod_{i=0}^{n-1}(x-x_i),
-\end{equation}
+\end{equation*}
 从而得到递推关系
-\begin{equation}
-    % eq 2.6
+\begin{equation*}
 \det V(x_0,x_1,\ldots,x_n)=\det V(x_0,x_1,\ldots,x_{n-1})\prod_{i=0}^{n-1}(x_n-x_i).
-\end{equation}
+\end{equation*}
 基于 $U(x_0,x_1)=x_1-x_0$ 的归纳法即可得到式 (\ref{eq::vandermonde_determinant}).
 \end{proof}
 
@@ -1454,18 +1451,22 @@ U(x)=\det V(x_0,x_1,\ldots,x_{n-1})\prod_{i=0}^{n-1}(x-x_i),
 \end{remark}
 
 \begin{theorem}[多项式插值的唯一性]
+    % thm 2.5
+    \label{thm::polynomial_interpolation}
 给定互不相同的点 $x_0,x_1,\ldots,x_n\in\mathbb{C}$ 以及对应的函数值 $f_0,f_1,\ldots,f_n\in\mathbb{C}$. 
 记 $\mathbb{P}_n$ 为次数不超过 $n$ 的多项式的集合。则存在唯一的多项式 $p_n(x)\in\mathbb{P}_n$, 使得
 \begin{equation}
+    % eq 2.4
+    \label{eq::vandermonde_polynomial}
 \forall i=0,1,\ldots,n,\qquad p_n(x_i)=f_i.
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-设一个多项式 $\sum_{i=0}^{n} a_i x^{i}$, 其中有 $n+1$ 个待定系数 $a_i$. 条件 \ref{eq::vandermonde_polynomial} 导出如下含有 $n+1$ 个方程的线性方程组：
-\begin{equation}
+设一个多项式 $\sum_{i=0}^{n} a_i x^{i}$, 其中有 $n+1$ 个待定系数 $a_i$. 条件 (\ref{eq::vandermonde_polynomial}) 导出如下含有 $n+1$ 个方程的线性方程组：
+\begin{equation*}
 a_0 + a_1 x_i + a_2 x_i^{2} + \cdots + a_n x_i^{n} = f_i,\qquad i=0,1,\ldots,n.
-\end{equation}
+\end{equation*}
 由引理 \ref{lem::vandermonde} 可知，该方程组的行列式为
 \begin{equation*}
 \prod_{i>j}(x_i-x_j).
@@ -1476,6 +1477,378 @@ a_0 + a_1 x_i + a_2 x_i^{2} + \cdots + a_n x_i^{n} = f_i,\qquad i=0,1,\ldots,n.
 \begin{remark}
 我们将在后续研究中利用插值多项式的唯一性。    
 \end{remark}
+
+\subsection{Cauchy 余项}
+\begin{remark}
+我们考虑一种很实际的情况. 用于插值输入的数据点, 来自一个
+函数(已知或未知)的取值:
+$$
+y_i = f(x_i),
+$$
+这样我们相当于知道了 $f(x)$ 在 $x_i$ 的取值. 而对于 $x \neq x_i$,我
+们可以用 $p_n(x)$ 去代替 $f(x)$. 也即我们相当于可以用一个容易计算的多
+项式 $p_n(x)$ 去替代一个可能不容易计算, 甚至是没有解析表达式的函数. 
+当然我们还没有讨论怎样构建这个 $p_n$ 的算法，
+但不妨碍我们在知道存在唯一性的前提下，先问一下, 这样做多靠谱?    
+
+为此我们需要有一些理论上的准备. 也就是定理 \ref{thm::generalized_rolle}. 
+这是一个广义罗尔
+(Generalized Rolle) 定理. 它的证明也只需要反复套用罗尔定理即可.
+\end{remark} 
+
+\begin{theorem}
+    % thm 2.6
+    \label{thm::generalized_rolle}
+(广义 Rolle 定理). 设 $n \geq 2$. 
+假设 $f \in C [a, b]$ 并且 $f^{(n)} (x)$ 在 $(a, b)$ 的每个点都存在。
+假设对于 $a \leq x_0 < x_1 < \cdots < x_n \leq b$, 
+有 $f (x_0) = f (x_1 ) = \cdots = f (x_n ) = 0$.
+那么存在一个点 $\xi \in (x_0, x_n )$ 使得 $f^{(n)} (\xi) = 0$.    
+\end{theorem}
+
+\begin{proof}
+
+\end{proof}
+在 $n$ 个区间 $(x_i , x_{i+1} )$ 上应用 Rolle 定理（定理 C.90）
+得到 $n$ 个点 $\zeta_i$, 在这些点上有 $f' (\zeta_i ) = 0$. 
+考虑 $f' , f'' , \cdots , f^{(n-1)}$ 为新的函数。
+反复应用上述论点完成证明。
+
+定理 \ref{thm::generalized_rolle} 的一个重要应用在于定理 \ref{thm::cauchy_remainder}, 
+即给出了用插值多项式 $p_n(x)$ 和被插函数 $f(x)$ 之间的误差估计
+$$
+R_n(f; x) : = f(x) - p_n(f; x)
+= \frac{f^{(n + 1)}(\xi)}{(n + 1)!} \prod_{i = 0}^n (x - x_i).
+$$
+
+\begin{theorem}
+    % thm 2.7
+    \label{thm::cauchy_remainder}
+(多项式插值的柯西余项) 设 $f \in C^{n} [a, b]$ 并且假设 $f^{(n+1)} (x)$ 
+在 $(a, b)$ 的每个点都存在。让 $p_n (f ; x)$ 表示在 $P_n$ 中与 $f$ 
+在 $x_0 , x_1 , \cdots , x_n$ 处取值相同的唯一多项式。
+定义
+\begin{equation}
+    % eq 2.5
+R_n (f ; x) := f (x) - p_n(f ; x) 
+\end{equation}
+为多项式插值的柯西余项。如果 $a \leq x_0 < x_1 < \cdots < x_n \leq b$, 
+那么存在一些 $\xi \in (a, b)$ 使得
+\begin{equation}
+    % eq 2.6
+    \label{eq::cauchy_remainder}
+R_n (f ; x) = \frac{f^{(n+1)}(\xi)}{(n + 1)!} \prod_{i=0}^{n} (x - x_i) 
+\end{equation}
+其中，$\xi$ 的值依赖于 $x, x_0 , x_1 , \cdots , x_n$ 和 $f$.
+\end{theorem}
+
+\begin{proof}
+由于 $f (x_k ) = p_n (f ; x_k )$, 余数 $R_n (f ; x)$ 在 $x_k$ 处为零。
+固定 $x \neq x_0, x_1 , \cdots , x_n$ 并定义
+\[
+K(x) = \frac{f (x) - p_n (f ; x)}{\prod_{i=0}^{n} (x - x_i)}
+\]
+和一个关于 $t$ 的函数
+\[
+W (t) = f (t) - p_n (f ; t) - K(x) \prod_{i=0}^{n} (t - x_i).
+\]
+函数 $W (t)$ 在 $t = x_0, x_1, \cdots , x_n$ 处为零（$K$ 后面的连乘）。
+另外 $W (x) = 0$（$K$ 分母消去）。
+根据定理 \ref{thm::generalized_rolle}，对于某些 $\xi \in (a, b)$, 
+有 $W^{(n+1)} (\xi) = 0$, 即
+\[
+0 = W^{(n+1)} (\xi) = f^{(n+1)}(\xi) - (n + 1)!K(x).
+\]
+因此 $K(x) = f^{(n+1)} (\xi)/(n + 1)!$ 并且 (\ref{eq::cauchy_remainder}) 成立。
+这是一个很像中值定理的结论和证明。
+\end{proof}
+
+\begin{corollary}
+    % cor 2.8
+    \label{cor::cauchy_remainder}
+设 $f(x)\in C^{n+1}[a, b]$. 则有
+\begin{equation}
+    % eq 2.7
+\lvert R_n(f;x)\rvert
+\le \frac{M_{n+1}}{(n+1)!}\prod_{i=0}^{n}\lvert x-x_i\rvert
+\le \frac{M_{n+1}}{(n+1)!}\,(b-a)^{n+1},
+\end{equation}
+其中
+\begin{equation*}
+M_{n+1}=\max_{x\in[a,b]}\bigl\lvert f^{(n+1)}(x)\bigr\rvert .
+\end{equation*}
+\end{corollary}
+
+\begin{example}
+    % exp 2.9
+    \label{exp::arcsin}
+通过对 $x=0.5330$ 与 $x=0.5340$ 两点作线性插值来近似 $\arcsin(0.5335)$. 估计由此产生的误差。
+
+取 $f(x)=\arcsin(x)$. 则
+\begin{equation*}
+f''(x)=x(1-x^{2})^{-3/2},\qquad
+f^{(3)}(x)=(1+2x^{2})(1-x^{2})^{-5/2}.
+\end{equation*}
+由于在区间 $[0.5330,\,0.5340]$ 上第三阶导数为正，$f''$ 的最大值出现在 $x=0.5340$. 
+由上面的推论可得
+\begin{equation*}
+\lvert R_1\rvert \le 4.42\times 10^{-7}.
+\end{equation*}
+实际误差约为
+\begin{equation*}
+1.10\times 10^{-7}.
+\end{equation*}
+真正的误差大约是 $1.10 \times 10^{-7}$. 大家有没有注意到这就是查数学用表时的做法？
+\end{example}
+
+推论 \ref{cor::cauchy_remainder} 将误差界整理成两个更加清晰的形式, 特别是后一个界, 给出了
+input 和 precondition 的现实意义:
+$$
+|R_n(f; x)| \leq
+\frac{\max_{x \in [a, b]}\left|f^{(n + 1)}(x)\right|}{(n + 1)!}(b - a)^{n + 1}.
+$$
+
+例子 \ref{exp::arcsin} 给出了一个实际案例的估值.
+
+\subsection{Lagrange 公式}
+\begin{remark}
+定理 \ref{thm::polynomial_interpolation} 使用了待定系数法来寻求插值多项式. 得到一个线性方
+程组, 但系数矩阵是 Vandermonde 矩阵. 我们已经讨论了它的问题.
+
+插值问题的理论模型是在空间 $\mathbb{P}_n$ 中寻找一个目标多项式:
+$$
+p_n(x) = \sum_{k = 0}^n a_k x^k
+$$
+满足
+$$
+p_n(x_i) = y_i.
+$$
+这里 $a_k$, $k = 0, 1, \cdots, n$ 是待定系数.
+
+从线性代数的角度观察这个问题, 那么问题就是, 我们实际上选取了
+$\mathbb{P}_n$ 的一组基:
+$$
+\left\{1, x, x^2, \cdots, x^n\right\}
+$$
+来表出插值多项式 $p_n(x)$, 而表出系数就是我们的待定系数 $a_k$.
+
+在这个模型下, 我们得到线性方程组的系数矩阵, 实际上就是我们的所选取这组
+基的表出矩阵. 如果这个矩阵不够好, 那么我们可以尝试选取一组更好的基来表出.
+
+现在问题抽象成, 对 $\mathbb{P}_n$ 的一组基:
+$$
+\left\{
+\phi_0, \phi_1, \cdots, \phi_n,
+\right\}
+$$
+则
+$$
+p_n(x) = \sum_{k = 0}^n a_k \phi_k(x),
+$$
+需满足
+$$
+p_n(x_i) = \sum_{k = 0}^n a_k \phi_k(x_i) = y_i.
+$$
+
+现在系数矩阵是 $\left[\phi_i(x_j)\right]$. 它可以是对角阵么? 也就是能不能有:
+$$
+a_i\phi_i(x_i) = y_i,
+$$
+而
+$$
+\phi_i(x_j) = 0, j \neq i.
+$$
+现在我们要问, $\phi_i$ 是什么? 它是 $\mathbb{P}_n$ 的一组基中的一个,
+因此它是最高不超过 $n$ 次的多项式. 我们希望它有 $n$ 个零点 $x_j$, $j \neq i$,
+即它有单因子
+$$
+\phi_i(x) = h(x) \prod_{j \neq i}(x - x_j).
+$$
+注意 $\prod_{j \neq i}(x - x_j)$ 已经是 $n$ 次多项式了, 因此 $h(x)$
+其实是一个常数 $h$. 现在我们用上最后一个条件:
+$$
+a_i\phi_i(x_i) = y_i,
+$$
+有
+$$
+a_i \cdot h \prod_{j \neq i}(x_i - x_j) = y_i,
+$$
+这里我们手中还有一个自由参数 $h$, 怎么选取能最优? 
+不如就令
+$$
+h = \prod_{j \neq i}\frac{1}{(x_i - x_j)} ?
+$$
+这样就有
+$$
+\phi_i(x) = \prod_{j \neq i}\frac{x - x_j}{x_i - x_j}, 
+$$
+而且 $\phi_i(x_i) = 1$, 进而有 $a_i = y_i$.
+
+发生肾么事了? 我们理一理啊:
+
+我们现在有 $\mathbb{P}_n$ 的一组基
+$$
+\left\{\phi_i(x) = \prod_{j \neq i}\frac{x - x_j}{x_i - x_j}
+\right\}, i = 0, 1, \cdots, n.
+$$
+满足
+$$
+\phi_i(x_j) = \left\{
+\begin{array}{ll}
+  1,& j = i \\
+  0,& j \neq i.
+\end{array}
+\right.
+$$
+这组基, 我们称它为 Lagrange 插值基函数. 一般我们用 $l_k(x), k = 0, 1, \cdots, n$
+表示(和书上公式 \ref{eq::lagrange_basis} 对上了). 在这组基下, 插值多项式
+$$
+p_n(x) = \sum_{k = 0}^n a_k \l_k(x)
+$$
+满足 $p_n(x_k) = f_k$, $k = 0, 1, \cdots, n$,
+则直接有 $a_k = f_k$. 于是我们可以直接写出
+$$
+p_n(x) = \sum_{k = 0}^n f_k l_k(x).
+$$
+这里注意, 由定理 \ref{thm::polynomial_interpolation}, 插值多项式是唯一的. 因此我们实际上只是给出了一个
+得到 $p_n(x)$ 的更好的算法, 这个算法就是 Lagrange 插值公式. 也就是书上
+的公式 \ref{eq::lagrange}.    
+\end{remark}
+
+\begin{definition}
+    % def 2.10
+    \label{def::lagrange}
+为在互异点 $x_0,x_1,\ldots,x_n$ 处插值给定数值 $f_0,f_1,\ldots,f_n$, 拉格朗日（Lagrange）公式为
+\begin{equation}
+    % eq 2.8
+    \label{eq::lagrange}
+p_n(x)=\sum_{k=0}^{n} f_k\,\ell_k(x),
+\end{equation}
+其中用于点值插值的基函数（或称初等拉格朗日插值多项式）$\ell_k(x)$ 定义为
+\begin{equation}
+    % eq 2.9
+    \label{eq::lagrange_basis}
+\ell_k(x)=\prod_{\substack{i=0\\ i\ne k}}^{n}\frac{x-x_i}{x_k-x_i}.
+\end{equation}
+特别地，当 $n=0$ 时，$\ell_0\equiv 1$.
+\end{definition}
+
+例子 \ref{exp::lagrange} 搞一下. 很方便啊. 
+
+\begin{example}
+    % exp 2.11
+    \label{exp::lagrange}
+对于 $i = 0, 1, 2$, 我们给出 $x_i = 1, 2, 4$ 和 $f (x_i ) = 8, 1, 5$. 
+拉格朗日公式生成了 $p_2 (x) = 3x^2 - 16x + 21$.
+    
+\end{example}
+
+\begin{lemma}
+    % lem 2.12
+    \label{lem::lagrange_symmetric}
+定义对称多项式
+\begin{equation}
+    % eq 2.10
+    \label{eq::lagrange_symmetric}
+\pi_n(x)=
+\begin{cases}
+1, & n=0,\\[4pt]
+\displaystyle\prod_{i=0}^{n-1}(x-x_i), & n>0.
+\end{cases}
+\end{equation}
+于是当 $n>0$ 时，点值插值的基函数可写为
+\begin{equation}
+    % eq 2.11
+    \label{eq::lagrange_symmetric_basis}
+\forall x\ne x_k,\qquad
+\ell_k(x)=\frac{\pi_{n+1}(x)}{(x-x_k)\,\pi_{n+1}'(x_k)}.
+\end{equation}
+
+\begin{proof}
+由链式法则，$\pi_{n+1}'(x)$ 是由 $n+1$ 项之和构成，每一项都是 $n$ 个因子的乘积。
+当以 $x_k$ 代入 $x$ 时，这 $n+1$ 项除一项外全部为零，结论成立。
+\end{proof}
+\end{lemma}
+
+\begin{remark}
+定理 \ref{thm::polynomial_interpolation} 与定理 \ref{thm::cauchy_remainder} 表明：
+对次数不超过 $k$ 的多项式插值算子作用在次数不超过 $k$ 的多项式 $q$ 上，结果正是 $q$ 本身。    
+\end{remark}
+
+由插值多项式唯一性, 定理 \ref{thm::generalized_rolle} 
+和 \ref{thm::cauchy_remainder} 给出的余项和误差界都继续成立.
+
+由于 $i \neq j$ 这个多少带有一点不对称性, 有时对我们的理论推导造成困难.
+所以另外一种常用的对称形式的 Lagrange 插值基函数形式是课本的公式 (\ref{eq::lagrange_symmetric_basis}).
+它需要用到引理 \ref{lem::lagrange_symmetric}, 在很多书上, $\pi_{n + 1}(x)$ 会用用一个更简略的记号
+$\omega_{n + 1}(x)$ 甚至 $\omega(x)$ ($n$ 由上下文决定) 表示. 此时
+Lagrange 插值基函数会写成:
+$$
+l_k(x) = \frac{1}{x - x_k}\frac{\omega(x)}{\omega'(x)}, k = 0, 1, \cdots, n.
+$$
+
+这里计算一下 $\pi_{n + 1}'(x_k)$
+
+大家脑补一下 Lagrange 插值基函数应该长成什么样子? 画画看? 课本上的引理 \ref{lem::cauchy}, 也从
+另一个角度给出其一个性质. 
+
+Jupyer 画个图... Lagrange.pdf
+
+\begin{lemma}(柯西（Cauchy）关系)
+    % lem 2.13
+    \label{lem::cauchy}
+拉格朗日基函数 $\ell_k(x)$ 满足以下柯西关系：
+\begin{equation}
+    % eq 2.12
+    \label{eq::cauchy}
+\sum_{k=0}^{n}\ell_k(x)\equiv 1;
+\end{equation}
+\begin{equation}
+    % eq 2.13
+    \label{eq::cauchy_higher}
+\forall\, j=1,\ldots,n,\qquad \sum_{k=0}^{n}(x_k-x)^{j}\,\ell_k(x)\equiv 0.
+\end{equation}
+\end{lemma}
+\begin{proof}
+由定理 \ref{thm::polynomial_interpolation} 与 \ref{thm::cauchy_remainder} 可知，
+对每个 $q(x)\in\mathbb{P}_n$, 都有 $p_n(q;x)\equiv q(x)$. 
+对常值函数 $f(x)\equiv 1$ 进行拉格朗日插值即得上式第一式。
+
+类似地，令 $q_j(u):=(u-x)^j$, 其中 $x$ 为自由参数。于是对任意 $j=1,\ldots,n$, 有
+\begin{equation*}
+p_n(q_j;u)\equiv q_j(u)\quad \Rightarrow \quad \sum_{k=0}^{n}(x_k-x)^j\,\ell_k(u)\equiv (u-x)^j,
+\end{equation*}
+当令 $u=x$ 时便得到第二式。
+\end{proof}
+
+% 证明. 根据定理 2.5 和 2.7，对于每个 $q(x) \in P_n$，
+% 我们都有 $p_n (q; x) \equiv q(x)$（即多项式的多项式插值就是自己）。
+% 用拉格朗日公式插值常数函数 $f (x) \equiv 1$，得到 (2.12)。
+
+% 同样，定义 $q_j (u) := (u - x)^j$，其中 $x$ 是一个自由参数，所以把它看成一个关于 $u$ 的多项式，
+% 就是一个 $j$ 次的，进而对于任何 $j = 1, \cdots , n$，做关于 $u$ 的多项式插值，有
+% \[
+% p_n (q_j ; u) \equiv q_j (u) \Rightarrow \sum_{k=0}^{n} (x_k - x)^j \ell_k (u) \equiv (u - x)^j ,
+% \]
+% 注意第一个式子还是多项式的插值就是多项式本身，第二个式子是 $(u - x)^j$ 关于 $u$ 在 $x_k$ 点做 
+% $n$ 次多项式插值
+% \[
+%   p_n(u) = \sum_{k=0}^{n} \left.(u - x)^j\right|_{u = x_k} \ell_k (u) = \sum_{k=0}^{n} (x_k - x)^j \ell_k (u).
+% \]
+% 最后当我们设定 $u = x$ 时，得到 (2.13)。
+
+
+\begin{remark}
+(柯西关系的另一种证明)
+设存在某个 $x=x_c$ 使得上述第二式不成立。对每个 $j=1,\ldots,n$, 
+对多项式 $q(x)=(x-u)^j$ 作拉格朗日插值，得到
+\begin{equation*}
+(x-u)^j=p_n(q,x)=\sum_{k=0}^{n}q_k\,\ell_k(x)=\sum_{k=0}^{n}(x_k-u)^j\,\ell_k(x).
+\end{equation*}
+令 $u=x_c$ 即得矛盾。    
+\end{remark}
+
+
 
 \bibliography{na.bib}
 \bibliographystyle{plain}
