@@ -2879,12 +2879,12 @@ P(x) = y_0 \varphi_0(x) + y_1 \varphi_1(x) + y_2 \varphi_2(x) + m_1 \psi(x)
 $$                                 
 其中假定 $\varphi_0(x), \varphi_1(x), \varphi_2(x), \psi(x)$ 都是3次多项式.
 若它们分别满足下列条件：     
-\begin{eqnarray}                                                                                    
+\begin{eqnarray*}                                                                                    
 &\varphi_0(x_0)=1, \quad &\varphi_0(x_1)=\varphi_0(x_2)=\varphi'_0(x_1)=0,\\             
 &\varphi_1(x_1)=1,\quad &\varphi_1(x_0)=\varphi_1(x_2)=\varphi'_1(x_1)=0,\\             
 &\varphi_2(x_2)=1,\quad &\varphi_2(x_0)=\varphi_2(x_1)=\varphi'_2(x_1)=0,\\             
 &\psi'(x_1)=1,\quad &\psi(x_0)=\psi(x_1)=\psi(x_2)=0.                                   
-\end{eqnarray}                                                                                      
+\end{eqnarray*}                                                                                      
 则上述 $P(x)$ 即为所求.
 
 于是                                                                                     
@@ -2901,6 +2901,279 @@ x_0)(x_1-x_2)}\Big]\\
 更多的用于一些公式的推导.
 
 
+\subsection{Runge 现象}
+% sec 2.7
+
+\begin{example}
+    % exp 2.40
+    \label{exp::runge}
+在定理 \ref{thm::polynomial_interpolation} 中，点 $x_0,x_1,\ldots,x_n$ 往往事先给定，
+例如在区间 $[x_0,x_n]$ 上等距分布。随着 $n$ 的增大，插值多项式的次数也随之增大。理想情况下，我们希望
+\begin{equation}
+    % eq 2.39
+    \label{eq::runge}
+\forall f\in C[x_0,x_n],\ \forall x\in[x_0,x_n],\qquad
+\lim_{n\to+\infty} p_n(f;x)=f(x).
+\end{equation}
+然而，对于等距节点的多项式插值，这并不成立。著名的 Runge 例子（见图 \ref{fig::runge}）展示了在区间端点处的剧烈振荡。
+\end{example}
+
+\begin{figure}
+    % fig 2.2
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/Runge.png}
+    \caption{通过在节点 $x_i=-5+10\,\tfrac{i}{n}$（$i=0,1,\ldots,n$，$n=2,4,6,8$）上对
+$f(x)=\dfrac{1}{1+x^{2}}$ 进行插值而产生的 Runge 现象。}
+    \label{fig::runge}
+\end{figure}
+
+\begin{remark}
+    % remark 2.29
+Runge 现象是如何产生的？尽管上图中的误差很大，Cauchy 余项定理仍然成立：
+\begin{equation*}
+R_n(f;x):=f(x)-p_n(f;x)=\frac{f^{(n+1)}(\xi)}{(n+1)!}\prod_{i=0}^{n}(x-x_i).
+\end{equation*}
+要理解 Runge 现象，我们提出问题：右端这三个因子中，究竟是哪一个导致了巨大的误差？
+显然不是 $(n+1)!$; 也不是 $\prod_{i=0}^{n}(x-x_i)$, 因为我们可以选择使 $x_n-x_0<1$, 
+从而每个因子都小于 $1$. 于是罪魁祸首只能是 $f^{(n+1)}(\xi)$.
+
+我们的推理从链式法则开始，它意味着函数 $f(x)=g(x)h(x)$ 的各阶导数中项的数量呈指数增长：
+\begin{equation*}
+f'=g'h+gh',\qquad
+f''=g''h+g'h'+g'h'+gh'',\quad \ldots
+\end{equation*}
+这种模式仿佛一棵满二叉树，$f^{(n)}$ 中的项数为 $2^{n}$, 且每一项都形如 $g^{(i)}h^{(n+1-i)}$. 
+如果这些导数都是有界的（即 $O(1)$），那么随着 $n$ 增加，$f^{(n)}$ 永远不可能超过 $n!$, 因为比值判别法给出
+\begin{equation*}
+\forall c\in\mathbb{R},\qquad \lim_{n\to+\infty}\frac{c^{n}}{n!}=0.
+\end{equation*}
+因此，函数 $f$ 必然具有某些特殊性质，使得其高阶导数的增长快于 $n!$.
+\end{remark}
+
+\begin{example}
+    % exp 2.41
+    \label{exp::runge_circle}
+有些函数无法被多项式很好地逼近。图 \ref{fig::runge_circle} 中，一条过原点的圆，其半径为 $R$, 圆心位于 $(-R\sin\theta,\; R\cos\theta)$. 当
+\begin{equation*}
+x\in\bigl(0,\; R-R\sin\theta\bigr)
+\end{equation*}
+时，该圆弧可以表示为某个函数的图像：
+\begin{equation}
+    % eq 2.40
+    \label{eq::runge_circle}
+y=H(x)=R\cos\theta-\sqrt{\,R^{2}-\bigl(x+R\sin\theta\bigr)^{2}\,}.
+\end{equation}
+$H(x)$ 的阶乘与各阶导数的取值见图 \ref{fig::runge_circle} 中的表。
+\end{example}
+
+\begin{figure}
+    % fig 2.3
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/runge_circle.png}
+    \caption{用式 (\ref{eq::runge_circle}) 中的函数 $H$ 表示一段局部圆弧。}
+    \label{fig::runge_circle}
+\end{figure}
+
+\begin{remark}
+    % remark 2.30
+设 $f:[a,b]\to\mathbb{R}$ 连续，定义
+\begin{equation*}
+x_i=a+i\,\tfrac{b-a}{n},\qquad i=0,1,\ldots,n,
+\end{equation*}
+并对每个 $n\in\mathbb{N}^+$ 用这些 $x_i$ 作为插值节点构造多项式插值函数 $p_n(f;x)$. 
+理想情况下，我们希望用序列 $(p_n(f))_{n=1}^{\infty}$ 一致逼近 $f$, 即
+\begin{align*}
+&\forall \varepsilon>0,\ \exists N\in\mathbb{N}^+\ \text{s.t.}\ \forall x\in[a,b],\ \forall n>N, \\
+&| p_n(f;x)-f(x) |_{\infty}<\varepsilon.
+\end{align*}
+然而，由于 Runge 现象，这显然要求过高。于是我们把期望降低为逐点收敛：
+\begin{align*}
+&\forall \varepsilon>0,\ \forall x\in[a,b],\ \exists N\in\mathbb{N}^+\ \text{s.t.}\ \forall n>N, \\
+& |p_n(f;x)-f(x)|_{\infty}<\varepsilon,
+\end{align*}
+但这同样不成立，因为当 $x_E=\tfrac{1}{2}(x_0+x_1)$ 时，Runge 现象中的误差 $| p_n(f;x)-f(x)|_{\infty} $ 
+会随着 $n$ 的增大而增大。该发散由例 2.41 展示，并在 Trefethen（2013）中有非常好的解释。
+
+总之，在等距网格上使用很高阶的多项式插值并不是逼近所有连续函数的好方法。
+\end{remark}
+
+\begin{remark}
+    % remark 2.31
+我们现在面临一个严肃的问题：待插值的函数通常是固定的，而 $H^{(n)}$ 的大小会随着 $n$ 的增加而迅速增长。
+为应对这一问题，我们可以采用分段插值或 Chebyshev 多项式两种方法。
+分段插值（见第 2.10 节与第 3 章）的要义是：在越来越多的子区间上使用低次数多项式；
+而 Chebyshev 多项式方法的要义是：明智地选择插值点的分布位置。
+\end{remark}
+
+下面补充一段内容\textbf{多项式求根}.
+
+
+\subsection{Chebyshev 多项式}
+    % sec 2.8
+
+\begin{remark}
+    % remark 2.32
+在推论 \ref{cor::cauchy_remainder} 的 Cauchy 余项估计中，若函数 $f$ 通常事先给定，
+我们对 $\max\lvert f^{(n+1)}(x)\rvert$ 无能为力。然而，如果我们可以自由选择插值点的位置，
+就能进一步减小余项。更具体地说，如何选择 $x_0,x_1,\ldots,x_n$ 来最小化
+\begin{equation*}
+\max_{x\in[a,b]} \bigl\lvert (x-x_0)(x-x_1)\cdots(x-x_n) \bigr\rvert \, ?
+\end{equation*}
+满足这一性质的 $x_i$ 正是 Chebyshev 多项式的零点。
+\end{remark}
+
+\begin{definition}
+    % def 2.42
+    \label{def::chebyshev_polynomial}
+设 $n\in\mathbb{N}$. 第一类 Chebyshev 多项式是指多项式 $T_n:[-1,1]\to[-1,1]$, 其定义为
+\begin{equation}
+    % eq 2.41
+    \label{eq::chebyshev_polynomial}
+T_n(x)=\cos\bigl(n\arccos x\bigr).
+\end{equation}
+\end{definition}
+
+\begin{remark}
+    % rem 2.33
+首先，$\lvert T_n(x)\rvert\le 1$. 其次，式 (\ref{eq::chebyshev_polynomial}) 确实定义了一个次数为 $n$ 的多项式。
+令 $x=\cos\theta$, 其中 $\theta\in[0,\pi]$. 则
+\begin{equation*}
+e^{i\theta}=\cos\theta+i\sin\theta
+\end{equation*}
+从而
+\begin{equation*}
+\left(e^{i\theta}\right)^{n}=e^{in\theta}=\cos(n\theta)+i\sin(n\theta)=\left(x+i\sqrt{1-x^{2}}\right)^{n}
+\end{equation*}
+于是
+\begin{equation*}
+\cos n\theta
+= x^{n}+\binom{n}{2}x^{\,n-2}(x^{2}-1)+\cdots ,
+\end{equation*}
+其中第一行是欧拉公式，最后一行来自二项式定理。前五个 Chebyshev 多项式为
+\begin{align*}
+T_0(x)&=1,\\
+T_1(x)&=x,\\
+T_2(x)&=2x^{2}-1,\\
+T_3(x)&=4x^{3}-3x,\\
+T_4(x)&=8x^{4}-8x^{2}+1.
+\end{align*}
+除了上述显式公式外，Chebyshev 多项式还可以通过一个递推关系来生成。
+\end{remark}
+
+\begin{theorem}
+    % thm 2.43
+    \label{thm::chebyshev_recurrence}
+第一类 Chebyshev 多项式满足如下递推关系：
+\begin{equation}
+    % eq 2.42
+    \label{eq::chebyshev_recurrence}
+\forall n\in\mathbb{N}^+,\qquad T_{n+1}(x)=2x\,T_n(x)-T_{n-1}(x).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+由三角恒等式可得
+\begin{align*}
+\cos\bigl((n+1)\theta\bigr)&=\cos n\theta \cos\theta-\sin n\theta \sin\theta,\\
+\cos\bigl((n-1)\theta\bigr)&=\cos n\theta \cos\theta+\sin n\theta \sin\theta.
+\end{align*}
+将两式相加并令 $\cos\theta=x$ 即得所需结论。
+\end{proof}
+
+\begin{corollary}
+    % cor 2.44
+    \label{cor::chebyshev_coefficient}
+对每个 $n>0$, $T_n$ 中 $x^n$ 的系数为 $2^{\,n-1}$.
+\end{corollary}
+
+\begin{proof}
+利用上式递推关系以及 $T_1=x$, 用数学归纳法即可证明。
+\end{proof}
+
+\begin{remark}
+    % remark 2.34
+回忆：函数 $f:X\to\mathbb{R}$ 在点 $x^*\in X$ 处具有一个局部极大值，当且仅当
+\begin{equation}
+\exists\,\varepsilon>0\ \text{s.t.}\ \forall x\in X,\ d_X(x,x^*)\le \varepsilon \ \Rightarrow\ f(x)\le f(x^*),
+\end{equation}
+其中 $(X,d_X)$ 是一个度量空间。
+\end{remark}
+
+\begin{theorem}
+    % thm 2.45
+    \label{thm::chebyshev_zeros_extrema}
+$T_n(x)$ 在如下 $n$ 个点处具有单零点：
+\begin{equation}
+    % eq 2.43
+    \label{eq::chebyshev_zeros}
+x_k=\cos\!\left(\frac{2k-1}{2n}\pi\right),\qquad k=1,2,\ldots,n.
+\end{equation}
+当 $x\in[-1,1]$ 且 $n\in\mathbb{N}^+$ 时，$T_n(x)$ 在如下 $n+1$ 个点处取得极值：
+\begin{equation}
+    % eq 2.44
+    \label{eq::chebyshev_extrema}
+x_k'=\cos\!\left(\frac{k}{n}\pi\right),\qquad k=0,1,\ldots,n,
+\end{equation}
+并且在这些点处的取值交替为 $(-1)^k$.
+\end{theorem}
+
+\begin{proof}
+由 (\ref{eq::chebyshev_polynomial}) 与 (\ref{eq::chebyshev_zeros}) 可得
+\begin{equation*}
+T_n(x_k)=\cos\!\left(n\arccos\!\bigl(\cos\tfrac{2k-1}{2n}\pi\bigr)\right)
+= \cos\!\left(\tfrac{2k-1}{2}\pi\right)=0.
+\end{equation*}
+对 (\ref{eq::chebyshev_polynomial}) 求导得
+\begin{equation*}
+T_n'(x)=\frac{n}{\sqrt{1-x^2}}\sin\!\bigl(n\arccos x\bigr).
+\end{equation*}
+于是每个 $x_k$ 均为单零点，因为
+\begin{equation*}
+T_n'(x_k)=\frac{n}{\sqrt{1-x_k^2}}\sin\!\left(\tfrac{2k-1}{2}\pi\right)\ne 0.
+\end{equation*}
+相反地，对任意 $k=1,2,\ldots,n-1$,
+\begin{equation*}
+T_n'(x_k')=n\Bigl(1-\cos^2\tfrac{k\pi}{n}\Bigr)^{-1/2}\sin(k\pi)=0;
+\end{equation*}
+并且
+\begin{equation*}
+T_n''(x)=\frac{n^2\cos\!\bigl(n\arccos(x)\bigr)}{x^2-1}
++\frac{n\,x\,\sin\!\bigl(n\arccos(x)\bigr)}{(1-x^2)^{3/2}},\qquad
+T_n''(x_k')\ne 0.
+\end{equation*}
+因此对 $T_n$ 作 Taylor 展开，得到
+\begin{equation*}
+T_n(x_k'+\delta)=T_n(x_k')+\frac{1}{2}T_n''(x_k')\delta^2+O(\delta^3),
+\end{equation*}
+从而 $T_n$ 必在每个 $x_k'$ 处取得局部极值。对任意 $k=0,1,\ldots,n$, 
+$T_n(x)$ 在 $x_k'$ 处取极值，因为 $T_n(x_0')=1,\ T_n(x_1')=-1,\ \ldots$, 
+且由 (\ref{eq::chebyshev_polynomial}) 知 $\lvert T_n(x)\rvert\le 1$. 
+显然这些就是 $T_n(x)$ 在 $[-1,1]$ 上的全部极值点。
+\end{proof}
+
+\begin{remark}
+    % remark 2.35
+可以更为简洁地证明 (\ref{eq::chebyshev_extrema})。由于 $T_n(x)$ 是次数为 $n$ 的多项式，
+$T_n'(x)$ 是次数为 $n-1$ 的多项式，至多有 $n-1$ 个互异零点。
+易见 $\{x_k'\}_{k=1}^{n-1}$ 正是 $T_n(x)$ 在 $(-1,1)$ 内的 $n-1$ 个互异极值点。
+由费马定理知，它们必为 $T_n'(x)$ 的 $n-1$ 个互异零点。
+因此，$\{x_k'\}_{k=1}^{n-1}$ 就是 $T_n$ 在 $(-1,1)$ 的全部极值点。结合 $-1$ 与 $1$ 也是 $T_n$ 的极值点即可完成证明。
+\end{remark}
+
+\begin{remark}
+    % remark 2.36
+根据定理 \ref{thm::chebyshev_zeros_extrema}，Chebyshev 多项式的零点等于单位圆上 $2n$ 个等间距点在实轴上的投影。
+在图 \ref{fig::chebyshev_zeros_extrema} 中，$n+1$ 个方形标记表示极值点，星号表示单位圆上点 $\exp\!\bigl(i\,\tfrac{2k-1}{2n}\pi\bigr)$, 
+它们在水平轴上的投影即为零点。
+\end{remark}
+
+\begin{figure}
+    % fig 2.4
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/chebyshev.png}
+    \caption{$n = 4$ 的Chebyshev 多项式的零点与极值点。}
+    \label{fig::chebyshev_zeros_extrema}
+\end{figure}
 
 
 \bibliography{na.bib}
