@@ -52,6 +52,8 @@
 \newtheorem{theorem}{定理}  
 %\newtheorem{example}{例}
 \newtheorem{remark}{备注}  
+\newtheorem*{remark*}{备注}  
+
 
 \newtheorem{definition}[theorem]{定义} % 定义 'definition' 环境    
 % 创建其他定理样式并使用上述“theorem”的计数器  
@@ -696,6 +698,8 @@ a = a - \frac{f(a)}{f'(a)},
 \end{remark}
 
 \begin{definition}
+    % def 1.18
+    \label{def::convex_set}
 向量空间 \(V\) 的子集 \(\mathcal{U}\) 是凸集当且仅当：
 \begin{equation}
 \forall x, y \in \mathcal{U}, \forall t \in (0,1), \quad tx + (1 - t)y \in \mathcal{U} 
@@ -2992,7 +2996,7 @@ x_i=a+i\,\tfrac{b-a}{n},\qquad i=0,1,\ldots,n,
 & |p_n(f;x)-f(x)|_{\infty}<\varepsilon,
 \end{align*}
 但这同样不成立，因为当 $x_E=\tfrac{1}{2}(x_0+x_1)$ 时，Runge 现象中的误差 $| p_n(f;x)-f(x)|_{\infty} $ 
-会随着 $n$ 的增大而增大。该发散由例 2.41 展示，并在 Trefethen（2013）中有非常好的解释。
+会随着 $n$ 的增大而增大。该发散由例 \ref{exp::runge_circle} 展示，并在 Trefethen（2013）中有非常好的解释。
 
 总之，在等距网格上使用很高阶的多项式插值并不是逼近所有连续函数的好方法。
 \end{remark}
@@ -3020,6 +3024,10 @@ x_i=a+i\,\tfrac{b-a}{n},\qquad i=0,1,\ldots,n,
 \max_{x\in[a,b]} \bigl\lvert (x-x_0)(x-x_1)\cdots(x-x_n) \bigr\rvert \, ?
 \end{equation*}
 满足这一性质的 $x_i$ 正是 Chebyshev 多项式的零点。
+
+这里其实有一个更加一般性的策略，我们知道多项式一般意义上会围绕它的零点振荡，且现在振荡的幅度和插值误差相关。
+现在我们希望降低整体误差，但我们不可能消除这种振荡行为，于是一种考虑是，调整插值节点，让振荡变得“均匀”。
+Chebyshev 多项式利用欧拉公式和三角函数性质来实现这一点。
 \end{remark}
 
 \begin{definition}
@@ -3034,7 +3042,7 @@ T_n(x)=\cos\bigl(n\arccos x\bigr).
 \end{definition}
 
 \begin{remark}
-    % rem 2.33
+    % rem 2.32
 首先，$\lvert T_n(x)\rvert\le 1$. 其次，式 (\ref{eq::chebyshev_polynomial}) 确实定义了一个次数为 $n$ 的多项式。
 令 $x=\cos\theta$, 其中 $\theta\in[0,\pi]$. 则
 \begin{equation*}
@@ -3091,11 +3099,11 @@ T_4(x)&=8x^{4}-8x^{2}+1.
 \end{proof}
 
 \begin{remark}
-    % remark 2.34
+    % remark 2.33
 回忆：函数 $f:X\to\mathbb{R}$ 在点 $x^*\in X$ 处具有一个局部极大值，当且仅当
-\begin{equation}
+\begin{equation*}
 \exists\,\varepsilon>0\ \text{s.t.}\ \forall x\in X,\ d_X(x,x^*)\le \varepsilon \ \Rightarrow\ f(x)\le f(x^*),
-\end{equation}
+\end{equation*}
 其中 $(X,d_X)$ 是一个度量空间。
 \end{remark}
 
@@ -3152,7 +3160,7 @@ $T_n(x)$ 在 $x_k'$ 处取极值，因为 $T_n(x_0')=1,\ T_n(x_1')=-1,\ \ldots$,
 \end{proof}
 
 \begin{remark}
-    % remark 2.35
+    % remark 2.34
 可以更为简洁地证明 (\ref{eq::chebyshev_extrema})。由于 $T_n(x)$ 是次数为 $n$ 的多项式，
 $T_n'(x)$ 是次数为 $n-1$ 的多项式，至多有 $n-1$ 个互异零点。
 易见 $\{x_k'\}_{k=1}^{n-1}$ 正是 $T_n(x)$ 在 $(-1,1)$ 内的 $n-1$ 个互异极值点。
@@ -3161,10 +3169,14 @@ $T_n'(x)$ 是次数为 $n-1$ 的多项式，至多有 $n-1$ 个互异零点。
 \end{remark}
 
 \begin{remark}
-    % remark 2.36
+    % remark 2.35
+要理解 Chebyshev 多项式的零点和极值点的位置，可以考虑另一种视角。
+
 根据定理 \ref{thm::chebyshev_zeros_extrema}，Chebyshev 多项式的零点等于单位圆上 $2n$ 个等间距点在实轴上的投影。
 在图 \ref{fig::chebyshev_zeros_extrema} 中，$n+1$ 个方形标记表示极值点，星号表示单位圆上点 $\exp\!\bigl(i\,\tfrac{2k-1}{2n}\pi\bigr)$, 
 它们在水平轴上的投影即为零点。
+
+而从 $T_n$ 的定义不难看出，它的极值点分别是 $-1$ 和 $1$.
 \end{remark}
 
 \begin{figure}
@@ -3175,6 +3187,604 @@ $T_n'(x)$ 是次数为 $n-1$ 的多项式，至多有 $n-1$ 个互异零点。
     \label{fig::chebyshev_zeros_extrema}
 \end{figure}
 
+\begin{exercise}
+    % ex 2.46
+编写程序复现实验图 \ref{fig::chebyshev_zeros_extrema}。
+\end{exercise}
+
+\begin{remark}
+    % remark 2.36
+对定义在区间 $[-1,1]$ 上、次数不超过 $n$ 的多项式而言，其零点与极值点的最大个数分别为 $n$ 与 $n+1$. 
+如定理 \ref{thm::chebyshev_zeros_extrema} 所证并在上图所示，Chebyshev 多项式同时达到了这两个最大值。
+这个事实，结合其三角函数定义，以及 $T_n(x)$ 的首项系数，不难引出了本节的核心结果。
+\end{remark}
+
+\begin{theorem}[Chebyshev]
+    % thm 2.47
+记 $\widetilde{\mathbb{P}}_n$ 为所有首项系数为 $1$、次数为 $n\in\mathbb{N}^+$ 的多项式的集合。则
+\begin{equation}
+    % eq 2.45
+    \label{eq::chebyshev_minimax}
+\forall p\in\widetilde{\mathbb{P}}_n,\qquad
+\max_{x\in[-1,1]}\left|\frac{T_n(x)}{2^{n-1}}\right|
+\le \max_{x\in[-1,1]} |p(x)|.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+由定理 \ref{thm::chebyshev_zeros_extrema}，$T_n(x)$ 在式（\ref{eq::chebyshev_extrema}）
+中的点 $x_k'$ 处取得 $n+1$ 个极值。设上述不等式不成立，则定理 \ref{thm::chebyshev_zeros_extrema} 蕴含
+\begin{equation}
+    % eq 2.46
+    \label{eq::chebyshev_contradiction}
+\exists\,p\in\widetilde{\mathbb{P}}_n\ \text{s.t.}\ 
+\max_{x\in[-1,1]}|p(x)|<\frac{1}{2^{n-1}}.
+\end{equation}
+考虑多项式 $Q(x)=\frac{1}{2^{n-1}}T_n(x)-p(x)$. 则
+\begin{equation*}
+Q(x_k')=\frac{(-1)^k}{2^{n-1}}-p(x_k'),\qquad k=0,1,\ldots,n.
+\end{equation*}
+由上式知，$Q(x)$ 在这 $n+1$ 个点处符号交替。因此 $Q(x)$ 必有 $n$ 个零点。
+然而按构造，$Q(x)$ 的次数至多为 $n-1$. 于是 $Q(x)\equiv 0$ 且 $p(x)=\frac{1}{2^{n-1}}T_n(x)$, 从而
+$\max |p(x)|=\frac{1}{2^{n-1}}$. 这与前述不等式矛盾。
+\end{proof}
+
+\begin{corollary}
+    % cor 2.48
+对任意 $n\in\mathbb{N}^+$, 有
+\begin{equation}
+    % eq 2.47
+    \label{eq::chebyshev_lower_bound}
+\max_{x\in[-1,1]}\bigl|x^n+a_1 x^{n-1}+\cdots+a_n\bigr|\ge \frac{1}{2^{n-1}}.
+\end{equation}
+\end{corollary}
+
+\begin{corollary}
+    % cor 2.49
+若对函数 $f$ 在定理 \ref{thm::chebyshev_zeros_extrema} 中 $T_{n+1}(x)$ 的 $n+1$ 个零点上进行多项式插值，
+则定理 \ref{thm::cauchy_remainder} 的 Cauchy 余项满足
+\begin{equation}
+    % eq 2.48
+    \label{eq::chebyshev_remainder}
+\lvert R_n(f;x)\rvert \le \frac{1}{2^n (n+1)!}\,
+\max_{x\in[-1,1]}\bigl|f^{(n+1)}(x)\bigr|.
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+由定理 \ref{thm::cauchy_remainder}、推论 \ref{cor::chebyshev_coefficient} 与定理 \ref{thm::chebyshev_zeros_extrema} 得
+\begin{equation*}
+\lvert R_n(f;x)\rvert
+=\frac{\lvert f^{(n+1)}(\xi)\rvert}{(n+1)!}\left|\prod_{i=0}^{n}(x-x_i)\right|
+=\frac{\lvert f^{(n+1)}(\xi)\rvert}{2^n (n+1)!}\,|T_{n+1}|.
+\end{equation*}
+由定义 \ref{def::chebyshev_polynomial} 可知 $|T_{n+1}|\le 1$, 从而结论成立。
+\end{proof}
+
+\begin{remark*}
+    至此，回答了本节开头提出的问题。Chebyshev 多项式的零点使得插值多项式的误差最小化。
+这组节点是所谓的“最好”的插值节点。但是注意，我们插值的问题动机是已知一些节点的函数值，
+希望估计非节点处的函数值。因此这些已知节点往往来自问题和需求，不能由我们决定。除非，
+我们的问题契约已经变为通过插值，给出一个已知函数 $f$ 的近似多项式 $p_n(f)$.
+在这种情况下，Chebyshev 多项式的零点是一个很好的选择。但这种情况下，
+实际问题已经从数据拟合变为函数逼近。
+
+那么一个自然的问题是，是否任何连续函数都能被多项式一致逼近？要回答这个问题，首先要考虑一致收敛是在什么范数的意义下。
+可以证明，在 $2$-范数下，Chebyshev 多项式的零点插值多项式序列确实一致收敛于任何连续函数，这种逼近是所谓的最佳平方逼近。
+然而，在 $\infty$-范数下，这并不成立。但最大模意义下我们可以构建另一种多项式逼近方法，也即最佳一致逼近。
+这种插值多项式的构造见下面一节。仍然是从基函数开始构建。注意，这里我们实际上已经放弃了插值的要求，我们得到的多项式，
+并不是插值多项式，因为它已经没有所谓的插值节点了。
+\end{remark*}
+
+\subsection{Bernstein 多项式}
+    % subsec 2.9
+
+\begin{definition}
+    % def 2.50
+    \label{def::bernstein_basis}
+次数为 $n\in\mathbb{N}^+$、相对于单位区间 $[0,1]$ 的 Bernstein 基多项式定义为
+\begin{equation}
+    % eq 2.49
+    \label{eq::bernstein_basis_def}
+\forall k=0,1,\ldots,n,\qquad
+b_{n,k}(t):=\binom{n}{k} t^{k}(1-t)^{n-k},
+\end{equation}
+并约定当整数 $k$ 取其他值时，$b_{n,k}(t)=0$.
+\end{definition}
+
+\begin{example}
+    % ex 2.51
+当 $n=3$ 时，Bernstein 基多项式为
+$t^{3},\ 3t^{2}(1-t),\ 3t(1-t)^{2},\ (1-t)^{3}$.
+\end{example}
+
+\begin{definition}
+    % def 2.52
+Bernstein 多项式是 Bernstein 基多项式的线性组合，即 $\sum_{k=0}^{n}\beta_{k} b_{n,k}$,
+其中系数称为 Bernstein 系数或 Bézier 系数。
+\end{definition}
+
+\begin{remark*}
+Bernstein 多项式最初由 Bernstein（1912）引入，它有一些非常好的性质。
+\end{remark*}
+
+\begin{lemma}
+    % lem 2.53
+一个 Bernstein 基多项式总可以表示为更高次数 Bernstein 基多项式的线性组合：
+\begin{equation}
+    % eq 2.50
+    \label{eq::bernstein_degree_elev}
+b_{n-1,k}(t)=\frac{n-k}{n}\, b_{n,k}(t)+\frac{k+1}{n}\, b_{n,k+1}(t).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+这由定义 \eqref{eq::bernstein_basis_def} 直接推出。
+\end{proof}
+
+\begin{lemma}
+    % lem 2.54
+Bernstein 基多项式的导数是两个更低次数 Bernstein 基多项式的线性组合，即
+\begin{equation}
+    % eq 2.51
+    \label{eq::bernstein_derivative}
+b'_{n,k}(t)=n\, b_{n-1,k-1}(t)-n\, b_{n-1,k}(t).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+这由定义 \eqref{eq::bernstein_basis_def} 直接推出。
+\end{proof}
+
+\begin{lemma}
+    % lem 2.55
+Bernstein 基多项式的积分只与其次数有关，即
+\begin{equation}
+    % eq 2.52
+    \label{eq::bernstein_integral}
+\forall k=0,1,\ldots,n,\qquad \int_{0}^{1} b_{n,k}(t)\,\mathrm{d}t=\frac{1}{n+1}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+由式 \eqref{eq::bernstein_basis_def} 并配合分部积分即可得到。
+\end{proof}
+
+\begin{lemma}
+    % lem 2.56
+    \label{lem::bernstein_basis}
+次数为 $n$ 的 Bernstein 基多项式构成 $\mathbb{P}_n$ 的一组基，其中 $\mathbb{P}_n$ 表示次数不超过 $n$ 的全部多项式的向量空间。
+\end{lemma}
+
+\begin{proof}
+由定义 \eqref{eq::bernstein_basis_def}，可写
+\begin{equation*}
+b_{n,k}(t)=\sum_{j=k}^{n} a_{k,j} t^{j},
+\end{equation*}
+因而有
+\begin{equation*}
+\begin{bmatrix}
+b_{n,0}(t)\\
+b_{n,1}(t)\\
+b_{n,2}(t)\\
+\vdots\\
+b_{n,n}(t)
+\end{bmatrix}
+=
+\begin{bmatrix}
+a_{0,0} & a_{0,1} & a_{0,2} & \cdots & a_{0,n}\\
+0 & a_{1,1} & a_{1,2} & \cdots & a_{1,n}\\
+0 & 0 & a_{2,2} & \cdots & a_{2,n}\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+0 & 0 & 0 & \cdots & a_{n,n}
+\end{bmatrix}
+\begin{bmatrix}
+1\\ t\\ t^{2}\\ \vdots\\ t^{n}
+\end{bmatrix},
+\end{equation*}
+其中该矩阵为上三角矩阵，且对角线元 $a_{k,k}=\binom{n}{k}\ne 0$. 其余结论由单项式构成 $\mathbb{P}_n$ 的一组基立即得到。
+\end{proof}
+
+\begin{lemma}
+    % lem 2.57
+Bernstein 基多项式满足
+\begin{subequations}
+    \label{eq::bern_2_53}
+\begin{equation}
+\label{eq::bern_2_53a}
+\forall k=0,1,\ldots,n,\ \forall t\in(0,1),\qquad b_{n,k}(t)>0,
+\end{equation}
+\begin{equation}
+\label{eq::bern_2_53b}
+\sum_{k=0}^{n} b_{n,k}(t)=1,
+\end{equation}
+\begin{equation}
+\label{eq::bern_2_53c}
+\sum_{k=0}^{n} k\, b_{n,k}(t)=n t,
+\end{equation}
+\begin{equation}
+\label{eq::bern_2_53d}
+\sum_{k=0}^{n} k^{2} b_{n,k}(t)=n(n-1)t^{2}+n t,
+\end{equation}
+\begin{equation}
+\label{eq::bern_2_53e}
+\sum_{k=0}^{n} (k-n t)^{2} b_{n,k}(t)=n t(1-t).
+\end{equation}
+\end{subequations}
+\end{lemma}
+
+\begin{proof}
+\eqref{eq::bern_2_53a} 由式（\ref{eq::bernstein_basis_def}）得到；\eqref{eq::bern_2_53b} 则由二项式定理
+\begin{equation}
+    % eq 2.54
+\sum_{k=0}^{n}\binom{n}{k} t^{k} s^{\,n-k}=(t+s)^{n}.
+\end{equation}
+对上式关于 $t$ 求导并两边同乘以 $t$, 得到
+\begin{equation*}
+(\ast):\qquad \sum_{k=0}^{n} k \binom{n}{k} t^{k} s^{\,n-k}=n t (t+s)^{n-1}.
+\end{equation*}
+令 $s=1-t$ 即得 \eqref{eq::bern_2_53c}；再次对 $(\ast)$ 关于 $t$ 求导并两边同乘以 $t$, 并配合
+\eqref{eq::bern_2_53b} 与 \eqref{eq::bern_2_53c} 化简，得到 \eqref{eq::bern_2_53d}；
+将 $s=1-t$ 代入 \eqref{eq::bern_2_53d}，再用 $-2 n t(\ast)+n^{2} t^{2}(t+s)^{n}$ 化简，即得 \eqref{eq::bern_2_53e}。
+\end{proof}
+
+\begin{remark}
+    % remark 2.37
+由 \eqref{eq::bern_2_53a} 与 \eqref{eq::bern_2_53b} 可知，Bernstein 基多项式构成定义 D.152 
+意义下的统一分解（partition of unity）。这在数值分析与计算中非常有用，并将在第 3 章再次出现。
+\end{remark}
+
+\begin{definition}
+    % def 2.58
+    \label{def::bernstein_polynomial}
+函数 $f\in\mathcal{C}[0,1]$ 的第 $n$ 个 Bernstein 多项式定义为
+\begin{equation}
+    % eq 2.55
+    \label{eq::bernstein_polynomial}
+(B_n f)(t):=\sum_{k=0}^{n} f\!\left(\frac{k}{n}\right) b_{n,k}(t),
+\end{equation}
+其中 $b_{n,k}$ 为式（\ref{eq::bernstein_basis_def}）中的 Bernstein 基多项式。
+\end{definition}
+
+\begin{remark*}
+Bernstein 多项式不是插值多项式，因为它并不满足插值条件 
+$$
+p_n(f;x_i)=f(x_i).
+$$    
+\end{remark*}
+
+\begin{theorem}[Weierstrass 逼近定理]
+    % thm 2.59
+任意连续函数 $f:[a,b]\to\mathbb{R}$ 都可以被一列多项式以任意精度一致逼近，即
+\begin{equation}
+    % eq 2.56
+    \label{eq::weierstrass_theorem}
+\forall f\in\mathcal{C}[a,b],\ \forall \epsilon>0,\ \exists N\in\mathbb{N}^+\ \text{s.t.}\ \forall n>N,\ 
+\exists p_n\in \mathbb{P}_n\ \text{s.t.}\ \forall x\in[a,b],\ |p_n(x)-f(x)|<\epsilon.
+%\label{eq::weierstrass_statement}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+不失一般性，设 $a=0,\ b=1$. 令 $p_n=B_n f$, 参见式（\ref{eq::bernstein_polynomial}）。
+对任意 $\epsilon>0$, 存在 $\delta>0$ 与 $n\in\mathbb{N}^+$, 使得
+\begin{align*}
+\bigl|(B_n f)(t)-f(t)\bigr|
+&=\left|(B_n f)(t)-f(t)\sum_{k=0}^{n} b_{n,k}(t)\right| \nonumber\\
+&\le \sum_{k=0}^{n}\left| f\!\left(\frac{k}{n}\right)-f(t)\right| b_{n,k}(t) \nonumber\\
+&=\left(\sum_{k:\,\left|\frac{k}{n}-t\right|<\delta}\ +\ \sum_{k:\,\left|\frac{k}{n}-t\right|\ge \delta}\right)
+\left| f\!\left(\frac{k}{n}\right)-f(t)\right| b_{n,k}(t) \nonumber\\
+&\le \sup_{|t-s|\le \delta} |f(t)-f(s)|\ +\ \frac{\lVert f\rVert_\infty}{2n\delta^{2}} \nonumber\\
+&\le \frac{\epsilon}{2}+\frac{\epsilon}{2}=\epsilon,
+\end{align*}
+其中第一步来自式（\ref{eq::bernstein_polynomial}）与三角不等式；第二行中情形 $|k-nt|<n\delta$ 由
+\eqref{eq::bern_2_53a} 与 \eqref{eq::bern_2_53b} 得到，情形 $|k-nt|\ge n\delta$ 则由
+\eqref{eq::bern_2_53e} 与
+\begin{equation*}
+\sum_{k:\, \left|\frac{k}{n}-t\right|\ge \delta} b_{n,k}(t)
+\le \sum_{k:\, \left|\frac{k}{n}-t\right|\ge \delta} b_{n,k}(t)\frac{(k-nt)^2}{\delta^{2} n^{2}}
+\le \sum_{k=0}^{n} b_{n,k}(t)\frac{(k-nt)^2}{\delta^{2} n^{2}}
+= \frac{t(1-t)}{n\delta^{2}}\le \frac{1}{4n\delta^{2}}
+\end{equation*}
+而最后一个不等式来自 $f$ 的一致连续性（参见定理 C.79）以及选择 $n>\lVert f\rVert_\infty/(\epsilon\delta^{2})$。
+\end{proof}
+
+\begin{remark}
+    % remark 2.39
+这个定理一般不被看作是一个数值计算的结果，因为其收敛速度通常很慢。它更多的是理论意义上证明了在无穷范数下的连续函数空间中，
+多项式空间是稠密的。
+    
+Weierstrass 逼近定理在理论上“挽救”了 Runge 现象，而后者可由 Bernstein 多项式来实现逼近。
+然而，收敛可能非常缓慢。就 Chebyshev 多项式而言，已有结果（见 Natanson, 1965, p. 43）表明，
+存在函数 $f\in\mathcal{C}[-1,1]$, 使得当 $n\to\infty$ 时，$f$ 的 Chebyshev 多项式插值在区间 $[-1,1]$ 的所有点上都发散。
+这与 Chebyshev 多项式的 Lebesgue 常数呈 $\log(n)$ 发散这一事实一致；
+参见 Trefethen, 2013, p. 115。幸运的是，可以证明 Chebyshev 多项式插值在某个 $2$-范数意义下是收敛的；
+见 Mason and Handscomb, 2003, p. 158。
+\end{remark}
+
+\begin{remark}
+    % remark 2.40
+Bernstein 基多项式非常有用，并且可以直接推广到更高维情形。令 $T$ 为一个非退化三角形，
+其顶点为 $v_i=(x_i,y_i)\in\mathbb{R}^2$. 则任意 $v\in\mathbb{R}^2$ 都可以唯一表示为
+\begin{equation*}
+v(x,y)=b_1(x,y)v_1+b_2(x,y)v_2+b_3(x,y)v_3,
+\end{equation*}
+其中重心坐标 $b_i$ 满足
+\begin{equation*}
+\forall v(x,y)\in\mathbb{R}^2,\qquad b_1(x,y)+b_2(x,y)+b_3(x,y)=1.
+\end{equation*}
+相对于三角形 $T$ 的次数为 $n$ 的 Bernstein 基多项式为
+\begin{equation*}
+B^{n}_{ijk}:=\frac{n!}{i!\,j!\,k!}\, b_1^{\,i} b_2^{\,j} b_3^{\,k}.
+\end{equation*}
+更多细节见 Lai and Schumaker (2007)。
+\end{remark}
+
+\begin{remark}
+    % remark 2.41
+定义函数 $f$ 的全变差为其导数（以分布意义）的 $1$-范数。若 $f$ 的第 $\nu$ 阶导数具有有界变差 $V$, 
+则 $f$ 的 Chebyshev 系数满足上界
+\begin{equation*}
+2\pi^{-1} V (k-\nu)^{-\nu-1}.
+\end{equation*}
+当 $\nu\ge 1$ 时，可推出 $f$ 的 $n$ 次 Chebyshev 插值的精度为 $O(V n^{-\nu})$；参见 Trefethen (2013), 第 7 章。
+\end{remark}
+
+\begin{remark}
+    % remark 2.42
+函数 $f\in\mathcal{C}[-1,1]$ 的最佳多项式逼近 $p_n$ 当 $n\to\infty$ 时以几何速度收敛
+（即存在常数 $\rho>1$ 与 $M$, 依赖于 $f$ 以及 $|f(x)|\le M$, 使得
+$\lVert p_n-f\rVert \le \dfrac{M}{\rho^{n}(\rho-1)}$），
+当且仅当 $f$ 为解析函数；见 Trefethen (2013), 第 8 章。
+因此，$f\in\mathcal{C}[-1,1]$ 越光滑，其最佳逼近收敛得越快。
+\end{remark}
+
+\subsection{Hermite 样条}
+    % subsec 2.10
+
+\begin{remark*}
+    毕竟一个连续函数，同时避免 Runge 现象的另一个更加常用的策略是使用分段多项式插值。
+即将目标区间划分为若干子区间，在每个子区间上使用低次多项式插值。最简单的例子是分段线性插值。
+如果希望增加插值多项式的光滑性，可以使用分段 Hermite 插值。
+\end{remark*}    
+
+\subsubsection{三次 Hermite 样条}
+% subsubsec 2.10.1
+
+\begin{definition}
+    % def 2.60
+    \label{def::cubic_hermite_spline}
+三次 Hermite 样条（cubic Hermite spline 或 cubic Hermite interpolator）是由分段三次多项式组成的 $C^1$ 函数，
+用以在插值点处给定函数值与导数值的 Hermite 插值问题。
+\end{definition}
+
+\begin{lemma}
+    % lem 2.61
+    \label{lem::cubic_hermite_spline}
+考虑 Hermite 插值问题：在点 $x_i$（$i=0,1,\ldots,n$ 且对任意 $j=0,1,\ldots,n-1$ 有 $x_j<x_{j+1}$）
+处给定函数值 $f_i$ 与导数值 $f_i'$. 相应的三次 Hermite 样条 $p_f$ 属于 $C^1([x_0,x_n])$, 并在区间 $[x_j,x_{j+1}]$ 上由下式给出
+\begin{subequations}
+    \label{eq::hermite_257}
+\begin{equation}
+    \label{eq::hermite_257a}
+p_f(x)\big|_{[x_j,x_{j+1}]}=:p_j(x)=\sum_{k=0}^{3}\beta_k\, b_{3,k}\!\left(\frac{x-x_j}{x_{j+1}-x_j}\right),
+\end{equation}
+\begin{equation}
+    \label{eq::hermite_257b}
+\beta_0=f_j,\qquad \beta_1=f_j+\frac{1}{3}f_j'(x_{j+1}-x_j);
+\end{equation}
+\begin{equation}
+    \label{eq::hermite_257c}
+\beta_3=f_{j+1},\qquad \beta_2=f_{j+1}-\frac{1}{3}f_{j+1}'(x_{j+1}-x_j),
+\end{equation}
+\end{subequations}
+其中 $b_{3,k}$ 为定义 \ref{def::bernstein_basis} 中次数为 $3$ 的第 $k$ 个 Bernstein 基多项式。
+\end{lemma}
+
+\begin{proof}
+由 \eqref{eq::hermite_257a} 可直接验证 $p_j(x)$ 满足插值条件
+\begin{equation*}
+p_j(x_j)=f_j,\quad p_j(x_{j+1})=f_{j+1};\qquad
+p_j'(x_j)=f_j',\quad p_j'(x_{j+1})=f_{j+1}'
+\end{equation*}
+于区间 $[x_j,x_{j+1}]$ 上。由定义 \ref{def::hermite_interpolation} 与 \ref{def::cubic_hermite_spline} 可知，
+$p_f$ 的确是三次 Hermite 样条且属于 $C^1$. 另一方面，每个区间上的四个插值条件唯一地确定 $p_j$, 
+因为引理 \ref{lem::bernstein_basis} 表明 $\{b_{3,k}:k=0,1,2,3\}$ 是 $\mathbb{P}_3$ 的一组基，
+并且坐标变换 $x\mapsto \dfrac{x-x_j}{x_{j+1}-x_j}$ 是双射。
+\end{proof}
+
+\begin{remark*}
+构建逐段三次 Hermite 样条的另一个算法是使用 Newton 形式的插值多项式。    
+\end{remark*}
+
+\begin{remark}
+    % remark 2.43
+引理 \ref{lem::cubic_hermite_spline} 提供了一种应对 Runge 现象的方法：
+采用固定多项式次数、逐渐增加区间数目的分段多项式插值。
+三次 Hermite 样条中的每个三次多项式都可以通过式（\ref{eq::hermite_257}）显式计算，
+因此仅具有 $C^1$ 连续性。若要使这些三次多项式达到 $C^2$ 连续性，需要将所有区间的信息装配为一个线性方程组，
+其解给出样条；参见第 3.1 节。总而言之，引理 \ref{lem::cubic_hermite_spline} 
+所得样条是显式计算、仅为 $C^1$ 或属于 $\mathbb{S}_3^{1}$（参见定义 3.1）；
+而定理 3.7 中的样条必须通过隐式方式计算，并且可以达到 $C^2$ 或属于 $\mathbb{S}_3^{2}$.
+\end{remark}
+
+\subsubsection{曲线：最基础}
+% subsubsec 2.10.2
+
+\begin{definition}
+    % def 2.62
+（开）曲线是某个连续映射 $\gamma:(\alpha,\beta)\to\mathbb{R}^D$ 的像，
+其中 $-\infty\le \alpha<\beta\le +\infty$. 若映射 $\gamma$ 为单射，则称其为简单曲线。
+\end{definition}
+
+\begin{remark*}
+    注意这个曲线可以是高维的。即曲线的参数化。
+\end{remark*}
+
+\begin{definition}
+    % def 2.63
+曲线 $\gamma$ 的切向量是它的一阶导数
+\begin{equation}
+    % eq 2.58
+\gamma' := \frac{\mathrm{d}\gamma}{\mathrm{d}t},
+\end{equation}
+而 $\gamma$ 的单位切向量，记为 $\mathbf{t}$, 是其切向量的单位化。
+\end{definition}
+
+\begin{definition}
+    % def 2.64
+单位速度曲线是指其切向量在每一点都具有单位长度的曲线。
+\end{definition}
+
+\begin{definition}
+    % def 2.65
+若 $\gamma(t_0)$ 处的导数 $t(t_0)$ 存在且 $t(t_0)\ne 0$, 
+则称点 $\gamma(t_0)$ 为曲线 $\gamma$ 的正则点；若曲线的所有点都是正则点，则称该曲线为正则的。
+\end{definition}
+
+\begin{definition}
+    % def 2.66
+闭曲线是连续映射 $\hat\gamma:[0,1]\to\mathbb{R}^2$ 的像，
+并满足 $\hat\gamma(0)=\hat\gamma(1)$. 如果 $\hat\gamma$ 在 $[0,1)$ 的限制进一步为单射，
+则该闭曲线称为简单闭曲线或 Jordan 曲线。
+\end{definition}
+
+\begin{definition}
+    % def 2.67
+曲线的带符号单位法向量，记为 $\mathbf{n}_s$, 是将其单位切向量逆时针旋转 $\tfrac{\pi}{2}$ 所得到的单位向量。
+\end{definition}
+
+\begin{definition}
+    % def 2.68
+单位速度曲线 $\gamma$ 的带符号曲率定义为 $\kappa_s := \gamma''\cdot \mathbf{n}_s$.
+\end{definition}
+
+\begin{remark}
+    % remark 2.44
+由隐函数定理 D.121，平面曲线 $\hat\gamma$ 在一个正则点 $p$ 的充分小的局部弧段，总可以重新参数化为
+\begin{equation*}
+(\ast):\quad \gamma(\xi)=(\xi,\,H(\xi)),
+\end{equation*}
+其中 $H:\mathbb{R}\to\mathbb{R}$ 称为与参数 $\xi$ 相关联的 $\gamma$ 的高度函数，
+且轴 $\xi$ 要么水平要么竖直，即 $\xi=+x$、$\xi=-x$、$\xi=+y$ 或 $\xi=-y$. 见例 \ref{exp::runge_circle}。
+
+$\kappa_s$ 的符号指示单位切向量在局部是逆时针（$\kappa_s>0$）还是顺时针（$\kappa_s<0$）旋转。
+对于形如 $(\ast)$ 的正则局部弧段，其带符号曲率可表示为
+\begin{equation*}
+\kappa_s=\frac{H''}{\bigl(1+(H')^{2}\bigr)^{3/2}},
+\end{equation*}
+其中另一条局部坐标轴 $\eta=H(\xi)$ 是通过将 $\xi$ 轴逆时针旋转 $\tfrac{\pi}{2}$ 得到的。
+\end{remark}
+
+
+\subsubsection{Bézier 曲线}
+% subsubsec 2.10.3
+
+\begin{definition}
+    % def 2.69
+    \label{def::bezier_curve}
+给定 $\mathbb{R}^D$ 中 $n+1$ 个互异点 $\mathbf{q}_0,\mathbf{q}_1,\ldots,\mathbf{q}_n$, 
+其 Bézier 曲线 $\mathbf{B}:[0,1]\to\mathbb{R}^D$ 定义为
+\begin{equation}
+    % eq 2.59
+    \label{eq::bezier_curve}
+\mathbf{B}(t):=\sum_{k=0}^{n}\mathbf{q}_k\, b_{n,k}(t),
+\end{equation}
+其中 $n\in\mathbb{N}^+$, $b_{n,k}$ 为定义 \ref{def::bernstein_basis} 中次数为 $n$ 的第 $k$ 个 Bernstein 基多项式，
+这些点 $\mathbf{q}_k$ 称为 Bézier 曲线的控制点。
+\end{definition}
+
+\begin{example}
+    % ex 2.70
+一次 Bézier 曲线为线段；也即，两点确定的一条 Bézier 曲线。二次 Bézier 曲线由三个互异点确定，而三次 Bézier 曲线由四个互异点确定。
+\end{example}
+
+\begin{lemma}
+    % lem 2.71
+    \label{lem::convex_combination}
+设两两不同的点 $\mathbf{p}_i\in W\subset\mathbb{R}^n$, 其中 $i=1,\ldots,m$ 且 $m\ge 2$. 
+则任一点 $\sum_{i=1}^{m}\lambda_i \mathbf{p}_i$, 
+当满足 $\sum_{i=1}^{m}\lambda_i=1$ 且 $\lambda_i\in[0,1]$ 时，属于 $W$ 的凸包。
+\end{lemma}
+
+\begin{proof}
+当 $m=2$ 时由定义 \ref{def::convex_set} 直接成立。对归纳步，有
+\begin{equation*}
+\sum_{i=1}^{m}\lambda_i \mathbf{p}_i=\lambda_m \mathbf{p}_m+(1-\lambda_m)\,\mathbf{q}_m,
+\end{equation*}
+其中 $\mathbf{q}_m:=\sum_{i=1}^{m-1}\frac{\lambda_i}{1-\lambda_m}\mathbf{p}_i$. 
+根据归纳假设，$\mathbf{q}_m$ 属于 $W$ 的凸包。于是证明可由归纳基完成。
+\end{proof}
+
+\begin{lemma}
+    % lem 2.72
+由 $n+1$ 个互异点确定的 Bézier 曲线包含于这些点的凸包之内。
+\end{lemma}
+
+\begin{proof}
+此结论由引理 \ref{lem::convex_combination}、式（\ref{eq::bern_2_53a}）、（\ref{eq::bern_2_53b}）
+以及定义 \ref{def::convex_set} 与 \ref{def::bezier_curve} 推出。
+\end{proof}
+
+\begin{lemma}
+    % lem 2.73
+    \label{lem::bezier_endpoints}
+次数为 $n$ 的 Bézier 曲线满足
+\begin{subequations}
+    \label{eq::bezier_endpoints}
+\begin{equation}
+\mathbf{B}(0)=\mathbf{q}_0,\qquad \mathbf{B}'(0)=n(\mathbf{q}_1-\mathbf{q}_0);
+\end{equation}
+\begin{equation}
+\mathbf{B}(1)=\mathbf{q}_n,\qquad \mathbf{B}'(1)=n(\mathbf{q}_n-\mathbf{q}_{n-1}).
+\end{equation}
+\end{subequations}
+\end{lemma}
+
+\begin{proof}
+将式 (\ref{eq::bezier_curve}) 改写为
+\begin{equation*}
+\mathbf{B}(t)=\mathbf{q}_n t^{n}+\mathbf{q}_0(1-t)^{n}+\sum_{k=1}^{n-1}\mathbf{q}_k \binom{n}{k} t^{k}(1-t)^{n-k},
+\end{equation*}
+从而得到 (\ref{eq::bezier_endpoints}) 中的第一组等式；并且
+\begin{align*}
+\mathbf{B}'(t)
+&=n\mathbf{q}_n t^{n-1}-n\mathbf{q}_0(1-t)^{n-1} \nonumber\\
+&\quad+\sum_{k=1}^{n-1}\mathbf{q}_k \binom{n}{k}\Bigl[k t^{k-1}(1-t)^{n-k}-(n-k)t^{k}(1-t)^{n-k-1}\Bigr],
+\end{align*}
+据此可得第二组等式。
+\end{proof}
+
+\begin{remark}
+    % remark 2.45
+由引理 \ref{lem::bezier_endpoints}，Bézier 曲线的首尾两个控制点在曲线上。
+同时，前两个控制点和后两个控制点分别确定曲线起点与终点处的切向量。
+\end{remark}
+
+\begin{algorithm}
+    % alg 2.74
+（基于三次 Bézier 曲线的曲线拟合）给定切向量 $\gamma'$ 的曲线 $\gamma:(0,1)\to\mathbb{R}^{D}$ 可按如下步骤由三次 Bézier 曲线近似：
+\begin{enumerate}
+\item 选择 $m+1$ 个相邻的标记点 $\mathbf{p}_0,\ldots,\mathbf{p}_m$ 于 $\gamma$ 上，并在这些标记点处计算切向量。
+\item 对每个 $j=0,\ldots,m-1$，计算
+\begin{equation*}
+\mathbf{q}_0:=\mathbf{p}_j,\qquad
+\mathbf{q}_1:=\tfrac{1}{3}\gamma'(\mathbf{p}_j)+\mathbf{p}_j,\qquad
+\mathbf{q}_2:=\mathbf{p}_{j+1}-\tfrac{1}{3}\gamma'(\mathbf{p}_j),\qquad
+\mathbf{q}_3:=\mathbf{p}_{j+1},
+\end{equation*}
+并由这些 $\mathbf{q}_j$ 确定一个三次 Bézier 曲线（式 \ref{eq::bezier_curve}）。
+\item 将这 $m$ 条三次 Bézier 曲线连接起来。
+\end{enumerate}
+\end{algorithm}
+
+\begin{remark}
+    % remark 2.46
+由于三次 Bézier 曲线的每个坐标函数都是三次 Hermite 样条，定理 \ref{thm::hermite_remainder} 
+蕴含所拟合的三次 Bézier 曲线在相邻标记点最大间距意义下具有四阶精度。
+
+Bézier 曲线提供了一种“手绘”分段曲线表示方法，在计算机图形学软件中有广泛应用。
+\end{remark}
 
 \bibliography{na.bib}
 \bibliographystyle{plain}
