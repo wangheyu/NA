@@ -53,6 +53,7 @@
 %\newtheorem{example}{例}
 \newtheorem{remark}{备注}  
 \newtheorem*{remark*}{备注}  
+\newtheorem{notation}{符号说明}
 
 
 \newtheorem{definition}[theorem]{定义} % 定义 'definition' 环境    
@@ -1355,6 +1356,7 @@ F(\sqrt{R}) = \frac{\sqrt{R}(R + 3R)}{3R + R} = \sqrt{R}
 
 \section{多项式插值}
 % sec 2
+\label{sec::polynomial_interpolation}
 
 \begin{definition}
 % def 2.1
@@ -3603,9 +3605,10 @@ $p_f$ 的确是三次 Hermite 样条且属于 $C^1$. 另一方面，每个区间
 采用固定多项式次数、逐渐增加区间数目的分段多项式插值。
 三次 Hermite 样条中的每个三次多项式都可以通过式（\ref{eq::hermite_257}）显式计算，
 因此仅具有 $C^1$ 连续性。若要使这些三次多项式达到 $C^2$ 连续性，需要将所有区间的信息装配为一个线性方程组，
-其解给出样条；参见第 3.1 节。总而言之，引理 \ref{lem::cubic_hermite_spline} 
-所得样条是显式计算、仅为 $C^1$ 或属于 $\mathbb{S}_3^{1}$（参见定义 3.1）；
-而定理 3.7 中的样条必须通过隐式方式计算，并且可以达到 $C^2$ 或属于 $\mathbb{S}_3^{2}$.
+其解给出样条；参见第 \ref{sec::pp_spline} 节。总而言之，引理 \ref{lem::cubic_hermite_spline} 
+所得样条是显式计算、仅为 $C^1$ 或属于 $\mathbb{S}_3^{1}$（参见定义 \ref{def::spline_space}）；
+而定理 \ref{thm::exist_unique_cubic_splines} 中的样条必须通过隐式方式计算，
+并且可以达到 $C^2$ 或属于 $\mathbb{S}_3^{2}$.
 \end{remark}
 
 \subsubsection{曲线：最基础}
@@ -3785,6 +3788,900 @@ $\kappa_s$ 的符号指示单位切向量在局部是逆时针（$\kappa_s>0$）
 
 Bézier 曲线提供了一种“手绘”分段曲线表示方法，在计算机图形学软件中有广泛应用。
 \end{remark}
+
+\section{样条}
+% sec 3
+
+\begin{remark}
+    % remark 3.1
+正如上一章所讨论的，在等距节点上进行高次数多项式插值会因宽幅振荡而表现不佳，
+这由 Runge 现象所示。除了 Chebyshev 多项式之外，
+本章中的样条函数构成了实现多项式插值快速收敛的另一种方法。
+历史上，样条函数有两种形式：分段多项式（PP）形式便于构造且适合误差分析，
+而 B 形式则具有诸如递归构造、局部支撑以及与单位分割的联系等优点。
+由定理 \ref{thm::exist_unique_cubic_splines} 知，$C^2$ 的三次样条是唯一的，因此其 PP 形式与 B 形式表示同一个函数。
+\end{remark}
+
+\begin{remark}
+    % remark 3.2
+样条（spline）是一条由弹性材料制成的长条，
+在若干点处被固定；该长条在这些固定点的约束下松弛，
+形成一条通过这些固定点的光滑曲线，从而将该曲线转移到另一种材料上；
+见图 \ref{fig::spline_example}。“样条函数”这一术语最早由 Schoenberg 于 1946 年提出，
+用以指代具有与上述机械装置相似性质的分段多项式。
+\end{remark}
+
+\begin{remark*}
+    绘制曲线是工业制造和设计中的一个重要问题。之前我们已经讨论了 Bézier 曲线，
+它们在计算机图形学中有广泛应用。样条函数则更加古老。Spline 装置最初用于船舶设计，
+而这个词的原意就是柳木条。在东方，我们主要使用竹条来绘制曲线，
+而样这个词来源于放样，或者样式。本质上就是建筑设计和模型制作。比如清代故宫建筑，
+主要由一个雷姓世家负责设计和施工，行业内称其为“样式雷”。
+\end{remark*}
+
+\begin{figure}
+\centering
+% 图 3.1 说明
+\includegraphics[width=0.6\textwidth]{images/spline.png}
+\caption{一个样条示例。L 形支架与圆圈表示固定装置，
+阴影加粗的曲线为在这些固定条件下弯曲的木条。}
+\label{fig::spline_example}
+\end{figure}
+
+\begin{definition}
+    % def 3.1
+    \label{def::spline_space}
+给定非负整数 $n,k$, 以及将区间 $[a,b]$ 划分开的严格递增序列 $(x_i)_{i=1}^{N}$, 
+即
+\begin{equation}
+    % eq 3.1
+    \label{eq::partition}
+a=x_1<x_2<\cdots<x_N=b,
+\end{equation}
+相对于该分割区间的次数为 $n$、光滑阶为 $k$ 的样条函数集合定义为
+\begin{equation}
+    % eq 3.2
+    \label{eq::spline_space}
+\mathbb{S}_n^{k}
+=\bigl\{\, s:\ s\in C^{k}[a,b]; 
+\forall i\in[1,N-1], s\big|_{[x_i,x_{i+1}]}\in\mathbb{P}_{n} 
+\bigr\}.
+\end{equation}
+这些 $x_i$ 称为样条的结点（knots）。
+\end{definition}
+
+\begin{remark}
+    % remark 3.3
+结点（knots）是对分段多项式的连续性条件进行约束的位置，
+而“站点”（sites）是插值条件得到满足的位置；参见评注 3.44 
+以获得更多讨论。
+\end{remark}
+
+\begin{notation}
+    % notation 1
+在第 \ref{sec::polynomial_interpolation} 章与本章中，
+各种方法中的多项式次数均记为 $n$. 此处我们用 $N$ 表示样条的结点数量。
+\end{notation}
+
+\begin{remark*}
+    注意定义 \ref{def::spline_space} 给出的是一个函数空间。
+    注意这个空间的定义依赖的信息是：结点序列 $(x_i)_{i=1}^{N}$, 
+    每个区间上分段多项式的次数 $n$ 以及多项式在节点处的光滑阶 $k$.
+    在区间内部，样条函数是多项式，因此在每个区间内部是无穷光滑的。
+    限制它的是结点处的光滑性条件。
+\end{remark*}
+
+\begin{example}
+    % example 3.2
+作为一个极端情形，$\mathbb{S}_n^{n}=\mathbb{P}_n$, 
+即 $s\in \mathbb{S}_n^{n}$ 的所有分段都属于同一个多项式。
+另一方面，$\mathbb{S}_1^{0}$ 是分段线性插值函数的类。
+最常用的样条是 $\mathbb{S}_3^{2}$ 中的三次样条，本章将聚焦于此。
+\end{example}
+
+\begin{remark*}
+    $\mathbb{S}_n^{n}=\mathbb{P}_n$, 节点处要求 $n$ 阶连续性，
+    导致多项式事实上不能再分段。实际上，
+    $$
+    \mathbb{S}_n^{n} = \mathbb{S}_n^{\infty} = \mathbb{P}_n.
+    $$
+\end{remark*}
+
+\subsection{PP 形式样条}
+% sec 3.1
+\label{sec::pp_spline}
+
+\subsubsection{构造 PP 形式样条}
+% subsec 3.1.1
+
+\begin{remark}
+    % remark 3.4
+为确定 PP (piecewise polynomial) 形式样条，
+我们首先在接下来的两个引理中给出关于三个相邻结点处一阶与二阶导数的关系。
+\end{remark}
+
+\begin{remark*}
+    以 $\mathbb{S}_3^2$ 为目标空间。我们把三次样条的应用问题再明确一下，
+    即给定 $N$ 个结点 $a = x_1<x_2<\cdots<x_N = b$ 
+    以及 $N$ 个函数值 $f_i=f(x_i)$, 
+    我们寻找一个样条函数 $s\in \mathbb{S}_3^2$ 使得
+    $s(x_i)=f_i$ 对所有 $i=1,2,\ldots,N$ 成立。
+    并且 $s$ 在全部节点处具有二阶连续性。它比分段 Hermite 样条 ($\mathbb{S}_3^1$) 
+    更光滑, 且需要更少的信息（不需要导数值）。而代价就是计算更复杂。
+    以及需要正确理解样条和目标曲线的一致性。
+\end{remark*}
+
+\begin{lemma}
+    % lem 3.3
+    \label{lem::spline_m_relation}
+记 $m_i=s'(f; x_i)$, 其中 $s\in \mathbb{S}_3^{2}$. 
+则对每个 $i=2,3,\ldots,N-1$, 有
+\begin{equation}
+    % eq 3.3
+    \label{eq::spline_m_relation}
+\lambda_i m_{i-1}+2 m_i+\mu_i m_{i+1}
+=3\mu_i f[x_i,x_{i+1}]+3\lambda_i f[x_{i-1},x_i],
+\end{equation}
+其中
+\begin{equation}
+    % eq 3.4
+    \label{eq::spline_lambda_mu}
+\mu_i=\frac{x_i-x_{i-1}}{x_{i+1}-x_{i-1}},\qquad
+\lambda_i=\frac{x_{i+1}-x_i}{x_{i+1}-x_{i-1}}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+记 $p_i(x)=s\big|_{[x_i,x_{i+1}]}$, 并记 $K_i=f[x_i,x_{i+1}]$. 
+针对 Hermite 插值问题 
+$$
+p_i(x_i)=f_i, p_i(x_{i+1})=f_{i+1}, p_i'(x_i)=m_i, p_i'(x_{i+1})=m_{i+1}
+$$ 
+的差商表为
+\[
+\begin{array}{c|llll}
+x_i & f_i&&\\
+x_i & f_i& m_i&\\
+x_{i+1} & f_{i+1}& K_i&\frac{K_i-m_i}{x_{i+1}-x_i}\\
+x_{i+1} & f_{i+1}& m_{i+1}&\frac{m_{i+1}-K_i}{x_{i+1}-x_i}&\frac{m_i+m_{i+1}-2K_i}{(x_{i+1}-x_i)^2} 
+\end{array}
+\]
+于是 Newton 公式给出
+\begin{equation}
+    % eq 3.5
+    \label{eq::spline_newton}
+\begin{aligned}
+p_i(x)
+&=f_i+(x-x_i)m_i+(x-x_i)^2\,\frac{K_i-m_i}{x_{i+1}-x_i}\\
+&\quad+(x-x_i)^2(x-x_{i+1})\,\frac{m_i+m_{i+1}-2K_i}{(x_{i+1}-x_i)^2},
+\end{aligned}
+\end{equation}
+或等价地
+\begin{equation}
+    % eq 3.6
+    \label{eq::spline_cubic}
+    \begin{aligned}
+p_i(x) &=c_{i,0}+c_{i,1}(x-x_i)+c_{i,2}(x-x_i)^2+c_{i,3}(x-x_i)^3,\\
+c_{i,0} &=f_i,\\
+c_{i,1} &=m_i,\\
+c_{i,2} &=\frac{3K_i-2m_i-m_{i+1}}{x_{i+1}-x_i},\\
+c_{i,3} &=\frac{m_i+m_{i+1}-2K_i}{(x_{i+1}-x_i)^2}.
+    \end{aligned}
+\end{equation}
+由于 $s\in C^{2}$ 蕴含 $p_{i-1}''(x_i)=p_i''(x_i)$,即
+\begin{equation*}
+3c_{i-1,3}(x_i-x_{i-1})=c_{i,2}-c_{i-1,2}.
+\end{equation*}
+将系数 $c_{i,j}$ 代入上式即可得到所述等式。
+\end{proof}
+
+\begin{remark*}
+    \[
+    3 \frac{m_{i - 1} + m_i - 2 K_{i - 1}}{(x_i - x_{i - 1})^2} (x_i - x_{i - 1})
+    = \frac{3 K_i - 2 m_i - m_{i + 1}}{x_{i + 1} - x_i} - \frac{3 K_{i - 1} - 2 m_{i - 1} - m_i}{x_i - x_{i - 1}}
+    \]
+    整理一下：
+    \[
+    \frac{m_{i - 1} + 2 m_i - 3 K_{i - 1}}{x_i - x_{i - 1}}
+    = \frac{3 K_i - 2 m_i - m_{i + 1}}{x_{i + 1} - x_i}
+    \]
+    令 $h_i = x_{i + 1} - x_i$，则有
+    \[
+    \frac{m_{i - 1} + 2 m_i - 3 K_{i - 1}}{h_{i - 1}}
+    = \frac{3 K_i - 2 m_i - m_{i + 1}}{h_i}
+    \]
+    进而
+    \[
+    \begin{aligned}        
+    & h_i m_{i - 1} + 2 (h_i + h_{i - 1}) m_i + h_{i - 1} m_{i + 1} \\
+    &= 3 (h_i K_{i - 1} + h_{i - 1} K_i) \\
+    &= 3 (h_i f[x_{i - 1}, x_i] + h_{i - 1} f[x_i, x_{i + 1}])
+    \end{aligned}
+    \]
+    两边一起除以 
+    \[
+    h_i + h_{i - 1} = x_{i + 1} - x_{i - 1},
+    \]
+    即得 式 (\ref{eq::spline_m_relation})。
+\end{remark*}
+
+\begin{remark}
+    % remark 3.5
+$\mu_i$ 与 $\lambda_i$ 是无量纲的比值；
+它们刻画了 $x_i$ 相对于 $x_{i-1}$ 与 $x_{i+1}$ 的相对位置。
+在科学与工程中，用无量纲数来描述物理过程是一种常见做法。
+\end{remark}
+
+\begin{remark}
+    % remark 3.6
+动态规划（dynamic programming，或称动态优化）的思想是：
+把一个复杂问题拆分为一组更简单的子问题，各个击破并只求解一次，
+然后存储这些解。当相同的子问题再次出现时，不再重新计算，
+而是查表直接取用，从而以增加存储空间为代价节省计算时间。
+
+在证明引理 \ref{eq::spline_m_relation} 时对 Newton 
+公式的使用与动态规划是类比的。按照这种方式组织材料是有益的：
+已知事实在早期被引入并重复使用（并因此得到强化），以简化对新材料的学习。
+
+在式 (\ref{eq::spline_newton}) 中，
+插值样条由所有结点处的一阶导数确定。类似地，
+将式 (\ref{eq::spline_first_derivative}) 
+与 (\ref{eq::spline_third_derivative}) 
+代入式 (\ref{eq::spline_taylor}) 也得到一个方程，
+表明插值样条同样可以由二阶导数确定。
+\end{remark}
+
+\begin{lemma}
+    % lemma 3.4
+    \label{lem::spline_M_relation}
+记 $M_i=s''(f; x_i)$, 其中 $s\in \mathbb{S}_3^{2}$. 
+则对每个 $i=2,3,\ldots,N-1$, 有
+\begin{equation}
+    % eq 3.7
+    \label{eq::spline_M_relation}
+\mu_i M_{i-1}+2M_i+\lambda_i M_{i+1}=6 f[x_{i-1},x_i,x_{i+1}],
+\end{equation}
+其中 $\mu_i$ 与 $\lambda_i$ 与式 (\ref{eq::spline_lambda_mu}) 相同。
+\end{lemma}
+
+\begin{proof}
+在 $x_i$ 处对 $s(x)$ 作泰勒展开，得到
+\begin{equation}
+    % eq 3.8
+    \label{eq::spline_taylor}
+s(x)=f_i+s'(x_i)(x-x_i)+\frac{M_i}{2}(x-x_i)^2+\frac{s'''(x_i)}{6}(x-x_i)^3.
+\end{equation}
+当 $x\in(x_i,x_{i+1}]$ 时，对式 (\ref{eq::spline_taylor}) 两次求导，
+得到
+\[
+s''(x) = M_i + s'''(x_i)(x - x_i),
+\]
+令 $x=x_{i+1}$, 得到
+\begin{equation}
+    % eq 3.9
+    \label{eq::spline_third_derivative}
+s'''(x_i)=\frac{M_{i+1}-M_i}{x_{i+1}-x_i}.
+\end{equation}
+将式 (\ref{eq::spline_third_derivative}) 代入式 (\ref{eq::spline_taylor})，
+再令 $x=x_{i+1}$, 得到
+\[
+s(x_{i+1}) 
+= f_i + s'(x_i)(x_{i+1} - x_i) 
++ \frac{M_i}{2}(x_{i+1} - x_i)^2 + \frac{M_{i+1} - M_i}{6}(x_{i+1} - x_i)^3.
+\]
+注意到 $s(x_{i + 1}) = f(x_{i + 1})$, 因此
+\begin{equation}
+    % eq 3.10
+    \label{eq::spline_first_derivative}
+s'(x_i)=f[x_i,x_{i+1}]-\frac{1}{6}(M_{i+1}+2M_i)(x_{i+1}-x_i).
+\end{equation}
+同理，当 $x\in[x_{i-1},x_i)$ 时，对式 (\ref{eq::spline_taylor}) 两次求导，
+令 $x=x_{i-1}$, 得到
+\begin{equation*}
+s'''(x_i)=\frac{M_i-M_{i-1}}{x_i-x_{i-1}},
+\end{equation*}
+将其代入式 (\ref{eq::spline_taylor}) 并化简得
+\begin{equation}
+    % eq 3.11
+    \label{eq::spline_first_derivative2}
+s'(x_i)=f[x_{i-1},x_i]-\frac{1}{6}(M_{i-1}+2M_i)(x_{i-1}-x_i).
+\end{equation}
+由式 (\ref{eq::spline_first_derivative2}) 
+减去式 (\ref{eq::spline_first_derivative}) 
+即可得到式 (\ref{eq::spline_M_relation})。
+\end{proof}
+
+\begin{remark*}
+    以上推导说明，条件就是约束，最终一个独立条件会形成一个独立的方程。
+    我们仔细数数，会发现要形成非奇异的线性方程组，还缺少两个条件：
+    \begin{itemize}
+    \item 在全部节点上，$s(x_i)=f(x_i)$, 这是 $N$ 个条件；
+    \item 在中间节点上，
+    $s(x_i)|_{[x_{i - 1}, x_{i}]} = s(x_i)|_{[x_i, x_{i + 1}]}$, 
+    这是 $N-2$ 个条件。
+    \item 在中间节点上，
+    $s'(x_i)|_{[x_{i - 1}, x_{i}]} = s'(x_i)|_{[x_i, x_{i + 1}]}$,
+    这是 $N-2$ 个条件。
+    \item 在中间节点上，
+    $s''(x_i)|_{[x_{i - 1}, x_{i}]} = s''(x_i)|_{[x_i, x_{i + 1}]}$,
+    这是 $N-2$ 个条件。
+    \item 以上条件一共是 $4N - 6$ 个条件。
+    \item 另一方面，$s$ 在每个区间上是一个三次多项式，因此每个区间上有 $4$ 个系数。
+    共有 $N-1$ 个区间，因此共有 $4(N-1) = 4N - 4$ 个系数。
+    \item 因此还缺少 $2$ 个条件。
+    \end{itemize}
+    \item 之前的待定系数法，不管怎么选择待定系数，都不会增加条件。
+\end{remark*}
+
+\begin{remark}
+    % remark 3.7
+然而，无论是式 (\ref{eq::spline_newton}) 
+还是式 (\ref{eq::spline_M_relation})，都有 $N$ 个未知量，
+但只有 $N-2$ 个方程。因此还需要两个附加条件来确定样条。
+不同的附加条件会导致不同类型的样条。
+\end{remark}
+
+\begin{definition}
+    % def 3.5
+    \label{def::spline_boundary_conditions}
+（三次样条的边界条件）常见的三次样条包括如下几类。
+\begin{itemize}
+\item 完备（complete）三次样条 $s\in \mathbb{S}_3^{2}$ 
+满足边界条件 $s'(f;a)=f'(a)$ 且 $s'(f;b)=f'(b)$.
+\item 在端点给定二阶导数的三次样条：
+$s''(f;a)=f''(a)$ 且 $s''(f;b)=f''(b)$.
+\item 自然（natural）三次样条 $s\in \mathbb{S}_3^{2}$ 
+满足边界条件 $s''(f;a)=0$ 且 $s''(f;b)=0$.
+\item not-a-knot 三次样条 $s\in \mathbb{S}_3^{2}$ 满足 $s'''(f;x)$ 
+在 $x=x_2$ 与 $x=x_{N-1}$ 处存在。
+（换言之，在 $x_1, x_2, x_3$ 上，对 $f_1$, $f_2$, $f_3$ 做一个二次插值多项式，
+右边也是一样。）
+\item 周期（periodic）三次样条 $s\in \mathbb{S}_3^{2}$ 
+通过用 $s(f;b)=f(b)$ 与 $s(f;b)=s(f;a)$, $s'(f;b)=s'(f;a)$, 
+$s''(f;b)=s''(f;a)$ 来替换 $s(f;b)=f(b)$ 获得。
+\end{itemize}
+\end{definition}
+
+\begin{remark}
+    % remark 3.8
+定义 \ref{def::spline_boundary_conditions} 中各类样条的命名理由如下。
+\begin{itemize}
+\item “complete”：在两个端点处给定斜率即可补足线性方程组，
+从而样条被唯一确定。
+\item “natural”：二阶导数为零意味着样条在端点处的斜率向插值区间外延拓，
+这就是样条的自然状态。
+\item “not-a-knot”：第一段与第二段成为同一段，
+从而第二个结点不再是结点。
+\item “periodic”：一条闭合的 $C^2$ 
+曲线应当在曲线上任一点处匹配两侧的导数。
+\end{itemize}
+\end{remark}
+
+\begin{remark}
+    % remark 3.9
+自然三次样条在实际中很少使用，因为被插值函数在端点处的二阶导数通常并不为零。
+在图 \ref{fig::spline_example} 中，把夹子去掉，使得端点不受力，
+就是自然样条的物理意义。
+\end{remark}
+
+\begin{remark}
+    % remark 3.10
+下文将以完备三次样条为例，展示如何使各种三次样条被唯一确定。
+\end{remark}
+
+\begin{lemma}
+    % lemma 3.6
+    \label{lem::complete_spline_end_eqs}
+对于完备三次样条 $s\in \mathbb{S}_3^{2}$, 记 $M_i=s''(f;x_i)$, 则有
+\begin{equation}
+    % eq 3.12
+    \label{eq::complete_spline_left_end}
+2M_1+M_2=6 f[x_1,x_1,x_2],
+\end{equation}
+\begin{equation}
+    % eq 3.13
+    \label{eq::complete_spline_right_end}
+M_{N-1}+2M_N=6 f[x_{N-1},x_N,x_N].
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+对于式（\ref{eq::complete_spline_left_end}），
+区间 $[x_1,x_2]$ 上的三次多项式可写为
+\begin{equation*}
+s_1(x)
+=f[x_1]
++f[x_1,x_1](x-x_1)
++\frac{M_1}{2}(x-x_1)^2
++\frac{s_1'''(x_1)}{6}(x-x_1)^3.
+\end{equation*}
+对上式两次求导，令 $x=x_2$, 得到 $s_1'''(x_1)=\dfrac{M_2-M_1}{x_2-x_1}$, 从而
+\begin{equation}
+    % eq 3.14
+    \label{eq::s1_poly_refined}
+s_1(x)
+=f[x_1]
++f[x_1,x_1](x-x_1)
++\frac{M_1}{2}(x-x_1)^2
++\frac{M_2-M_1}{6(x_2-x_1)}(x-x_1)^3.
+\end{equation}
+令 $x=x_2$, 两边同除以 $x_2-x_1$, 得到
+\begin{equation*}
+f[x_1,x_2]
+=f[x_1,x_1]
++\left(\frac{M_1}{2}
++\frac{M_2-M_1}{6}\right)(x_2-x_1),
+\end{equation*}
+这即推出式（\ref{eq::complete_spline_left_end}）。
+（相当于引理 \ref{lem::spline_M_relation} 的证明走一半）
+式（\ref{eq::complete_spline_right_end}）可用同样方法证明。
+\end{proof}
+
+\begin{theorem}
+    % thm 3.7
+    \label{thm::exist_unique_cubic_splines}
+对于给定函数 $f:[a,b]\to\mathbb{R}$, 
+存在唯一的完备/自然/周期三次样条 $s(f;x)\in \mathbb{S}_3^{2}$ 插值 $f$.
+\end{theorem}
+\begin{remark*}
+    这个证明是简单的，相当于说明上面给出的线性系统是非奇异的。
+\end{remark*}
+
+\begin{proof}
+仅证明完备三次样条的情形，其余情形类似。
+
+由引理 \ref{lem::spline_m_relation} 的证明可知，
+只要各区间上的 $m_i$ 唯一确定，则 $s$ 唯一确定。
+对完备三次样条，我们已有 $m_1=f'(a)$ 与 $m_N=f'(b)$. 
+将式 (\ref{eq::spline_m_relation}) 组装为线性系统
+\begin{equation}
+    % eq 3.15
+    \label{eq::tri_system_m}
+\begin{bmatrix}
+2 & \mu_2 \\
+\lambda_3 & 2 & \mu_3 \\
+& \ddots & \ddots & \ddots \\
+& & \lambda_i & 2 & \mu_i \\
+& & & \ddots & \ddots & \ddots \\
+& & & & \lambda_{N-2} & 2 & \mu_{N-2} \\
+& & & & & \lambda_{N-1} & 2
+\end{bmatrix}
+\begin{bmatrix}
+m_2\\ m_3\\ \vdots\\ m_i\\ \vdots\\ m_{N-2}\\ m_{N-1}
+\end{bmatrix}
+=\mathbf{b},
+\end{equation}
+其中向量 $\mathbf{b}$ 由已知信息确定。
+式 (\ref{eq::spline_lambda_mu}) 表明上述矩阵严格对角占优，
+因而其行列式非零，$m_i$ 唯一确定。
+
+或者，也可由引理 \ref{lem::complete_spline_end_eqs} 与 
+\ref{lem::spline_M_relation} 唯一确定完备三次样条，论证与上面类似。
+\end{proof}
+
+\begin{remark}
+    % remark 3.11
+    \label{rem::how_to_determine_cubic_splines}
+要确定完备三次样条，可将式 (\ref{eq::spline_m_relation}) 
+改写为大小为 $(N-2)\times(N-2)$ 的线性系统（\ref{eq::tri_system_m}），
+施加端点条件，求解线性系统，计算差商，最后使用式 (\ref{eq::spline_cubic})。
+
+要确定在端点给定二阶导数的三次样条，则将式 (\ref{eq::spline_m_relation}) 
+化为大小为 $(N-2)\times(N-2)$ 的线性系统，
+施加端点条件，求解线性系统，计算差商，最后使用式 (\ref{eq::spline_taylor})、
+(\ref{eq::spline_third_derivative}) 与 (\ref{eq::spline_first_derivative})。
+\end{remark}
+
+\begin{remark*}
+    样条不论是手算还是编程，直接写出线性系统。
+\end{remark*}
+
+\begin{example}
+    % example 3.8
+    \label{ex::complete_cubic_ln}
+构造一个完备三次样条 $s(x)$, 
+其结点为 $x_1=1,\ x_2=2,\ x_3=3,\ x_4=4,\ x_5=6$, 
+函数值来自 $f(x)=\ln(x)$, 并在 $x_1$ 与 $x_5$ 处使用其导数。
+用 $s(5)$ 近似 $\ln(5)$.
+\end{example}
+
+由给定条件，构造如下差商表：
+\[
+\begin{array}{c|cccc}
+x_i & f[x_i] & & & \\
+\hline
+1 & 0 \\
+1 & 0 & 1 \\
+2 & 0.6931 & 0.6931 & -0.3069 \\
+3 & 1.0986 & 0.4055 & -0.1438 \\
+4 & 1.3863 & 0.2877 & -0.05889 \\
+6 & 1.7918 & 0.2027 & -0.02831 \\
+6 & 1.7918 & 0.1667 & -0.01803
+\end{array}
+\]
+
+除 $\lambda_4,\mu_4$ 外，其余各 $i$ 的 $\lambda_i,\mu_i$ 均为 $1/2$, 其中
+\begin{equation*}
+\lambda_4=\frac{2}{3},\qquad \mu_4=\frac{1}{3}.
+\end{equation*}
+
+由引理 \ref{eq::spline_M_relation} 与 \ref{lem::complete_spline_end_eqs} 
+得到线性系统
+\begin{equation*}
+\begin{bmatrix}
+2 & 1 \\
+1 & 4 & 1 \\
+& 1 & 4 & 1 \\
+& & 1 & 6 & 2 \\
+& & & 1 & 2
+\end{bmatrix}
+\begin{bmatrix}
+M_1\\ M_2\\ M_3\\ M_4\\ M_5
+\end{bmatrix}
+\approx
+\begin{bmatrix}
+-1.84112\\
+-1.72610\\
+-0.70670\\
+-0.50967\\
+-0.10820
+\end{bmatrix},
+\end{equation*}
+其中右端向量由差商表最后一列分别乘以 $6,12,12,18,6$ 得到
+（为何如此？参见式（\ref{eq::spline_M_relation}）与端点条件的系数）。
+
+解出线性系统即可得到所有 $M_i$. 随后按与式（\ref{eq::s1_poly_refined}）相同的步骤，
+在最后一个区间上写出样条的显式表达，代入 $x=5$ 得
+\[
+s(5)\approx 1.60977.
+\]
+作为比较，$\ln(5)\approx 1.60944$.
+
+\subsubsection{最小性质}
+% subsec 3.1.2
+\label{subsec::minimum_properties}
+
+\begin{theorem}
+    % thm 3.9
+    \label{thm::min_bending_complete}
+（最小弯曲能）设 $g\in C^{2}[a,b]$ 满足 $g'(a)=f'(a)$、$g'(b)=f'(b)$, 
+且对每个 $i=1,2,\ldots,N$ 有 $g(x_i)=f(x_i)$. 记完备三次样条为 $s=s(f;x)$, 则
+\begin{equation}
+    % eq 3.16
+    \label{eq::min_energy_complete}
+\int_{a}^{b}\bigl[s''(x)\bigr]^2\,\mathrm{d}x
+\le
+\int_{a}^{b}\bigl[g''(x)\bigr]^2\,\mathrm{d}x,
+\end{equation}
+且当且仅当 $g(x)=s(f;x)$ 时取等号。
+\end{theorem}
+
+\begin{remark*}
+    样条是满足插值条件的所有 $C^2$ 函数中弯曲能量最小的函数。
+\end{remark*}
+
+\begin{proof}
+令 $\eta(x)=g(x)-s(x)$. 由已知条件，
+$\eta\in C^{2}[a,b]$, $\eta'(a)=\eta'(b)=0$, 
+且对所有 $i=1,2,\ldots,N$, 有 $\eta(x_i)=0$. 于是
+\begin{align*}
+\int_{a}^{b}\bigl[g''(x)\bigr]^2\,\mathrm{d}x
+&=\int_{a}^{b}\bigl[s''(x)+\eta''(x)\bigr]^2\,\mathrm{d}x \\
+&=\int_{a}^{b}\bigl[s''(x)\bigr]^2\,\mathrm{d}x+\int_{a}^{b}\bigl[\eta''(x)\bigr]^2\,\mathrm{d}x
++2\int_{a}^{b}s''(x)\eta''(x)\,\mathrm{d}x.
+\end{align*}
+由分部积分并利用分段三次样条在各结点处的二阶导数连续性与 $\eta$ 的边界/插值条件，有
+\begin{align*}
+\int_{a}^{b}s''(x)\eta''(x)\,\mathrm{d}x
+&=\sum_{i=1}^{N-1}\int_{x_i}^{x_{i+1}} s''(x)\,\mathrm{d}\eta'(x) \\
+&=\sum_{i=1}^{N-1}\Bigl[s''(x)\eta'(x)\Bigr]_{x_i}^{x_{i+1}}\mbox{（首尾相消）}
+-\sum_{i=1}^{N-1}\int_{x_i}^{x_{i+1}}\eta'(x)\,s'''(x)\,\mathrm{d}x \\
+&=s''(b)\eta'(b)-s''(a)\eta'(a)\mbox{（端点为零）}
+-\sum_{i=1}^{N-1}\int_{x_i}^{x_{i+1}} s'''(x)\,\mathrm{d}\eta(x) \mbox{（继续分部积分）}\\
+&=-\sum_{i=1}^{N-1}\Bigl[s'''(x)\eta(x)\Bigr]_{x_i}^{x_{i+1}}
++\sum_{i=1}^{N-1}\int_{x_i}^{x_{i+1}}\eta(x)\,s^{(4)}(x)\,\mathrm{d}x \\
+&=0,
+\end{align*}
+其中最后一步用到了 $\eta(x_i)=\eta(x_{i+1})=0$, 
+以及分段三次样条 $s$ 在每个子区间上满足 $s^{(4)}(x)\equiv 0$. 
+\[
+\int_{a}^{b}\bigl[g''(x)\bigr]^2\,\mathrm{d}x
+=\int_{a}^{b}\bigl[s''(x)\bigr]^2\,\mathrm{d}x+\int_{a}^{b}\bigl[\eta''(x)\bigr]^2\,\mathrm{d}x
+\ge \int_{a}^{b}\bigl[s''(x)\bigr]^2\,\mathrm{d}x,
+\]
+且等号当且仅当 $\eta''\equiv 0$, 
+由边界与插值条件推出 $\eta\equiv 0$, 即 $g\equiv s$.
+\end{proof}
+
+\begin{theorem}
+    % thm 3.10
+    \label{thm::min_bending_natural}
+（最小弯曲能）设 $g\in C^{2}[a,b]$ 且对每个 
+$i=1,2,\ldots,N$ 有 $g(x_i)=f(x_i)$. 记自然三次样条为 $s=s(f;x)$, 则
+\begin{equation}
+    % eq 3.17
+    \label{eq::min_energy_natural}
+\int_{a}^{b}\bigl[s''(x)\bigr]^2\,\mathrm{d}x
+\le
+\int_{a}^{b}\bigl[g''(x)\bigr]^2\,\mathrm{d}x,
+\end{equation}
+且当且仅当 $g(x)=s(f;x)$ 时取等号。
+\end{theorem}
+
+\begin{proof}
+证明与定理 \ref{thm::min_bending_complete} 类似。
+虽然此时 $\eta'(a)=\eta'(b)=0$ 不一定成立，
+但自然边界条件 $s''(a)=s''(b)=0$ 使得端点项同样为零，
+其余步骤完全相同。
+\end{proof}
+
+\begin{remark}
+    % remark 3.12
+    \label{rem::physical_meaning_min_energy}
+为理解定理 \ref{thm::min_bending_complete} 
+与 \ref{thm::min_bending_natural} 的物理意义，
+可在二维情形下考虑一根弹性细杆，其某些位置被拉伸（凸侧），
+另一些位置被压缩（凹侧）。由拉伸/压缩的连续性与介值定理，
+存在一条既不被拉伸也不被压缩的中性线 $\gamma=(x,H(x))$, 
+其中 $H:[a,b]\to\mathbb{R}$. 该细杆单位长度的弯曲能为
+\[
+\frac{1}{2}EI\bigl(H''(x)\bigr)^2,
+\]
+其中 $E$ 为杨氏模量，$I$ 为圆形截面的截面惯性矩，
+而曲线的二阶导数在小挠度下满足 $\gamma''\approx H''$. 
+因此，沿杆 $H(x)$（$x\in[a,b]$）的总弯曲能为
+\[
+\frac{1}{2}EI\int_{a}^{b}\bigl(H''(x)\bigr)^2\,\mathrm{d}x.
+\]
+因此，三次样条是使弯曲能最小的插值曲线。
+\end{remark}
+
+\begin{lemma}
+    % lemma 3.11
+    \label{lem::spp_bound_second_derivative}
+设 $f:[a,b]\to\mathbb{R}$ 为 $C^{2}$ 函数，
+且用完备三次样条或在端点给定二阶导数的三次样条对其进行插值。则
+\begin{equation}
+    % eq 3.18
+    \label{eq::s_bound_second_derivative}
+\forall x\in[a,b],\qquad |s''(x)|\le 3\max_{x\in[a,b]}|f''(x)|.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+由于 $s''(x)$ 在每个区间 $[x_i,x_{i+1}]$ 上为线性函数，
+故 $|s''(x)|$ 的最大值在某个结点 $x_j$ 处取得。
+若 $j=2,\ldots,N-1$, 由引理 \ref{eq::spline_M_relation} 
+与推论 \ref{cor::newton_remainder} 得
+\begin{align}
+        % eq 3.19
+    \label{eq::Mj_bound_interior}
+2M_j &= 6 f[x_{j-1},x_j,x_{j+1}] - \mu_j M_{j-1} - \lambda_j M_{j+1} \nonumber\\
+\Rightarrow\quad
+2|M_j| &\le 6\,|f[x_{j-1},x_j,x_{j+1}]| + (\mu_j+\lambda_j)|M_j| \nonumber\\
+\Rightarrow\quad
+&\exists\,\xi\in(x_{j-1},x_{j+1})\ \text{s.t.}\ |M_j|\le 3\,|f''(\xi)| \nonumber\\
+\Rightarrow\quad
+|s''(x)| &\le 3\max_{x\in[a,b]}|f''(x)|.
+\end{align}
+若 $|s''(x)|$ 在 $x_1$ 或 $x_N$ 处取得最大值，
+则对在端点给定二阶导数的三次样条，\eqref{eq::Mj_bound_interior} 显然成立，
+因为 $s''(a)=f''(a)$、$s''(b)=f''(b)$.
+
+对完备三次样条，只需在 $|s''(x)|$ 于 $x_1$ 
+处取得最大值时证明 \eqref{eq::s_bound_second_derivative}。
+由于端点一阶导数 $f'(a)=f[x_1,x_1]$ 已给定，故 $f[x_1,x_1,x_2]$ 为常数。
+由式 \eqref{eq::complete_spline_left_end} 有
+\[
+2|M_1|\le 6|f[x_1,x_1,x_2]|+|M_2|\le 6|f[x_1,x_1,x_2]|+|M_1|,
+\]
+再结合推论 \ref{cor::newton_remainder} 可得
+\[
+\exists\,\xi\in(x_1,x_2)\ \text{s.t.}\ |M_1|\le 3|f''(\xi)|.
+\]
+于是 \eqref{eq::s_bound_second_derivative} 得证。
+\end{proof}
+
+\begin{remark}
+    % remark 3.13
+    \label{rem::tight_constant_3}
+存在某些函数 $f$ 与结点列 $\{x_i\}$ 
+使得式 \eqref{eq::Mj_bound_interior} 中的不等式取等号。
+因此，引理 \ref{lem::spp_bound_second_derivative} 可视为一种“最小性质”，
+但其形式与定理 \ref{thm::min_bending_complete} 
+与 \ref{thm::min_bending_natural} 不同。
+\end{remark}
+
+\begin{remark}
+    % remark 3.14
+    \label{rem::cannot_localize_interval}
+引理 \ref{lem::spp_bound_second_derivative} 不能推广到单个区间。换言之，
+\[
+\forall x\in[x_i,x_{i+1}],\qquad |s''(x)|\le 3\max|f''(x)|
+\]
+并不成立，因为 $f''$ 的最大幅值可能出现在其他区间的内部。
+\end{remark}
+
+\begin{remark}
+    % remark 3.15
+    \label{rem::divided_diff_helpful}
+注意到差商及其性质在多项式样条的计算与分析中发挥了作用。
+\end{remark}
+
+\subsubsection{误差分析}
+%  subsub 3.1.3
+\label{subsec::error_analysis}
+
+\begin{remark}
+    % remark 3.16
+    \label{rem::how_good_and_rate}
+与往常一样，我们关心样条插值“有多好”。
+下面的定理给出了回答；此外，它还给出了当区间长度的最大范数减小时，
+误差以多快的速度趋于零的一些信息。
+\end{remark}
+
+\begin{theorem}
+    % thm 3.12
+    \label{thm::error_rates_cubic}
+记 $X_b:=(x_i)_{i=1}^{N}$ 为式 (\ref{eq::partition}) 中的分点序列。
+设标量函数 $f\in C^{2}([a,b])\cap C^{4}([a,b]\setminus X_b)$ 
+用完备三次样条或在端点给定二阶导数的三次样条进行插值。
+则对任意 $x\in[a,b]$ 与 $j=0,1,2$, 有
+\begin{equation}
+    % eq 3.20
+    \label{eq::error_rate_main}
+\bigl|f^{(j)}(x)-s^{(j)}(x)\bigr|\le c_j\,h^{\,4-j}\,
+\max_{\xi\in[a,b]\setminus X_b}\bigl|f^{(4)}(\xi)\bigr|,
+\end{equation}
+其中 $c_0=\tfrac{1}{16}$, $c_1=c_2=\tfrac{1}{2}$, 且
+$h=\max_{i=1}^{N-1}|x_{i+1}-x_i|$.
+\end{theorem}
+
+\begin{proof}
+我们的计划是先证明 $j=2$ 的情形，然后用这个结论处理其余情形。
+
+取一个辅助函数 $\hat{s}\in C^{2}[a,b]$, 满足对所有 $i=1,2,\ldots,N-1$,
+\[
+\begin{cases}
+\hat{s}\big|_{[x_i,x_{i+1}]}\in\mathbb{P}_3,\\[2pt]
+\hat{s}''(x_i)=f''(x_i),
+\end{cases}
+\qquad\text{且}\qquad
+\hat{s}''(x_N)=f''(x_N).
+\]
+可先用某个 $\tilde{s}\in\mathbb{S}_1^{0}$ 插值 $f''(x)$, 
+再对 $\tilde{s}$ 两次积分构造出这样的 $\hat{s}$. 
+由柯西型余项定理（定理 \ref{thm::cauchy_remainder}）知，
+存在 $\xi_i\in(x_i,x_{i+1})$, 使得对所有 $x\in[x_i,x_{i+1}]$,
+\[
+\bigl|f''(x)-\tilde{s}(x)
+\bigr|\le \frac{1}{2}
+\bigl|f^{(4)}(\xi_i)\bigr|
+\bigl|(x-x_i)(x-x_{i+1})\bigr|,
+\]
+从而
+\begin{equation*}
+\bigl|f''(x)-\hat{s}''(x)\bigr|_{x\in[x_i,x_{i+1}]}
+\le \frac{1}{8}\,\max_{\xi\in(x_i,x_{i+1})}\bigl|f^{(4)}(\xi)\bigr|\, (x_{i+1}-x_i)^2,
+\end{equation*}
+进一步得到
+\begin{equation}
+    % eq 3.21
+\label{eq::sec_der_global}
+\forall x\in[a,b],\quad
+\bigl|f''(x)-\hat{s}''(x)\bigr|\le
+\frac{1}{8}\,h^{2}\,
+\max_{\xi\in[a,b]\setminus X_b}\bigl|f^{(4)}(\xi)\bigr|.
+\end{equation}
+
+现在用三次样条插值 $f-\hat{s}$. 
+由于 $\hat{s}\in\mathbb{S}_3^{2}$, 对应的插值样条为 $s-\hat{s}$. 
+由引理 \ref{lem::spp_bound_second_derivative} 得
+\[
+\forall x\in[a,b],\quad
+\bigl|s''(x)-\hat{s}''(x)\bigr|
+\le 3\max_{\xi\in[a,b]}\bigl|f''(\xi)-\hat{s}''(\xi)\bigr|,
+\]
+结合 \eqref{eq::sec_der_global}，对 $j=2$ 有
+\begin{align}
+    % eq 3.22
+\bigl|f''(x)-s''(x)\bigr|
+&\le \bigl|f''(x)-\hat{s}''(x)\bigr|+\bigl|\hat{s}''(x)-s''(x)\bigr| \nonumber\\
+&\le 4\max_{\xi\in[a,b]}\bigl|f''(\xi)-\hat{s}''(\xi)\bigr|
+\le \frac{1}{2}\,h^{2}\,\max_{\xi\in[a,b]\setminus X_b}\bigl|f^{(4)}(\xi)\bigr|.
+\label{eq::j2_bound}
+\end{align}
+
+当 $j=1$ 时，由插值条件知 $f(x)-s(x)$ 在 $x=x_i,x_{i+1}$ 处为零，
+Rolle 定理给出某个 $\xi_i\in(x_i,x_{i+1})$ 使
+$f'(\xi_i)-s'(\xi_i)=0$。于是由微积分基本定理（定理 C.127）
+\[
+\forall x\in[x_i,x_{i+1}],\quad
+f'(x)-s'(x)=\int_{\xi_i}^{x}\bigl(f''(t)-s''(t)\bigr)\,\mathrm{d}t,
+\]
+再由积分中值定理（定理 C.123）与 \eqref{eq::j2_bound} 得
+\begin{equation*}
+\bigl|f'(x)-s'(x)\bigr|\big|_{x\in[x_i,x_{i+1}]}
+\le \tfrac{1}{2}\,h^{3}\,
+\max_{\xi\in[a,b]\setminus X_b}\bigl|f^{(4)}(\xi)\bigr|.
+\end{equation*}
+
+最后，当 $j=0$ 时，用某个折线样条 $\bar{s}\in\mathbb{S}_1^{0}$ 插值 $f-s$. 
+插值条件给出
+$\forall x\in[a,b],\ \bar{s}(x)\equiv 0$. 因此
+\begin{align*}
+\bigl|f(x)-s(x)\bigr|\big|_{x\in[x_i,x_{i+1}]}
+&=\bigl|f(x)-s(x)-\bar{s}(x)\bigr|\big|_{x\in[x_i,x_{i+1}]}\nonumber\\
+&\le \frac{1}{8}(x_{i+1}-x_i)^2
+\max_{\xi\in[x_i,x_{i+1}]}\bigl|f''(\xi)-s''(\xi)\bigr| \nonumber\\
+&\le \frac{1}{16}\,h^{4}\,
+\max_{\xi\in[a,b]\setminus X_b}\bigl|f^{(4)}(\xi)\bigr|,
+\end{align*}
+其中第二步分别来自定理 \ref{thm::cauchy_remainder} 
+与式 \eqref{eq::j2_bound}。证毕。
+\end{proof}
+
+\begin{remark*}
+    要把
+\[
+\bigl|f''(x)-\tilde{s}(x)\bigr|
+\le \tfrac12\,|f^{(4)}(\xi_i)|\,|(x-x_i)(x-x_{i+1})|
+\]
+转化为
+\[
+\bigl|f''(x)-\hat{s}''(x)\bigr|
+\le \tfrac18\,
+\max_{\xi\in(x_i,x_{i+1})}|f^{(4)}(\xi)|\,(x_{i+1}-x_i)^2,
+\qquad x\in[x_i,x_{i+1}],
+\]
+用到两点：
+
+1) 构造关系。按照构造，$\tilde{s}$ 是在每个小区间上对 $f''$ 的一次样条插值（分段线性），而 $\hat{s}$ 是对 $\tilde{s}$ 两次积分所得，因此
+\[
+\hat{s}''=\tilde{s}\quad\text{在 }[x_i,x_{i+1}] \text{ 上恒成立。}
+\]
+于是
+\[
+|f''(x)-\hat{s}''(x)|=|f''(x)-\tilde{s}(x)|.
+\]
+
+2) 简单几何不等式。对任意 $x\in[x_i,x_{i+1}]$，有
+\[
+|(x-x_i)(x-x_{i+1})|
+\le \max_{x\in[x_i,x_{i+1}]}|(x-x_i)(x-x_{i+1})|
+=\frac{(x_{i+1}-x_i)^2}{4}.
+\]
+最后一步来自二次函数
+$q(x)=(x-x_i)(x-x_{i+1})$
+在对称点 $x=\tfrac{x_i+x_{i+1}}{2}$ 取得最小值 $-\tfrac{(x_{i+1}-x_i)^2}{4}$（绝对值取最大即为 $\tfrac{(x_{i+1}-x_i)^2}{4}$）。
+
+将 1) 与 2) 代入柯西型余项估计，并把 $|f^{(4)}(\xi_i)|$ 以区间上的最大值上界，即得
+\[
+\begin{aligned}
+|f''(x)-\hat{s}''(x)|
+&=|f''(x)-\tilde{s}(x)|
+\le \frac12
+\Bigl(\max_{\xi\in(x_i,x_{i+1})}|f^{(4)}(\xi)|\Bigr)
+\cdot \frac{(x_{i+1}-x_i)^2}{4} \\
+&=\frac18\,\max_{\xi\in(x_i,x_{i+1})}|f^{(4)}(\xi)|\,(x_{i+1}-x_i)^2.
+\end{aligned}
+\]
+这就给出了所需的不等式。
+\end{remark*}
+
+\begin{remark}
+    % remark 3.17
+    \label{rem::assumption_c4_general}
+有些作者在定理 \ref{thm::error_rates_cubic} 中假设 $f\in C^{4}([a,b])$; 
+但我们采用的假设 $f\in C^{2}([a,b])\cap C^{4}([a,b]\setminus X_b)$ 
+使结论更为一般。
+\end{remark}
+
+\begin{exercise}
+    % exercise 3.13
+    \label{exer::verify_thm312_by_ex38}
+利用例 \ref{ex::complete_cubic_ln} 的结果验证定理 \ref{thm::error_rates_cubic}。
+\end{exercise}
 
 \bibliography{na.bib}
 \bibliographystyle{plain}
