@@ -4683,6 +4683,548 @@ $q(x)=(x-x_i)(x-x_{i+1})$
 利用例 \ref{ex::complete_cubic_ln} 的结果验证定理 \ref{thm::error_rates_cubic}。
 \end{exercise}
 
+\subsection{B- 形样条}
+%  sec 3.2
+\label{sec::b_form_splines}
+
+\begin{remark}
+    % remark 3.18
+    \label{rem::pp_form_drawback}
+PP 形式（分段多项式形式）的样条有一个缺点：对于不同次数的样条，推导必须重复进行。
+在更高维度中推导 PP 形式样条也非常复杂。在本节中，我们从线性空间的视角来研究样条，
+从而可以通过简单的递推关系得到不同次数的样条。B- 样条中的字母“B”表示样条向量空间的“基”（basis）。
+\end{remark}
+
+\begin{notation}
+    % notation 2
+    \label{not::Sn_def}
+在记号 $\mathbb{S}^{\,n-1}_n(t_1,t_2,\cdots,t_N)$ 中，括号里的 $t_i$ 表示样条的结点。当不存在歧义风险时，我们也使用简写
+$\mathbb{S}^{\,n-1}_{n,N}:=\mathbb{S}^{\,n-1}_n(t_1,t_2,\cdots,t_N)$, 
+或直接写作 $\mathbb{S}^{\,n-1}_n$.
+\end{notation}
+
+\begin{theorem}
+    % thm 3.14
+    \label{thm::dim_Sn}
+样条集合 $\mathbb{S}^{n-1}_n(t_1,t_2,\cdots,t_N)$ 是一个维数为 $n+N-1$ 的线性空间。
+\end{theorem}
+
+\begin{proof}
+由式 \eqref{eq::spline_space} 与定义 B.2 可容易验证 $\mathbb{S}^{\,n-1}_n(t_1,t_2,\cdots,t_N)$ 确实是一个线性空间。
+需要注意的是，加法恒等元是零函数而不是数字 $0$. 一个次数为 $n$ 的多项式由 $n+1$ 个系数所确定。$N-1$ 个小区间带来 $(N-1)(n+1)$ 个系数。
+在每个 $N-2$ 个内部结点处，光滑性条件要求相邻多项式的第 $0$ 阶、第 $1$ 阶， $\cdots$, 第 $(n-1)$ 阶导数匹配。因此维数为
+\[
+(N-1)(n+1)-n(N-2) = n + N - 1.
+\]
+\end{proof}
+
+\begin{example}
+    % example 3.15
+    \label{ex::cubic_dim}
+定义 \ref{def::spline_boundary_conditions} 中的三次样条具有 $n=3$, 因此 $\mathbb{S}^{\,2}_3$ 的维数为 $N+2$. 
+除了在结点处的 $N$ 个插值条件之外，我们还需要在插值区间的两端施加另外两个条件以获得唯一的样条；
+这就导致了定义 \ref{def::spline_boundary_conditions} 中不同类型的三次样条。
+\end{example}
+
+\begin{remark}
+    % remark 3.19
+    \label{rem::after_dim_find_basis}
+在得到线性空间的维数之后，自然的一步就是寻找一个合适的基。第 \ref{subsec::truncated_power_functions} 节中的截断幂函数是基的候选者，
+但由于缺乏紧支撑且条件数不佳，它们并不完美。在第 \ref{subsec::local_support_bspline} 节中，
+我们对截断幂函数应用差商从而得到 B- 样条，它们具有许多吸引人的性质，如第 \ref{subsec::b_spline_props1}、\ref{subsec::b_spline_props2} 
+与 \ref{subsec::b_spline_props3} 节所示。最后，我们在第 \ref{subsec::b_spline_basis} 节中证明 B- 样条确实构成一个基。
+\end{remark}
+
+\subsubsection{截断幂函数}
+%  subsub 3.2.1
+\label{subsec::truncated_power_functions}
+
+\begin{definition}
+    % def 3.16
+    \label{def::truncated_power}
+带有指数 $n$ 的截断幂函数定义为
+\begin{equation}
+    % eq 3.23
+    \label{eq::truncated_power}    
+x^{n}_{+}=
+\begin{cases}
+x^{n}, & x\ge 0,\\
+0,     & x<0.
+\end{cases}
+\end{equation}
+
+\end{definition}
+
+\begin{example}
+    % ex 3.17
+    \label{ex::tp_int}
+根据定义 \ref{def::truncated_power}，对任意 $t\in[a,b]$ 有
+\begin{equation}
+    % eq 3.24
+    \label{eq::tp_int}
+\int_{a}^{b}(t-x)_{+}^{n}\,\mathrm{d}x
+=\int_{a}^{t}(t-x)^{n}\,\mathrm{d}x
+=\frac{(t-a)^{n+1}}{n+1}.
+\end{equation}
+\end{example}
+
+\begin{remark}
+    % remark 3.20
+    \label{rem::tp_smooth}
+当 $n\in\mathbb{N}^{+}$ 时，$x_{+}^{n}\in C^{n-1}(-\infty,+\infty)$. 
+因此
+$x_{+}^{n}\in \mathbb{S}^{\,n-1}_{n}(-\infty,0,+\infty)$.
+\end{remark}
+
+\begin{lemma}
+    % lemma 3.18
+    \label{lem::tp_basis}
+如下函数族构成 $\mathbb{S}^{n-1}_{n}(t_1,\ldots,t_N)$ 的一个基：
+\begin{equation}
+\label{eq::tp_basis_list}
+1,\ x,\ x^{2},\ldots,x^{n},\ (x-t_2)_{+}^{n},\ (x-t_3)_{+}^{n},\ldots,(x-t_{N-1})_{+}^{n}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+对所有 $i=2,3,\ldots,N-1$, $(x-t_i)_{+}^{n}\in \mathbb{S}^{n-1}_{n,N}$.
+同时，对所有 $i=0,1,\ldots,n$, $x^{i}\in \mathbb{S}^{n-1}_{n,N}$. 设
+\begin{equation}
+\label{eq::tp_lin_comb_zero}
+\sum_{i=0}^{n} a_i x^{i} + \sum_{j=2}^{N-1} a_{n+j}(x-t_j)_{+}^{n}=0(x).
+\end{equation}
+要使 (\ref{eq::tp_lin_comb_zero}) 对所有 $x<t_2$ 成立，
+则 $a_i$ 必须为 0（$i=0,1,\ldots,n$）。
+要使 (\ref{eq::tp_lin_comb_zero}) 对所有 $x\in(t_2,t_3)$ 
+成立，则 $a_{n+2}$ 必须为 $0$. 类似地，所有 $a_{n+j}$ 均必须为 $0$. 因此式 (\ref{eq::tp_basis_list}) 中的函数线性无关（见定义 B.26）。
+结合定理 \ref{thm::dim_Sn}、引理 B.42 以及 (\ref{eq::tp_basis_list}) 中函数的个数为 $n+N-1$ 的事实，命题得证。
+\end{proof}
+
+\begin{corollary}
+    % cor 3.19
+    \label{cor::tp_expansion}
+任意 $s\in \mathbb{S}^{n-1}_{n,N}$ 都可表示为
+\begin{equation}
+\label{eq::tp_expansion}
+s(x)=\sum_{i=0}^{n} a_i (x-t_1)^{i}
++\sum_{j=2}^{N-1} a_{n+j}\,(x-t_j)_{+}^{n},
+\qquad x\in[t_1,t_N].
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+由引理 \ref{lem::tp_basis}，只需指出
+\[
+\operatorname{span}\{1,x,\ldots,x^{n}\}
+=\operatorname{span}\{1,(x-t_1),\ldots,(x-t_1)^{n}\}.
+\]
+\end{proof}
+
+\begin{example}
+    % ex 3.20
+    \label{ex::n1_linear_interp}
+式 (\ref{eq::tp_expansion}) 在 $n=1$ 的情形对应于线性样条插值。设想一根初始笔直的塑料杆。
+把它的一端放在 $(t_1,f_1)$, 并让它穿过 $(t_2,f_2)$. 通常 $(t_3,f_3)$ 不会在杆上，但我们可以在 $t_2$ 处把杆“弯折”到 $f_2$, 
+使得杆经过 $(t_3,f_3)$. 这种“弯折”的过程对应于在式 (\ref{eq::tp_expansion}) 中加入第一个截断幂函数。
+\end{example}
+
+\begin{remark}
+    % remark 3.21
+    \label{rem::proof_cor_tp}
+（对推论 \ref{cor::tp_expansion} 的一种说明性证明。）记
+$p_i(x)=s(x)\big|_{x\in[t_1,t_{i+1}]}$. 显然 $p_{N-1}(x)=s(x)$. 有
+\[
+p_1(x)=a_0+a_1(x-t_1)+\cdots+a_n(x-t_1)^n.
+\]
+对 $x\in[t_2,t_3]$, $p_2(x)$ 与 $p_1(x)$ 的延拓只在第 $n$ 阶导数上不同，因此可写成
+\[
+p_2(x)=p_1(x)+a_{n+2}(x-t_2)_{+}^{n}.
+\]
+将上述论证对 $i=3,4,\ldots,N-1$ 重复即可完成证明。
+\end{remark}
+
+\begin{remark}
+    % remark 3.22
+    \label{rem::tp_drawbacks}
+式 (\ref{eq::tp_basis_list}) 的基存在若干缺点。
+首先，式 (\ref{eq::tp_expansion}) 中的系数 $a_{n+j}$ 依赖于所有的 $a_{n+2},a_{n+3},\ldots,a_{n+j-1}$. 
+因此，在确定 $a_{n+2},a_{n+3},\ldots,a_{n+j-1}$ 时的误差会传播到 $a_{n+j}$ 的计算中，这使得整个过程病态（见定义 B.\,）。
+其次，插入一个新的结点会改变该新结点右侧所有结点的系数。
+\end{remark}
+
+\subsubsection{B- 样条的局部支撑}
+%  subsub 3.2.2
+\label{subsec::local_support_bspline}
+
+\begin{remark}
+    % remark 3.23
+    \label{rem::hat_good_basis}
+“帽函数”（hat functions）构成 $\mathbb{S}^{\,0}_{1}$ 的一个极好的基。
+\end{remark}
+
+\begin{definition}
+    % def 3.21
+    \label{def::hat_function}
+在结点 $t_i$ 处的帽函数定义为
+\begin{equation}
+    % eq 3.25
+    \label{eq::hat_function}
+\hat{B}_i(x)=
+\begin{cases}
+\dfrac{x-t_{i-1}}{t_i-t_{i-1}}, & x\in(t_{i-1},t_i],\\[6pt]
+\dfrac{t_{i+1}-x}{t_{i+1}-t_i}, & x\in(t_i,t_{i+1}],\\[6pt]
+0, & \text{otherwise}.
+\end{cases}
+\end{equation}
+\end{definition}
+
+\begin{theorem}
+    % thm 3.22
+    \label{thm::hat_form_basis}
+帽函数构成 $\mathbb{S}^{\,0}_{1}$ 的一个基。
+\end{theorem}
+
+\begin{proof}
+由定义 \ref{def::hat_function} 可得
+\begin{equation}
+    % eq 3.29
+\label{eq::hat_kronecker}
+\hat{B}_i(t_j)=
+\begin{cases}
+1, & i=j,\\
+0, & i\ne j.
+\end{cases}
+\end{equation}
+设 $\sum_{i=1}^{N} c_i \hat{B}_i(x)=0(x)$. 
+令 $x=t_j$ 并用 (\ref{eq::hat_kronecker}) 可得每个 $j=1,2,\ldots,N$ 均有 $c_j=0$.
+因此按定义 B.26，这 $N$ 个帽函数线性无关。结合定理 \ref{thm::dim_Sn} 与引理 B.42，命题得证。
+\end{proof}
+
+\begin{remark}
+    % remark 3.24
+    \label{rem::alt_proof_hat_basis}
+对定理 \ref{thm::hat_form_basis} 的另一种证明如下。
+我们有 $\operatorname{span}\{\hat{B}_1,\hat{B}_2,\ldots,\hat{B}_N\}=\mathbb{S}^{\,0}_{1}$, 因为
+\[
+\forall s(x)\in \mathbb{S}^{0}_{1},\ \exists s_B(x)=\sum_{i=1}^{N} s(t_i)\hat{B}_i(x)\ \text{s.t.}\ s(x)=s_B(x).
+\]
+其余结论由定理 \ref{thm::dim_Sn} 与引理 B.41 推出。确实，在每个区间 $[t_i,t_{i+1}]$ 上，
+由 (\ref{eq::hat_kronecker}) 知 $s_B(t_i)=s(t_i)$ 且 $s_B(t_{i+1})=s(t_{i+1})$. 因此 $s_B(x)\equiv s(x)$, 
+因为它们都为线性函数。
+
+帽函数类似于初等的拉格朗日插值多项式。如何从一次情形过渡到高次？这个问题引出了更一般的 B- 样条。
+\end{remark}
+
+\begin{definition}
+    % def 3.23
+    \label{def::bspline_recursive}
+B- 样条按如下递推方式定义：
+\begin{equation}
+    % eq 3.20
+\label{eq::bspline_recursion}
+B^{\,n+1}_i(x)=
+\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}\,B^{\,n}_i(x)
++\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\,B^{\,n}_{i+1}(x).
+\end{equation}
+递推的基为零次 B- 样条：
+\begin{equation}
+    % eq 3.31
+\label{eq::bspline_degree0}
+B^{\,0}_i(x)=
+\begin{cases}
+1, & x\in(t_{i-1},t_i],\\
+0, & \text{otherwise}.
+\end{cases}
+\end{equation}
+\end{definition}
+
+\begin{example}
+    % example 3.24
+    \label{ex::hat_is_degree1_bspline}
+定义 \ref{def::hat_function} 中的帽函数显然就是一次 B- 样条：
+\begin{equation}
+    % eq 3.32
+\label{eq::B1_equals_hat}
+B^{\,1}_i=\hat{B}_i.
+\end{equation}
+在式 (\ref{eq::bspline_recursion}) 中，更高次数的 B- 样条是通过推广帽函数的思想来定义的。
+\end{example}
+
+\begin{example}
+    % example 3.25
+    \label{ex::quadratic_bspline_formula}
+二次 B- 样条 $B^{\,2}_i(x)=$
+\begin{equation}
+    % eq 3.33
+\label{eq::quadratic_bspline}
+\begin{cases}
+\dfrac{(x-t_{i-1})^{2}}{(t_{i+1}-t_{i-1})(t_i-t_{i-1})}, & x\in(t_{i-1},t_i],\\[8pt]
+\dfrac{(x-t_i)(t_{i+1}-x)}{(t_{i+2}-t_i)(t_{i+1}-t_i)}
++\dfrac{(t_{i+2}-x)(x-t_i)}{(t_{i+2}-t_i)(t_{i+1}-t_i)}, & x\in(t_i,t_{i+1}],\\[8pt]
+\dfrac{(t_{i+2}-x)^{2}}{(t_{i+2}-t_i)(t_{i+2}-t_{i+1})}, & x\in(t_{i+1},t_{i+2}],\\[8pt]
+0, & \text{otherwise}.
+\end{cases}
+\end{equation}
+\end{example}
+
+\begin{definition}
+    % def 3.26
+    \label{def::support_function}
+函数 $f:\mathbb{R}^{n}\to\mathbb{R}$ 的支撑集（support）定义为
+\begin{equation}
+    % eq 3.34
+\label{eq::support_def}
+\operatorname{supp}(f)=\operatorname{closure}\{x\in\mathbb{R}^{n}:\ f(x)\ne 0\}.
+\end{equation}
+\end{definition}
+
+\begin{remark}
+    % remark 3.25
+    \label{rem::closure_precise}
+关于度量空间背景下闭包的精确定义，见定义 D.65。
+\end{remark}
+
+\begin{lemma}
+    % lemma 3.27
+    \label{lem::support_bspline}
+（B- 样条的支撑。）当 $n\in\mathbb{N}^{+}$ 时，$B^{n}_i$ 的支撑区间为 $[t_{i-1},t_{i+n}]$, 其中
+\begin{equation}
+    % eq 3.35
+\label{eq::support_positive}
+\forall x\in(t_{i-1},t_{i+n}),\quad B^{n}_i(x)>0.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+由 (\ref{eq::bspline_degree0}) 与 (\ref{eq::bspline_recursion}) 进行简单的归纳即可。
+\end{proof}
+
+\begin{remark}
+    % remark 3.26
+    \label{rem::memorize_recursion}
+引理 \ref{lem::support_bspline} 有助于记忆递推定义 (\ref{eq::bspline_recursion})。
+分式系数中的结点恰好是其支撑区间的两个端点；对 $B^{n}_{i+1}(x)$ 亦然。该引理对于理解 B- 样条算法也至关重要。
+\end{remark}
+
+\begin{remark}
+    % remark 3.27
+    \label{rem::local_support_advantage}
+与截断幂函数相比，B- 样条的一个优势是它们具有局部支撑。当次数从 $n$ 增加到 $n+1$ 时，
+支撑区间向右覆盖多一个结点，而左端点 $t_{i-1}$ 保持不变。另一种常见的约定是将 $t_i$ 作为固定的左端点。
+\end{remark}
+
+\begin{definition}
+    % def 3.28
+    \label{def::linear_functional}
+设 $X$ 为一个向量空间。对每个 $x\in X$, 关联一个唯一的实（或复）数 $L(x)$. 
+若对所有 $x,y\in X$ 以及任意 $\alpha,\beta\in\mathbb{R}$（或 $\mathbb{C}$）有
+\begin{equation}
+    % eq 3.36
+\label{eq::linear_functional_axiom}
+L(\alpha x+\beta y)=\alpha L(x)+\beta L(y),
+\end{equation}
+则称 $L$ 为 $X$ 上的线性泛函。
+\end{definition}
+
+\begin{example}
+    % example 3.29
+    \label{ex::linear_functionals_on_Cab}
+令 $X=C[a,b]$, 则 $X$ 的元素是在 $[a,b]$ 上连续的函数。如下
+\begin{equation*}
+\label{eq::functionals_examples}
+L(f)=\int_{a}^{b} f(x)\,\mathrm{d}x,\qquad
+L(f)=\int_{a}^{b} f(x)\,\mathrm{d}x,\qquad
+L(f)=\int_{a}^{b} x^{2} f(x)\,\mathrm{d}x
+\end{equation*}
+都是 $X$ 上的线性泛函。
+\end{example}
+
+\begin{notation}
+    % notation 3
+    \label{not::divided_diff_as_functional}
+我们曾使用记号 $f[x_0,\ldots,x_k]$ 表示 $f$ 的第 $k$ 阶差商，
+这与将 $f[x_0,\ldots,x_k]$ 视为泰勒展开的一种推广保持一致。此后，为了分析 B- 样条，
+从语义与语法上讲，使用记号 $[x_0,\ldots,x_k]f$ 更为合适，这也与把“差商过程”视作作用于 $C[x_0,x_k]$ 上的线性泛函相一致。
+\end{notation}
+
+\begin{theorem}
+    % thm 3.30
+    \label{thm::leibniz_divided_difference}
+（莱布尼茨公式）当 $k\in\mathbb{N}$ 时，两个函数乘积的第 $k$ 阶差商满足
+\begin{equation}
+    % eq 3.37
+\label{eq::leibniz_divdiff}
+[x_0,\ldots,x_k]fg=\sum_{i=0}^{k}[x_0,\ldots,x_i]f\;\cdot\;[x_i,\ldots,x_k]g.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+归纳基 $k=0$ 成立，因为式 \eqref{eq::leibniz_divdiff} 化为 $[x_0]fg=f(x_0)g(x_0)$. 
+现假设 \eqref{eq::leibniz_divdiff} 对 $k$ 成立。对归纳步，由定理 \ref{thm:DD-recursion} 得
+\[
+[x_0,\ldots,x_{k+1}]\,fg=\frac{[x_1,\ldots,x_{k+1}]\,fg-[x_0,\ldots,x_k]\,fg}{x_{k+1}-x_0}.
+\]
+由归纳假设，
+\[
+\begin{aligned}
+\relax [x_1,\ldots,x_{k+1}] fg &=\sum_{i=0}^{k}[x_1,\ldots,x_{i+1}]f\cdot[x_{i+1},\ldots,x_{k+1}]g \\
+&= S_1+\sum_{i=0}^{k}[x_0,\ldots,x_i]f\cdot[x_{i+1},\ldots,x_{k+1}]g,    
+\end{aligned}
+\]
+其中
+\[
+\begin{aligned}
+S_1&=\sum_{i=0}^{k}(x_{i+1}-x_0)\cdot [x_0,\ldots,x_{i+1}]f\cdot[x_{i+1},\ldots,x_{k+1}]g \\
+&=\sum_{i=1}^{k+1}(x_i-x_0)\cdot [x_0,\ldots,x_i]\,f\;\cdot\;[x_i,\ldots,x_{k+1}]g.
+\end{aligned}
+\]
+同样地，
+\[
+\begin{aligned}
+\relax [x_0,\ldots,x_k]fg&=\sum_{i=0}^{k}[x_0,\ldots,x_i]f\cdot[x_i,\ldots,x_k]g \\
+&= -S_2+\sum_{i=0}^{k}[x_0,\ldots,x_i]f\cdot[x_{i+1},\ldots,x_{k+1}]g,
+\end{aligned}
+\]
+其中
+\[
+S_2=\sum_{i=0}^{k}[x_0,\ldots,x_i]f\cdot (x_{k+1}-x_i)\cdot [x_i,\ldots,x_{k+1}]g.
+\]
+在上述推导中，我们应用了定理 \ref{thm:DD-recursion}，将第 $k$ 阶差商提升为第 $k+1$ 阶。于是
+\[
+\begin{aligned}
+\relax [x_0,\ldots,x_{k+1}]fg& =\frac{S_1+S_2}{x_{k+1}-x_0} \\
+&=\sum_{i=0}^{k+1}[x_0,\ldots,x_i]f\cdot[x_i,\ldots,x_{k+1}]g,    
+\end{aligned}
+\]
+从而完成归纳证明。
+\end{proof}
+
+\begin{remark}
+    % remark 3.28
+    \label{rem::compare_leibniz_rule}
+为了便于记忆，把定理 \ref{thm::leibniz_divided_difference} 与求导的莱布尼茨法则进行比较是有帮助的：
+\begin{equation*}
+(fg)^{(n)}=\sum_{i=0}^{n}\binom{n}{i} f^{(n-i)}g^{(i)}.
+\end{equation*}
+\end{remark}
+
+\begin{example}
+    % example 3.31
+    \label{ex::relation_bspline_truncated_power}
+B- 样条与截断幂函数之间存在关系，例如
+\begin{equation*}
+    \begin{aligned}
+&(t_{i+1}-t_{i-1})[t_{i-1},t_i,t_{i+1}](t-x)_{+}\\
+=&[t_i,t_{i+1}](t-x)_{+}-[t_{i-1},t_i](t-x)_{+} \\
+=&\frac{(t_{i+1}-x)_{+}-(t_{i}-x)_{+}}{t_{i+1}-t_i} 
+-\frac{(t_{i}-x)_{+}-(t_{i-1}-x)_{+}}{t_i-t_{i-1}} \\
+=&B^{\,1}_i
+=
+\begin{cases}
+\dfrac{x-t_{i-1}}{t_i-t_{i-1}}, & x\in(t_{i-1},t_i],\\
+\dfrac{t_{i+1}-x}{t_{i+1}-t_i}, & x\in(t_i,t_{i+1}],\\
+0, & \text{otherwise}.
+\end{cases}
+\end{aligned}
+\end{equation*}
+\end{example}
+
+代数关系如图 \ref{fig::dd_truncated_power} 所示。
+
+其意义在于：对截断幂函数施加差商可以“治愈”其非局部支撑的缺点。下一条定理将对此给出精确定义。
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{images/truncated_power_functions.png}
+% 仅占位说明：图 3.2 为示意图，展示对截断幂函数做差商的过程及其得到的局部支撑形状（折线图）。
+\caption{截断幂函数的差商。}
+\label{fig::dd_truncated_power}
+\end{figure}
+
+\begin{theorem}
+    % thm 3.32
+    \label{thm::bspline_as_divdiff_truncated}
+（将 B- 样条表示为截断幂函数的差商。）对任意 $n\in\mathbb{N}$, 有
+\begin{equation}
+    % eq 3.38
+\label{eq::Bn_divdiff_truncated}
+B^{\,n}_i(x)=(t_{i+n}-t_{i-1})\cdot [t_{i-1},\ldots,t_{i+n}](t-x)^{n}_{+}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+当 $n=0$ 时，式 \eqref{eq::Bn_divdiff_truncated} 化为
+\[
+B^{\,0}_i(x)=(t_i-t_{i-1})\cdot [t_{i-1},t_i](t-x)^{0}_{+}
+=(t_i-x)^{0}_{+}-(t_{i-1}-x)^{0}_{+}
+=\begin{cases}
+0, & x\in(-\infty,t_{i-1}],\\
+1, & x\in(t_{i-1},t_i],\\
+0, & x\in(t_i,+\infty),
+\end{cases}
+\]
+与式 \eqref{eq::bspline_degree0} 相同，故归纳基成立。现假设归纳假设 \eqref{eq::Bn_divdiff_truncated} 对 $n$ 成立。
+
+由定义 \ref{def::truncated_power}，有
+\[
+(t-x)^{n+1}_{+}=(t-x)\,(t-x)^{n}_{+}.
+\]
+对 $f=(t-x)$、$g=(t-x)^{n}_{+}$ 应用莱布尼茨公式（定理 \ref{thm::leibniz_divided_difference}）得
+\begin{equation}
+    % eq 3.39
+\label{eq::leibniz_for_truncated}
+\begin{aligned}
+&\relax [t_{i-1},\ldots,t_{i+n}](t-x)^{n+1}_{+} \\
+=&(t_{i-1}-x)\cdot [t_{i-1},\ldots,t_{i+n}](t-x)^{n}_{+}
++[t_i,\ldots,t_{i+n}](t-x)^{n}_{+}.    
+\end{aligned}
+\end{equation}
+
+由定义 \ref{def::bspline_recursive} 与归纳假设可得
+\[
+B^{n+1}_i(x)=\beta(x)+\gamma(x),
+\]
+其中
+\[
+\begin{aligned}
+\beta(x)&=\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}B^{n}_i(x) \\
+&=(x-t_{i-1})\cdot [t_{i-1},\ldots,t_{i+n}](t-x)^{n}_{+} \\
+&=[t_i,\ldots,t_{i+n}](t-x)^{n}_{+}-(t_{i-1},\ldots,t_{i+n}](t-x)^{n+1}_{+},    
+\end{aligned}
+\]
+最后一步由式 \eqref{eq::leibniz_for_truncated} 得到。类似地，
+\[
+\gamma(x)=\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\,B^{\,n}_{i+1}(x)
+=(t_{i+n+1}-x)\cdot [t_i,\ldots,t_{i+n+1}](t-x)^{n}_{+}
+\]
+\[
+=(t_{i+n+1}-t_i)\cdot [t_i,\ldots,t_{i+n+1}](t-x)^{n}_{+}
++(t_i-x)\cdot [t_i,\ldots,t_{i+n+1}](t-x)^{n}_{+}
+\]
+\[
+=[t_{i+1},\ldots,t_{i+n+1}](t-x)^{n}_{+}
+-[t_i,\ldots,t_{i+n}](t-x)^{n}_{+}
++[t_i,\ldots,t_{i+n+1}](t-x)^{n+1}_{+},
+\]
+其中倒数第二步由定理 \ref{thm:DD-recursion} 与式 \eqref{eq::leibniz_for_truncated} 得到。
+
+由上述结果可得
+\[
+\begin{aligned}
+B^{n+1}_i(x)&=[t_i,\ldots,t_{i+n+1}](t-x)^{n+1}_{+}
+-[t_{i-1},\ldots,t_{i+n}](t-x)^{n+1}_{+} \\
+&=(t_{i+n+1}-t_{i-1})\cdot [t_{i-1},\ldots,t_{i+n+1}](t-x)^{n+1}_{+},   
+\end{aligned}
+\]
+从而完成归纳证明。
+\end{proof}
+
+\begin{remark}
+    % remark 3.29
+    \label{rem::alt_def_bspline}
+有些作者以式 \eqref{eq::Bn_divdiff_truncated} 作为 B- 样条的定义，然后由此推得递推式 \eqref{eq::bspline_recursion}。
+\end{remark}
+
 \bibliography{na.bib}
 \bibliographystyle{plain}
 
