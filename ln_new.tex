@@ -4693,6 +4693,8 @@ $q(x)=(x-x_i)(x-x_{i+1})$
 PP 形式（分段多项式形式）的样条有一个缺点：对于不同次数的样条，推导必须重复进行。
 在更高维度中推导 PP 形式样条也非常复杂。在本节中，我们从线性空间的视角来研究样条，
 从而可以通过简单的递推关系得到不同次数的样条。B- 样条中的字母“B”表示样条向量空间的“基”（basis）。
+
+像之前插值一样，能不能用一组靠谱的基表出？
 \end{remark}
 
 \begin{notation}
@@ -4768,12 +4770,18 @@ x^{n}, & x\ge 0,\\
 \end{equation}
 \end{example}
 
+\begin{remark*}
+    $x > t$ 时积分为零。
+\end{remark*}
+
 \begin{remark}
     % remark 3.20
     \label{rem::tp_smooth}
 当 $n\in\mathbb{N}^{+}$ 时，$x_{+}^{n}\in C^{n-1}(-\infty,+\infty)$. 
 因此
 $x_{+}^{n}\in \mathbb{S}^{\,n-1}_{n}(-\infty,0,+\infty)$.
+
+即在 $x = 0$ 处，$x_{+}^{n}$ 的前 $n-1$ 阶导数连续，而第 $n$ 阶导数在该点处不连续。
 \end{remark}
 
 \begin{lemma}
