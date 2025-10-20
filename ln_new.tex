@@ -4875,7 +4875,7 @@ p_2(x)=p_1(x)+a_{n+2}(x-t_2)_{+}^{n}.
     \label{def::hat_function}
 在结点 $t_i$ 处的帽函数定义为
 \begin{equation}
-    % eq 3.25
+    % eq 3.28
     \label{eq::hat_function}
 \hat{B}_i(x)=
 \begin{cases}
@@ -4928,7 +4928,7 @@ p_2(x)=p_1(x)+a_{n+2}(x-t_2)_{+}^{n}.
     \label{def::bspline_recursive}
 B- 样条按如下递推方式定义：
 \begin{equation}
-    % eq 3.20
+    % eq 3.30
 \label{eq::bspline_recursion}
 B^{\,n+1}_i(x)=
 \frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}\,B^{\,n}_i(x)
@@ -5034,13 +5034,17 @@ L(\alpha x+\beta y)=\alpha L(x)+\beta L(y),
 则称 $L$ 为 $X$ 上的线性泛函。
 \end{definition}
 
+\begin{remark*}
+    泛函是函数的推广，映射的定义域是一个向量空间，而值域是实数域或复数域。典型的定义域为函数空间，如 $C[a,b]$. 比如积分算子就是一个泛函。同时它还是线性的。
+    但微分算子通常不是泛函，因为它的值域不是实数域或复数域。
+\end{remark*}
+
 \begin{example}
     % example 3.29
     \label{ex::linear_functionals_on_Cab}
 令 $X=C[a,b]$, 则 $X$ 的元素是在 $[a,b]$ 上连续的函数。如下
 \begin{equation*}
 \label{eq::functionals_examples}
-L(f)=\int_{a}^{b} f(x)\,\mathrm{d}x,\qquad
 L(f)=\int_{a}^{b} f(x)\,\mathrm{d}x,\qquad
 L(f)=\int_{a}^{b} x^{2} f(x)\,\mathrm{d}x
 \end{equation*}
@@ -5055,6 +5059,10 @@ L(f)=\int_{a}^{b} x^{2} f(x)\,\mathrm{d}x
 从语义与语法上讲，使用记号 $[x_0,\ldots,x_k]f$ 更为合适，这也与把“差商过程”视作作用于 $C[x_0,x_k]$ 上的线性泛函相一致。
 \end{notation}
 
+\begin{remark*}
+    这样，我们可以将差商视为作用于函数空间 $C[x_0,x_k]$ 的线性泛函。$x_0,\ldots,x_k$ 成为泛函的参数，而 $f$ 成为该泛函的自变量。
+\end{remark*}
+
 \begin{theorem}
     % thm 3.30
     \label{thm::leibniz_divided_difference}
@@ -5068,7 +5076,7 @@ L(f)=\int_{a}^{b} x^{2} f(x)\,\mathrm{d}x
 
 \begin{proof}
 归纳基 $k=0$ 成立，因为式 \eqref{eq::leibniz_divdiff} 化为 $[x_0]fg=f(x_0)g(x_0)$. 
-现假设 \eqref{eq::leibniz_divdiff} 对 $k$ 成立。对归纳步，由定理 \ref{thm:DD-recursion} 得
+现假设 \eqref{eq::leibniz_divdiff} 对 $k$ 成立。对归纳步，由定理 \ref{thm:DD-recursion} 得 （差商递归公式）
 \[
 [x_0,\ldots,x_{k+1}]\,fg=\frac{[x_1,\ldots,x_{k+1}]\,fg-[x_0,\ldots,x_k]\,fg}{x_{k+1}-x_0}.
 \]
@@ -5079,11 +5087,11 @@ L(f)=\int_{a}^{b} x^{2} f(x)\,\mathrm{d}x
 &= S_1+\sum_{i=0}^{k}[x_0,\ldots,x_i]f\cdot[x_{i+1},\ldots,x_{k+1}]g,    
 \end{aligned}
 \]
-其中
+其中（对 $f$ 再使用一次差商递归公式）
 \[
 \begin{aligned}
 S_1&=\sum_{i=0}^{k}(x_{i+1}-x_0)\cdot [x_0,\ldots,x_{i+1}]f\cdot[x_{i+1},\ldots,x_{k+1}]g \\
-&=\sum_{i=1}^{k+1}(x_i-x_0)\cdot [x_0,\ldots,x_i]\,f\;\cdot\;[x_i,\ldots,x_{k+1}]g.
+&=\sum_{i=1}^{k+1}(x_i-x_0)\cdot [x_0,\ldots,x_i]\,f\;\cdot\;[x_i,\ldots,x_{k+1}]g. \mbox{（调整一下下标起点）}
 \end{aligned}
 \]
 同样地，
@@ -5093,7 +5101,7 @@ S_1&=\sum_{i=0}^{k}(x_{i+1}-x_0)\cdot [x_0,\ldots,x_{i+1}]f\cdot[x_{i+1},\ldots,
 &= -S_2+\sum_{i=0}^{k}[x_0,\ldots,x_i]f\cdot[x_{i+1},\ldots,x_{k+1}]g,
 \end{aligned}
 \]
-其中
+其中（对 $g$ 再使用一次差商递归公式）
 \[
 S_2=\sum_{i=0}^{k}[x_0,\ldots,x_i]f\cdot (x_{k+1}-x_i)\cdot [x_i,\ldots,x_{k+1}]g.
 \]
@@ -5141,6 +5149,10 @@ B- 样条与截断幂函数之间存在关系，例如
 
 其意义在于：对截断幂函数施加差商可以“治愈”其非局部支撑的缺点。下一条定理将对此给出精确定义。
 
+\begin{remark*}
+    对截断幂函数做差商后得到具有局部支撑的函数，并可以用它进一步构建 B-样条基。
+\end{remark*}
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{images/truncated_power_functions.png}
@@ -5177,7 +5189,7 @@ B^{\,0}_i(x)=(t_i-t_{i-1})\cdot [t_{i-1},t_i](t-x)^{0}_{+}
 \[
 (t-x)^{n+1}_{+}=(t-x)\,(t-x)^{n}_{+}.
 \]
-对 $f=(t-x)$、$g=(t-x)^{n}_{+}$ 应用莱布尼茨公式（定理 \ref{thm::leibniz_divided_difference}）得
+对 $f=(t-x)$、$g=(t-x)^{n}_{+}$ 应用莱布尼茨公式（定理 \ref{thm::leibniz_divided_difference}）（除了$[t_{i-1}](t - x)$ 和 $[t_{i - 1}, t_i](t - x)$ 其余都是 $0$）得
 \begin{equation}
     % eq 3.39
 \label{eq::leibniz_for_truncated}
@@ -5192,15 +5204,15 @@ B^{\,0}_i(x)=(t_i-t_{i-1})\cdot [t_{i-1},t_i](t-x)^{0}_{+}
 \[
 B^{n+1}_i(x)=\beta(x)+\gamma(x),
 \]
-其中
+其中（用归纳假设）
 \[
 \begin{aligned}
 \beta(x)&=\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}B^{n}_i(x) \\
 &=(x-t_{i-1})\cdot [t_{i-1},\ldots,t_{i+n}](t-x)^{n}_{+} \\
-&=[t_i,\ldots,t_{i+n}](t-x)^{n}_{+}-(t_{i-1},\ldots,t_{i+n}](t-x)^{n+1}_{+},    
+&=[t_i,\ldots,t_{i+n}](t-x)^{n}_{+}-[t_{i-1},\ldots,t_{i+n}](t-x)^{n+1}_{+},    
 \end{aligned}
 \]
-最后一步由式 \eqref{eq::leibniz_for_truncated} 得到。类似地，
+最后一步由式 \eqref{eq::leibniz_for_truncated} （反过来用）得到。类似地，
 \[
 \gamma(x)=\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\,B^{\,n}_{i+1}(x)
 =(t_{i+n+1}-x)\cdot [t_i,\ldots,t_{i+n+1}](t-x)^{n}_{+}
@@ -5209,12 +5221,19 @@ B^{n+1}_i(x)=\beta(x)+\gamma(x),
 =(t_{i+n+1}-t_i)\cdot [t_i,\ldots,t_{i+n+1}](t-x)^{n}_{+}
 +(t_i-x)\cdot [t_i,\ldots,t_{i+n+1}](t-x)^{n}_{+}
 \]
+（加一项减一项）
 \[
+\begin{aligned}
 =[t_{i+1},\ldots,t_{i+n+1}](t-x)^{n}_{+}
--[t_i,\ldots,t_{i+n}](t-x)^{n}_{+}
-+[t_i,\ldots,t_{i+n+1}](t-x)^{n+1}_{+},
+-[t_i,\ldots,t_{i+n}](t-x)^{n}_{+} \\
++[t_i,\ldots,t_{i+n+1}](t-x)^{n+1}_{+}
+-[t_{i+1},\ldots,t_{i+n+1}](t-x)^{n}_{+},    
+\end{aligned}
 \]
-其中倒数第二步由定理 \ref{thm:DD-recursion} 与式 \eqref{eq::leibniz_for_truncated} 得到。
+\[
+=[t_i,\ldots,t_{i+n+1}](t-x)^{n+1}_{+}-[t_i,\ldots,t_{i+n}](t-x)^{n}_{+} \\
+\]
+其中倒数第二步（头两项）由定理 \ref{thm:DD-recursion} 与（后两项）式 \eqref{eq::leibniz_for_truncated} 得到。
 
 由上述结果可得
 \[
@@ -5232,6 +5251,370 @@ B^{n+1}_i(x)&=[t_i,\ldots,t_{i+n+1}](t-x)^{n+1}_{+}
     \label{rem::alt_def_bspline}
 有些作者以式 \eqref{eq::Bn_divdiff_truncated} 作为 B- 样条的定义，然后由此推得递推式 \eqref{eq::bspline_recursion}。
 \end{remark}
+
+\subsubsection{积分和导数}
+% subsubsec 3.32
+
+\begin{corollary}[B 样条的积分]
+% cor 3.33
+\label{cor::bspline_integral}
+B-样条在其支集上的平均值仅取决于其次数，
+\begin{equation}
+    % eq 3.40
+\label{eq::bspline_average_value}
+\frac{1}{t_{i+n} - t_{i-1}} \int_{t_{i-1}}^{t_{i+n}} B_i^n(x) \, dx = \frac{1}{n+1}. 
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+式 (\ref{eq::bspline_average_value}) 的左边（LHS）为
+\begin{align*}
+&\frac{1}{t_{i+n} - t_{i-1}} \int_{t_{i-1}}^{t_{i+n}} B_i^n(x) \, dx \\
+&= \int_{t_{i-1}}^{t_{i+n}} [t_{i-1}, \ldots, t_{i+n}] (t - x)_+^n \, dx \\
+&= [t_{i-1}, \ldots, t_{i+n}] \int_{t_{i-1}}^{t_{i+n}} (t - x)_+^n \, dx \\
+&= [t_{i-1}, \ldots, t_{i+n}] \frac{(t - t_{i-1})^{n+1}}{n+1} \\
+&= \frac{1}{n+1},
+\end{align*}
+其中第一步由定理 \ref{thm::bspline_as_divdiff_truncated} 得出，第二步由积分与差商运算的交换性得出，
+第三步由式 \eqref{eq::tp_int} 得出，最后一步由推论 \ref{cor::newton_remainder} 得出。
+\end{proof}
+
+\begin{remark}
+    % remark 3.30
+事实上，定义 \ref{def::newton_interpolating} 直接推出
+\[
+[t_{i-1}, \ldots, t_{i+n}] (t - t_{i-1})^{n+1} = 1,
+\]
+因为插值函数 $(t - t_{i-1})^{n+1}$ 在 $n+2$ 个点 $t_{i-1}, \ldots, t_{i+n}$ 上的插值多项式就是其本身，
+且单项式 $t^{n+1}$ 的系数显然为 $1$. 有时这种思维方式既方便又强大；例如，\eqref{eq::leibniz_for_truncated} 可通过这种方式加以证明。（如何？）
+\end{remark}
+
+\begin{remark}
+    % remark 3.31
+当 $n = 1$ 时，推论 \ref{cor::bspline_integral} 简单地说明：三角形的面积仅依赖于其底边和高。
+\end{remark}
+
+\begin{theorem}[B-样条的导数]
+% thm 3.34
+\label{thm::bspline_derivative}
+对于 $n \geq 2$, 有 $\forall x \in \mathbb{R}$,
+\begin{equation}
+    % eq 3.41
+\label{eq::bspline_derivative}
+\frac{d}{dx} B_i^n(x) = \frac{n B_i^{n-1}(x)}{t_{i+n-1} - t_{i-1}} - \frac{n B_{i+1}^{n-1}(x)}{t_{i+n} - t_i}. 
+\end{equation}
+当 $n = 1$ 时，式 \eqref{eq::bspline_derivative} 对所有 $x$ 成立，除了三个节点 $t_{i-1}$、$t_i$ 和 $t_{i+1}$ 处，
+因为在这些点上 $B_i^1$ 的导数未定义。
+\end{theorem}
+
+\begin{proof}
+我们首先证明 \eqref{eq::bspline_derivative} 对所有 $x$ 成立，除了在节点 $t_j$ 处。由 \eqref{eq::B1_equals_hat}、\eqref{eq::hat_function} 和 \eqref{eq::bspline_degree0}，
+我们有：
+\[
+\forall x \in \mathbb{R} \setminus \{t_{i-1}, t_i, t_{i+1}\}, \quad
+\frac{\mathrm{d}}{\mathrm{d}x} B_i^1(x) = \frac{1}{t_i - t_{i-1}} B_i^0(x) - \frac{1}{t_{i+1} - t_i} B_{i+1}^0(x).
+\]
+因此，归纳基础成立。现在假设 \eqref{eq::bspline_derivative} 对所有 $x \in \mathbb{R} \setminus \{t_{i-1}, \ldots, t_{i+n}\}$ 成立。对 \eqref{eq::bspline_recursion} 求导，
+应用归纳假设 \eqref{eq::bspline_derivative}，我们得到：
+\begin{equation}
+    % eq 3.42
+\label{eq::bspline_derivative_induction}
+\frac{\mathrm{d}}{\mathrm{d}x} B_i^{n+1}(x) = \frac{B_i^n(x)}{t_{i+n} - t_{i-1}} - \frac{B_{i+1}^n(x)}{t_{i+n+1} - t_i} + n C(x), 
+\end{equation}
+其中 $C(x)$ 为（求导的乘法法则）：
+\begin{align*}
+&\frac{x - t_{i-1}}{t_{i+n} - t_{i-1}} \left[ \frac{B_i^{n-1}(x)}{t_{i+n-1} - t_{i-1}} - \frac{B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} \right] \\
++ &\frac{t_{i+n+1} - x}{t_{i+n+1} - t_i} \left[ \frac{B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} - \frac{B_{i+2}^{n-1}(x)}{t_{i+n+1} - t_{i+1}} \right] \\
+= &\frac{1}{t_{i+n} - t_{i-1}} \left[ \frac{(x - t_{i-1}) B_i^{n-1}(x)}{t_{i+n-1} - t_{i-1}} + \frac{(t_{i+n} - x) B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} \right] \\
+- &\frac{1}{t_{i+n+1} - t_i} \left[ \frac{(x - t_i) B_{i+1}^{n-1}(x)}{t_{i+n} - t_i} + \frac{(t_{i+n+1} - x) B_{i+2}^{n-1}(x)}{t_{i+n+1} - t_{i+1}} \right] \\
+= &\frac{B_i^n(x)}{t_{i+n} - t_{i-1}} - \frac{B_{i+1}^n(x)}{t_{i+n+1} - t_i},
+\end{align*}
+其中最后一步由 \eqref{eq::bspline_recursion} 得出。于是 \eqref{eq::bspline_derivative_induction} 可写为：
+\[
+\frac{\mathrm{d}}{\mathrm{d}x} B_i^{n+1}(x) = \frac{(n+1) B_i^n(x)}{t_{i+n} - t_{i-1}} - \frac{(n+1) B_{i+1}^n(x)}{t_{i+n+1} - t_i},
+\]
+这完成了 \eqref{eq::bspline_derivative} 的归纳证明，除了在节点处。由于 $B_i^1 = \hat{B}_i$ 是连续的，
+结合 \eqref{eq::bspline_recursion} 进行简单的归纳可得：对所有 $n \geq 1$, $B_i^n$ 都是连续的。因此，\eqref{eq::bspline_derivative} 的右边对所有 $n \geq 2$ 都是连续的。
+所以，当 $n \geq 2$ 时，$\frac{\mathrm{d}}{\mathrm{d}x} B_i^n(x)$ 对所有 $x \in \mathbb{R}$ 都存在。这就完成了证明。
+
+\end{proof}
+
+\begin{remark*}
+目标是证明
+\[
+C(x)=\frac{B^{n}_i(x)}{t_{i+n}-t_{i-1}}-\frac{B^{n}_{i+1}(x)}{t_{i+n+1}-t_i}.
+\]
+
+从原始表达式出发：
+\begin{align*}
+C(x)
+&=\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}
+\Biggl[
+\frac{B^{n-1}_i(x)}{t_{i+n-1}-t_{i-1}}-\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+\Biggr]
++\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}
+\Biggl[
+\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}-\frac{B^{n-1}_{i+2}(x)}{t_{i+n+1}-t_{i+1}}
+\Biggr].
+\end{align*}
+
+第 1 步（重排并按公共外因子分组）：
+\begin{align*}
+C(x)
+&=\frac{1}{t_{i+n}-t_{i-1}}
+\Biggl[
+\frac{(x-t_{i-1})B^{n-1}_i(x)}{t_{i+n-1}-t_{i-1}}
++\frac{(t_{i+n}-x)B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+\Biggr]\\
+&\quad-\frac{1}{t_{i+n+1}-t_i}
+\Biggl[
+\frac{(x-t_i)B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
++\frac{(t_{i+n+1}-x)B^{n-1}_{i+2}(x)}{t_{i+n+1}-t_{i+1}}
+\Biggr].
+\end{align*}
+说明：使用恒等式
+\[
+(x-t_{i-1})+(t_{i+n}-x)=t_{i+n}-t_{i-1},\qquad
+(x-t_i)+(t_{i+n+1}-x)=t_{i+n+1}-t_i,
+\]
+将与 $B^{n-1}_{i+1}$ 相关的两项分别并入对应方括号中。
+
+第 2 步（识别 de Boor 递推结构）：
+\begin{align*}
+\Biggl[
+\frac{(x-t_{i-1})B^{n-1}_i}{t_{i+n-1}-t_{i-1}}
++\frac{(t_{i+n}-x)B^{n-1}_{i+1}}{t_{i+n}-t_i}
+\Biggr]&=B^{n}_i(x),\\
+\Biggl[
+\frac{(x-t_i)B^{n-1}_{i+1}}{t_{i+n}-t_i}
++\frac{(t_{i+n+1}-x)B^{n-1}_{i+2}}{t_{i+n+1}-t_{i+1}}
+\Biggr]&=B^{n}_{i+1}(x),
+\end{align*}
+这正是 B 样条的递推公式（de Boor 公式）的两种索引实例。
+
+由此得到最终结果：
+\[
+C(x)=\frac{B^{n}_i(x)}{t_{i+n}-t_{i-1}}-\frac{B^{n}_{i+1}(x)}{t_{i+n+1}-t_i}.
+\]    
+
+下面把“第 1 步（重排并按公共外因子分组）”写成逐项等价变形。
+
+从原式
+\[
+\begin{aligned}
+C(x)
+&=\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}
+\Biggl(
+\frac{B^{n-1}_i(x)}{t_{i+n-1}-t_{i-1}}
+-\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+\Biggr)
++\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}
+\Biggl(
+\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+-\frac{B^{n-1}_{i+2}(x)}{t_{i+n+1}-t_{i+1}}
+\Biggr)
+\end{aligned}
+\]
+出发，先把外层系数分配进每个括号（逐项乘开）：
+\[
+\begin{aligned}
+C(x)
+&=\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}\cdot
+\frac{B^{n-1}_i(x)}{t_{i+n-1}-t_{i-1}}
+-\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}\cdot
+\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i} \\
+&\quad+\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\cdot
+\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+-\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\cdot
+\frac{B^{n-1}_{i+2}(x)}{t_{i+n+1}-t_{i+1}}.
+\end{aligned}
+\]
+
+现在把与 $B^{n-1}_i$、$B^{n-1}_{i+2}$ 的两项分别保持不动，把与
+$B^{n-1}_{i+1}$ 的两项合并为“两个带不同公共因子”的组。具体做法是分别把
+$\dfrac{1}{t_{i+n}-t_{i-1}}$ 与 $\dfrac{1}{t_{i+n+1}-t_i}$ 提到每组外面：
+
+1) 关于 $B^{n-1}_i$ 与 $B^{n-1}_{i+1}$ 的第一组（提取 $1/(t_{i+n}-t_{i-1})$）：
+\[
+\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}\cdot
+\frac{B^{n-1}_i(x)}{t_{i+n-1}-t_{i-1}}
+-\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}\cdot
+\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}.
+\]
+将第二项中的系数
+$-\dfrac{x-t_{i-1}}{t_{i+n}-t_{i-1}}$
+改写为
+\[
+-\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}
+=\frac{t_{i+n}-x}{t_{i+n}-t_{i-1}}-1
+\qquad (\text{因为 }(t_{i+n}-x)-(x-t_{i-1})=t_{i+n}-t_{i-1}),
+\]
+于是这一组可重写为
+\[
+\frac{1}{t_{i+n}-t_{i-1}}
+\Biggl[
+\frac{(x-t_{i-1})B^{n-1}_i(x)}{t_{i+n-1}-t_{i-1}}
++\frac{(t_{i+n}-x)B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+\Biggr]
+-\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}.
+\]
+这里我们有意地把“$-1\cdot\dfrac{B^{n-1}_{i+1}}{t_{i+n}-t_i}$”暂时留在组外，待会儿与下一组合并。
+
+2) 关于 $B^{n-1}_{i+1}$ 与 $B^{n-1}_{i+2}$ 的第二组（提取 $1/(t_{i+n+1}-t_i)$）：
+\[
+\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\cdot
+\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+-\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\cdot
+\frac{B^{n-1}_{i+2}(x)}{t_{i+n+1}-t_{i+1}}.
+\]
+将第一项中的系数
+$\dfrac{t_{i+n+1}-x}{t_{i+n+1}-t_i}$
+改写为
+\[
+\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}
+=1-\frac{x-t_i}{t_{i+n+1}-t_i}
+\qquad (\text{因为 }(t_{i+n+1}-x)+(x-t_i)=t_{i+n+1}-t_i),
+\]
+于是这一组可重写为
+\[
+\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+-\frac{1}{t_{i+n+1}-t_i}
+\Biggl[
+\frac{(x-t_i)B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
++\frac{(t_{i+n+1}-x)B^{n-1}_{i+2}(x)}{t_{i+n+1}-t_{i+1}}
+\Biggr].
+\]
+
+将两组结果与上一步遗留的
+$-\dfrac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}$ 相加，恰好抵消：
+\[
+-\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
++\frac{B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}=0.
+\]
+因此 $C(x)$ 化为
+\[
+\boxed{
+\begin{aligned}
+C(x)
+&=\frac{1}{t_{i+n}-t_{i-1}}
+\Biggl[
+\frac{(x-t_{i-1})B^{n-1}_i(x)}{t_{i+n-1}-t_{i-1}}
++\frac{(t_{i+n}-x)B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
+\Biggr]\\
+&\quad-\frac{1}{t_{i+n+1}-t_i}
+\Biggl[
+\frac{(x-t_i)B^{n-1}_{i+1}(x)}{t_{i+n}-t_i}
++\frac{(t_{i+n+1}-x)B^{n-1}_{i+2}(x)}{t_{i+n+1}-t_{i+1}}
+\Biggr],
+\end{aligned}}
+\]
+这就是“第 1 步”的目标形式。接下来第 2 步只需识别每个方括号都是
+B 样条的 de Boor 递推组合，从而得到
+$C(x)=\dfrac{B^{n}_i(x)}{t_{i+n}-t_{i-1}}
+-\dfrac{B^{n}_{i+1}(x)}{t_{i+n+1}-t_i}$。
+\end{remark*}
+
+\begin{remark}
+另一种方式，定理 \ref{thm::bspline_derivative} 可以从定理 \ref{thm::bspline_as_divdiff_truncated} 推导如下：
+\begin{align*}
+\frac{\mathrm{d}}{\mathrm{d}x} B_i^n(x) &= (t_{i+n} - t_{i-1}) \cdot [t_{i-1}, \ldots, t_{i+n}] \frac{\mathrm{d}}{\mathrm{d}x} (t - x)_+^n \\
+&= ([t_i, \ldots, t_{i+n}] - [t_{i-1}, \ldots, t_{i+n-1}]) (-n (t - x)_+^{n-1}) \\
+&= n [t_{i-1}, \ldots, t_{i+n-1}] (t - x)_+^{n-1} - n [t_i, \ldots, t_{i+n}] (t - x)_+^{n-1} \\
+&= \frac{n B_i^{n-1}(x)}{t_{i+n-1} - t_{i-1}} - \frac{n B_{i+1}^{n-1}(x)}{t_{i+n} - t_i},
+\end{align*}
+其中第二行由定理 \ref{thm:DD-recursion} 得出。
+
+推论 \ref{cor::bspline_integral} 可以部分地从定理 \ref{thm::bspline_derivative} 推出。
+
+\[
+\begin{aligned}
+& \int_{t_{i-1}}^{t_{i+n}} \frac{\mathrm{d}}{\mathrm{d}x} B_i^n(x) \, dx = 0 \\
+\Rightarrow & \frac{\displaystyle \int_{t_{i-1}}^{t_{i+n}} B_i^{n-1}(x) \, dx}{t_{i+n-1} - t_{i-1}} = \frac{\displaystyle \int_{t_{i-1}}^{t_{i+n}} B_{i+1}^{n-1}(x) \, dx}{t_{i+n} - t_i}. \\
+\Rightarrow & \frac{\displaystyle \int_{t_{i-1}}^{t_{i+n-1}} B_i^{n-1}(x) \, dx}{t_{i+n-1} - t_{i-1}} = \frac{\displaystyle \int_{t_i}^{t_{i+n}} B_{i+1}^{n-1}(x) \, dx}{t_{i+n} - t_i}. \\
+\Rightarrow & \frac{\displaystyle \int_{t_{i-1}}^{t_{i+n}} B_i^n(x) \, dx}{t_{i+n} - t_{i-1}} = \frac{\displaystyle \int_{t_i}^{t_{i+n+1}} B_{i+1}^n(x) \, dx}{t_{i+n+1} - t_i},
+\end{aligned}
+\]
+其中第一行由微积分基本定理和引理 \ref{lem::support_bspline} 得出，第二行由定理 \ref{thm::bspline_derivative} 得出，
+第三行由引理 \ref{lem::support_bspline} 得出，最后一行是将 $n$ 替换为 $n+1$.  （只得到都相等。）  
+\end{remark}
+
+\begin{corollary}[B 样条的光滑性]
+    % cor 3.35
+    \label{cor::bspline_higher_derivative}
+    $B_i^n \in \mathbb{S}_n^{n-1}$.
+\end{corollary}
+
+\begin{proof}
+当 $n=1$ 时，归纳基础 $B_i^1(x) \in \mathbb{S}_1^0$ 成立，这是由 \eqref{eq::B1_equals_hat} 得出的。其余部分的证明由 \eqref{eq::bspline_recursion} 
+和定理 \ref{thm::bspline_derivative} 通过简单的归纳法即可得出。
+\end{proof}
+
+\subsubsection{Marsden 恒等式}
+% subsec 3.24
+
+\begin{theorem}[Marsden 恒等式]
+    % thm 3.36
+    \label{thm::marsden_identity}
+对任意 $n\in\mathbb{N}$, 有
+\begin{equation}
+    % eq 3.43
+\label{eq::marsden_identity}
+(t-x)^n=\sum_{i=-\infty}^{+\infty}(t-t_i)\cdots (t-t_{i+n-1})\,B^{\,n}_i(x),
+\end{equation}
+其中当 $n=0$ 时，乘积 $(t-t_i)\cdots (t-t_{i+n-1})$ 按约定取为 $1$.
+\end{theorem}
+
+（右边加起来是个函数。）
+
+\begin{proof}
+当 $n=0$ 时，式 \eqref{eq::marsden_identity} 由定义 \ref{def::bspline_recursive} 推出。现在假设式 \eqref{eq::marsden_identity} 成立。
+线性函数 $f(t)=t-x$ 的线性插值就是其自身，即（插值点是 $t_{i-1}, t_{i+n}$）
+\begin{equation}
+    % eq 3.44
+\label{eq::linear_interp_t_minus_x}
+t-x=\frac{t-t_{i+n}}{t_{i-1}-t_{i+n}}\,(t_{i-1}-x)+\frac{t-t_{i-1}}{t_{i+n}-t_{i-1}}\,(t_{i+n}-x).
+\end{equation}
+于是归纳步有
+\[
+\begin{aligned}
+(t-x)^{n+1}
+&=(t-x)\sum_{i=-\infty}^{+\infty}(t-t_i)\cdots (t-t_{i+n-1})\,B^{\,n}_i(x) \\
+&=\sum_{i=-\infty}^{+\infty}(t-t_i)\cdots (t-t_{i+n}) 
+\frac{t_{i-1}-x}{t_{i-1}-t_{i+n}}\,B^{\,n}_i(x) \\
+&+\sum_{i=-\infty}^{+\infty}(t-t_{i-1})\cdots (t-t_{i+n-1})
+\frac{t_{i+n}-x}{t_{i+n}-t_{i-1}}\,B^{\,n}_i(x) \mbox{（注意第二项乘最前面）}\\
+&=\sum_{i=-\infty}^{+\infty}(t-t_i)\cdots (t-t_{i+n})
+\frac{x-t_{i-1}}{t_{i+n}-t_{i-1}}\,B^{\,n}_i(x) \mbox{（分子分母同换）}\\
+&+\sum_{i=-\infty}^{+\infty}(t-t_i)\cdots (t-t_{i+n})
+\frac{t_{i+n+1}-x}{t_{i+n+1}-t_i}\,B^{\,n}_{i+1}(x) \mbox{（指标加 $1$）}\\
+&=\sum_{i=-\infty}^{+\infty}(t-t_i)\cdots (t-t_{i+n})\,B^{\,n+1}_i(x),
+\end{aligned}
+\]
+其中第一步来自归纳假设，第二步来自式 \eqref{eq::linear_interp_t_minus_x}，第三步由第二个求和式中将指标 $i$ 替换为 $i+1$ 得到，最后一步来自式 \eqref{eq::bspline_recursion}。
+\end{proof}
+
+\begin{corollary}
+    % cor 3.37
+    \label{cor::truncated_as_linear_comb_bspline}
+（将截断幂函数表示为 B- 样条的线性组合）。对任意 $j\in\mathbb{Z}$ 和 $n\in\mathbb{N}$, 有
+\begin{equation}
+    % eq 3.45
+\label{eq::truncated_linear_combo}
+(t_j-x)^{n}_{+}=\sum_{i=-\infty}^{j-n}(t_j-t_i)\cdots (t_j-t_{i+n-1})\,B^{\,n}_i(x).
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+我们需要证明右端在 $x\le t_j$ 时等于 $(t_j-x)^n$, 否则为 $0$. 在式 \eqref{eq::marsden_identity} 中取 $t=t_j$, 得到
+\[
+(t_j-x)^n=\sum_{i=-\infty}^{+\infty}(t_j-t_i)\cdots (t_j-t_{i+n-1})\,B^{\,n}_i(x).
+\]
+对每个 $i=j-n+1,\ldots,j$, 上述求和中的相应项与 $x$ 无关恒为 $0$; 而对每个 $i\ge j+1$, 引理 \ref{lem::support_bspline} 蕴含（支撑之外都是零。）当 $x\le t_j$ 时 $B^{\,n}_i(x)=0$. 因此
+\[
+x\le t_j\ \Longrightarrow\ \sum_{i=-\infty}^{j-n}(t_j-t_i)\cdots (t_j-t_{i+n-1})\,B^{\,n}_i(x)=(t_j-x)^n.
+\]
+若 $x>t_j$, 则由引理 \ref{lem::support_bspline} 得 $B^{\,n}_i(x)=0$ 对所有 $i\le j-n$ 均成立。证毕。
+\end{proof}
 
 \bibliography{na.bib}
 \bibliographystyle{plain}
