@@ -1984,7 +1984,7 @@ f[x_0,x_1,\ldots,x_k]
 推论 \ref{thm:DD-recursion_permutation} 告诉我们, 对 $k-$阶差商, 交换这些结点的次序, 是没有关系的. 因为不论什么次序,
 这 $k + 1$ 个结点唯一确定了插值多项式.
 
-而和 Lagrange 插值公式对比一下, 不难得到引理 2.16 的结论.
+而和 Lagrange 插值公式对比一下, 不难得到推论 \ref{cor::newton_explicit} 的结论.
 
 % 最后, 定理 \ref{thm:DD-recursion} 给出了 $k-$阶差商的递推公式, 这里的证明思路是:
 
@@ -5252,8 +5252,17 @@ B^{n+1}_i(x)&=[t_i,\ldots,t_{i+n+1}](t-x)^{n+1}_{+}
 有些作者以式 \eqref{eq::Bn_divdiff_truncated} 作为 B- 样条的定义，然后由此推得递推式 \eqref{eq::bspline_recursion}。
 \end{remark}
 
+\begin{remark*}
+    总结：对 $\mathbb{S}_{n, N}^{n - 1}$ 空间，我们已经构建了一组基：即截断幂函数基（见引理 \ref{lem::tp_basis} 和推论 \ref{cor::tp_expansion}）；
+进一步，我们试图构建一组具有局部支撑性的基：即 B-样条基（见定义 \ref{def::bspline_recursive}）。
+借助工具莱布尼兹公式（定理 \ref{thm::leibniz_divided_difference}），
+我们将 B-样条与截断幂函数联系起来（见定理 \ref{thm::bspline_as_divdiff_truncated}）。注意，到这个阶段，
+我们还没有证明 B-样条基确实构成 $\mathbb{S}_{n, N}^{n - 1}$ 的一个基。为了完成这一点，我们需要进一步了解 B-样条基的性质，以及更多的形式工具。
+\end{remark*}
+
+
 \subsubsection{积分和导数}
-% subsubsec 3.32
+% subsubsec 3.2.3
 
 \begin{corollary}[B 样条的积分]
 % cor 3.33
@@ -5269,10 +5278,10 @@ B-样条在其支集上的平均值仅取决于其次数，
 \begin{proof}
 式 (\ref{eq::bspline_average_value}) 的左边（LHS）为
 \begin{align*}
-&\frac{1}{t_{i+n} - t_{i-1}} \int_{t_{i-1}}^{t_{i+n}} B_i^n(x) \, dx \\
-&= \int_{t_{i-1}}^{t_{i+n}} [t_{i-1}, \ldots, t_{i+n}] (t - x)_+^n \, dx \\
-&= [t_{i-1}, \ldots, t_{i+n}] \int_{t_{i-1}}^{t_{i+n}} (t - x)_+^n \, dx \\
-&= [t_{i-1}, \ldots, t_{i+n}] \frac{(t - t_{i-1})^{n+1}}{n+1} \\
+&\frac{1}{t_{i+n} - t_{i-1}} \int_{t_{i-1}}^{t_{i+n}} B_i^n(x) \, dx \mbox{（直接使用定理 \ref{thm::bspline_as_divdiff_truncated}）}\\
+&= \int_{t_{i-1}}^{t_{i+n}} [t_{i-1}, \ldots, t_{i+n}] (t - x)_+^n \, dx\mbox{（积分和差商都是线性泛函）} \\
+&= [t_{i-1}, \ldots, t_{i+n}] \int_{t_{i-1}}^{t_{i+n}} (t - x)_+^n \, dx\mbox{（截断幂函数可直接积分，见\eqref{eq::tp_int}）} \\
+&= [t_{i-1}, \ldots, t_{i+n}] \frac{(t - t_{i-1})^{n+1}}{n+1}\mbox{（$(t - t_{i-1})^{n+1}$在$t_{i-1}, \ldots, t_{i+n}$上插值就是自己，最高项系数是 $1$.）} \\
 &= \frac{1}{n+1},
 \end{align*}
 其中第一步由定理 \ref{thm::bspline_as_divdiff_truncated} 得出，第二步由积分与差商运算的交换性得出，
@@ -5550,7 +5559,8 @@ $C(x)=\dfrac{B^{n}_i(x)}{t_{i+n}-t_{i-1}}
 \end{proof}
 
 \subsubsection{Marsden 恒等式}
-% subsec 3.24
+% subsec 3.2.4
+\label{subsubsec::marsden_identity}
 
 \begin{theorem}[Marsden 恒等式]
     % thm 3.36
@@ -5615,6 +5625,381 @@ x\le t_j\ \Longrightarrow\ \sum_{i=-\infty}^{j-n}(t_j-t_i)\cdots (t_j-t_{i+n-1})
 \]
 若 $x>t_j$, 则由引理 \ref{lem::support_bspline} 得 $B^{\,n}_i(x)=0$ 对所有 $i\le j-n$ 均成立。证毕。
 \end{proof}
+
+\subsubsection{对称多项式}
+% subsec 3.2.5
+\label{subsubsec::symmetric_polynomials}
+
+\begin{definition}
+    % def 3.38
+    \label{def::elementary_symmetric_poly}
+（基本对称多项式）在 $n$ 个变量中的次数为 $k$ 的基本对称多项式，是从这 $n$ 个变量中选取 $k$ 个互不相同的变量所得到的所有乘积之和，即
+\begin{equation}
+    % eq 3.46
+\label{eq::elem_sym_def}
+\sigma_k(x_1,\ldots,x_n)=
+\sum_{1\le i_1<\cdots<i_k\le n} x_{i_1}x_{i_2}\cdots x_{i_k}.
+\end{equation}
+特别地，$\sigma_0(x_1,\ldots,x_n)=1$，并且
+\[
+\forall\,k>n,\qquad \sigma_k(x_1,\ldots,x_n)=0.
+\]
+若去掉“互不相同”的条件，则得到在 $n$ 个变量中的次数为 $k$ 的完全对称多项式：
+\begin{equation}
+    % eq 3.47
+\label{eq::complete_sym_def}
+\tau_k(x_1,\ldots,x_n)=
+\sum_{1\le i_1\le\cdots\le i_k\le n} x_{i_1}x_{i_2}\cdots x_{i_k}.
+\end{equation}
+\end{definition}
+
+\begin{example}
+    % ex 3.39
+    \label{ex::elem_sym_239}
+$\sigma_2(x_1,x_2,x_3)=x_1x_2+x_1x_3+x_2x_3$. 作比较，$\tau_2(x_1,x_2,x_3)=\sigma_2(x_1,x_2,x_3)+x_1^2+x_2^2+x_3^2$.
+\end{example}
+
+\begin{lemma}
+    % lem 3.40
+    \label{lem::elem_sym_recursion}
+当 $k\le n$ 时，基本对称多项式满足如下递推关系：
+\begin{equation}
+    % eq 3.48
+\label{eq::elem_sym_rec}
+\sigma_{k+1}(x_1,\ldots,x_n,x_{n+1})
+=\sigma_{k+1}(x_1,\ldots,x_n)+x_{n+1}\,\sigma_k(x_1,\ldots,x_n).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+$\sigma_{k+1}(x_1,\ldots,x_n,x_{n+1})$ 中的各项可分为两类：
+(a) 含有因子 $x_{n+1}$ 的项；
+(b) 不含该因子的项。由式 \eqref{eq::elem_sym_def} 的对称性可知，(a) 类恰为 $x_{n+1}\sigma_k(x_1,\ldots,x_n)$，(b) 类恰为 $\sigma_{k+1}(x_1,\ldots,x_n)$. 故得结论。
+\end{proof}
+
+\begin{example}
+    % ex 3.41
+    \label{ex::elem_sym_241}
+$\sigma_2(x_1,x_2,x_3)=x_1x_2+x_3(x_1+x_2)$.
+\end{example}
+
+\begin{definition}
+    % def 3.42
+    \label{def::gen_func_elementary}
+基本对称多项式的生成函数为
+\begin{equation}
+    % eq 3.49
+\label{eq::gen_func_sigma}
+g_{\sigma,n}(z)=\prod_{i=1}^{n}(1+x_i z)=(1+x_1 z)\cdots(1+x_n z).
+\end{equation}
+对于完全对称多项式，其生成函数为
+\begin{equation}
+    % eq 3.50
+\label{eq::gen_func_tau}
+g_{\tau,n}(z)=\prod_{i=1}^{n}\frac{1}{1-x_i z}
+=\frac{1}{1-x_1 z}\cdots\frac{1}{1-x_n z}.
+\end{equation}
+\end{definition}
+
+\begin{lemma}
+    % lem 3.43
+    \label{lem::gen_elem_complete}
+（生成基本对称与完全对称多项式）。基本对称与完全对称多项式与其生成函数之间满足
+\begin{align}
+    % eq 3.51
+    \label{eq::gen_func_sigma_expansion}
+g_{\sigma,n}(z)&=\sum_{k=0}^{n}\sigma_k(x_1,\ldots,x_n)\,z^k,
+\\
+    % eq 3.52
+    \label{eq::gen_func_tau_expansion}
+g_{\tau,n}(z)&=\sum_{k=0}^{+\infty}\tau_k(x_1,\ldots,x_n)\,z^k.
+\end{align}
+\end{lemma}
+
+\begin{proof}
+结合引理 \ref{lem::elem_sym_recursion}，式 \eqref{eq::gen_func_sigma_expansion} 可用简单的归纳法证明。对于式 \eqref{eq::gen_func_tau_expansion}，
+由式 \eqref{eq::gen_func_tau} 以及恒等式
+\begin{equation}
+    % eq 3.53
+\label{eq::geom_series_identity}
+\frac{1}{1-x}=\sum_{k=0}^{+\infty}x^k
+\end{equation}
+得到
+\[
+g_{\tau,n}(z)=\prod_{i=1}^{n}\sum_{k=0}^{+\infty}x_i^{\,k}z^{k}
+=(1+x_1 z+x_1^{2}z^{2}+\cdots)(1+x_2 z+x_2^{2}z^{2}+\cdots)\cdots
+(1+x_n z+x_n^{2}z^{2}+\cdots).
+\]
+$z^k$ 的单项式系数等于从 $x_1,x_2,\ldots,x_n$ 中取 $k$ 个变量的所有乘积之和。由定义 \ref{def::elementary_symmetric_poly} 即得结论。
+\end{proof}
+
+\begin{remark}
+    % rem 3.33
+    \label{rem::geom_series_algebraic}
+恒等式 \eqref{eq::geom_series_identity} 成立，因为
+\[
+1\equiv (1-x)\sum_{k=0}^{+\infty}x^k
+=\sum_{k=0}^{+\infty}x^k-\sum_{k=1}^{+\infty}x^k.
+\]
+这是一个代数层面的论证，与几何级数收敛所需的 $|x|<1$ 条件无关，原因是：
+(i) 这里的 $x$ 不是数而是符号；
+(ii) \eqref{eq::geom_series_identity} 仅用于识别两个等价多项式的系数，这与几何级数的收敛性无关。
+\end{remark}
+
+\begin{example}
+    % ex 3.44
+    \label{ex::gen_example_344}
+\[
+(1+x_1 z)(1+x_2 z)(1+x_3 z)
+=1+(x_1+x_2+x_3)z+(x_1x_2+x_1x_3+x_2x_3)z^2+x_1x_2x_3 z^3.
+\]
+\end{example}
+
+\begin{lemma}
+    % lem 3.45
+    \label{lem::tau_recursion}
+（完全对称多项式的递推关系）。完全对称多项式满足如下递推：
+\begin{equation}
+    % eq 3.54
+\label{eq::tau_recursion}
+\tau_{k+1}(x_1,\ldots,x_n,x_{n+1})
+=\tau_{k+1}(x_1,\ldots,x_n)+x_{n+1}\,\tau_k(x_1,\ldots,x_n,x_{n+1}).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+由式 \eqref{eq::gen_func_tau} 可得
+\begin{equation}
+    % eq 3.55
+\label{eq::gen_tau_shift}
+g_{\tau,n+1}=g_{\tau,n}+x_{n+1}z\,g_{\tau,n+1}.
+\end{equation}
+令等式两边 $z^{k+1}$ 的系数相等，即得结论。
+\end{proof}
+
+\begin{remark}
+    % rem 3.34
+    \label{rem::deduce_sigma_from_tau}
+通过删除每一项中含有重复 $x_i$ 因子的项，可以由引理 \ref{lem::tau_recursion} 推出引理 \ref{lem::elem_sym_recursion}。
+此外，引理 \ref{lem::elem_sym_recursion} 中的条件 $k\le n$ 在引理 \ref{lem::tau_recursion} 中并未出现。
+\end{remark}
+
+\begin{theorem}
+    % thm 3.46
+    \label{thm::tau_as_divdiff}
+（完全对称多项式即单项式的差商）。在 $n+1$ 个变量中的次数为 $m-n$ 的完全对称多项式是单项式 $x^{m}$ 的第 $n$ 阶差商，即
+\begin{equation}
+    % eq 3.56
+\label{eq::tau_divdiff}
+\forall m\in\mathbb{N}^+,\ \forall i\in\mathbb{N},\ \forall n=0,1,\ldots,m,\qquad
+\tau_{m-n}(x_i,\ldots,x_{i+n})=[x_i,\ldots,x_{i+n}]\,x^{m}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+由引理 \ref{lem::tau_recursion} 可得
+\begin{equation}
+    % eq 3.57
+\label{eq::tau_recursion_step}
+\begin{array}{rl}
+(x_{n+1}-x_1)\,\tau_k(x_1,\ldots,x_n,x_{n+1})
+&=\tau_{k+1}(x_1,\ldots,x_n,x_{n+1})-\tau_{k+1}(x_1,\ldots,x_n)\nonumber\\
+&\quad -x_1\,\tau_k(x_1,\ldots,x_n,x_{n+1})\nonumber\\
+&=\tau_{k+1}(x_2,\ldots,x_n,x_{n+1})+x_1\,\tau_k(x_1,\ldots,x_n,x_{n+1})\nonumber\\
+&\quad -\tau_{k+1}(x_1,\ldots,x_n)-x_1\,\tau_k(x_1,\ldots,x_n)\nonumber\\
+&=\tau_{k+1}(x_2,\ldots,x_n,x_{n+1})-\tau_{k+1}(x_1,\ldots,x_n).
+\end{array}
+\end{equation}
+余下部分对 $n$ 作归纳。当 $n=0$ 时，式 \eqref{eq::tau_divdiff} 化为
+\[
+\tau_m(x_i)=[x_i]\,x^{m},
+\]
+这显然成立。现在设 \eqref{eq::tau_divdiff} 对某个满足 $n<m$ 的非负整数 $n$ 成立。由式 \eqref{eq::tau_recursion_step} 与归纳假设得到
+\[
+\begin{aligned}
+\tau_{m-n-1}(x_i,\ldots,x_{i+n+1})
+&=\frac{\tau_{m-n}(x_{i+1},\ldots,x_{i+n+1})-\tau_{m-n}(x_i,\ldots,x_{i+n})}{x_{i+n+1}-x_i}\\
+&=\frac{[x_{i+1},\ldots,x_{i+n+1}]\,x^{m}-[x_i,\ldots,x_{i+n}]\,x^{m}}{x_{i+n+1}-x_i}\\
+&=[x_i,\ldots,x_{i+n+1}]\,x^{m},
+\end{aligned}
+\]
+从而完成证明。
+\end{proof}
+
+\subsubsection{B 样条确实构成一组基}
+% subsec 3.2.6
+
+\begin{theorem}
+    % thm 3.47
+    \label{thm::bspline_basis}
+给定任意 $k\in\mathbb{N}$，对任意固定的 $n\ge k$，单项式 $x^{k}$ 都可以表示为 B 样条的线性组合，其形式为
+\begin{equation}
+    % eq 3.58
+\label{eq::monomial_bspline_combo}
+\binom{n}{k}x^{k}=\sum_{i=-\infty}^{+\infty}\sigma_k(t_i,\ldots,t_{i+n-1})\,B^{\,n}_i(x),
+\end{equation}
+其中 $\sigma_k(t_i,\ldots,t_{i+n-1})$ 是关于 $n$ 个变量 $t_i,\ldots,t_{i+n-1}$ 的次数为 $k$ 的基本对称多项式。
+\end{theorem}
+
+\begin{proof}
+由引理 \ref{lem::gen_elem_complete} 可得
+\[
+(1+t_i x)\cdots(1+t_{i+n-1}x)=\sum_{k=0}^{n}\sigma_k(t_i,\ldots,t_{i+n-1})\,x^{k}.
+\]
+将 $x$ 替换为 $-1/t$，并两边同乘 $t^{n}$，得到
+\[
+(t-t_i)\cdots(t-t_{i+n-1})=\sum_{k=0}^{n}\sigma_k(t_i,\ldots,t_{i+n-1})(-1)^{k}t^{\,n-k}.
+\]
+把上式代入 \eqref{eq::marsden_identity} 即得
+\[
+\begin{aligned}
+(t-x)^{n}
+&=\sum_{i=-\infty}^{+\infty}\sum_{k=0}^{n}\sigma_k(t_i,\ldots,t_{i+n-1})(-1)^{k}t^{\,n-k}B^{\,n}_i(x)\\ 
+&=\sum_{k=0}^{n}\Bigl\{t^{\,n-k}(-1)^{k}\sum_{i=-\infty}^{+\infty}\sigma_k(t_i,\ldots,t_{i+n-1})B^{\,n}_i(x)\Bigr\}.
+\end{aligned}
+\]
+另一方面，二项式定理给出
+\[
+(t-x)^{n}=\sum_{k=0}^{n}\binom{n}{k}t^{\,n-k}(-x)^{k}
+=\sum_{k=0}^{n}t^{\,n-k}(-1)^{k}\binom{n}{k}x^{k}.
+\]
+比较最后两式中 $t^{\,n-k}(-1)^{k}$ 的系数，即得所需结论。
+\end{proof}
+
+\begin{remark}
+    % rem 3.35
+    \label{rem::double_sum_order}
+细心的读者也许会质疑在定理 \ref{thm::bspline_basis} 的证明中交换双重求和次序的正当性，
+因为在基础分析中我们学到，两重无穷和改变求和次序可能会得出不同的结果。
+考虑如下一个无限二维数组 $\{a_{ij}: i,j\in\mathbb{Z}^{+}\}$ 的例子：
+\[
+a_{ij}=
+\begin{cases}
+-1, & i=j,\\
+2^{\,j-i}, & i>j,\\
+0, & i<j,
+\end{cases}
+\qquad\text{即}\qquad
+\begin{array}{cccccc}
+-1 & 0 & 0 & 0 & \cdots\\
+\frac12 & -1 & 0 & 0 & \cdots\\
+\frac14 & \frac12 & -1 & 0 & \cdots\\
+\frac18 & \frac14 & \frac12 & -1 & \cdots\\
+\vdots & \vdots & \vdots & \vdots & \ddots
+\end{array}
+\]
+容易验证
+\[
+\sum_{i=1}^{+\infty}\sum_{j=1}^{+\infty}a_{ij}=-2,\qquad
+\sum_{j=1}^{+\infty}\sum_{i=1}^{+\infty}a_{ij}=-2,\qquad
+\sum_{j=1}^{+\infty}\sum_{i=1}^{+\infty}a_{ij}=0.
+\]
+然而，在定理 \ref{thm::bspline_basis} 的证明中，按 $k$ 索引的求和只有有限项，
+因此上述“反例”并不适用。事实上，对于任意固定的 $x$，按 $i$ 索引的求和中，非零项的个数也是有限的。
+因此，对任意给定的 $x$ 与 $n$，表达式 $(t-x)^{n}$ 的双重求和只含有限项。
+将 $i$ 的求和范围写成从 $-\infty$ 到 $+\infty$ 仅是一种记号便利，使得对所有 $x\in\mathbb{R}$ 的 $(t-x)^{n}$ 表达式能够采用同一形式。
+\end{remark}
+
+\begin{corollary}
+    % cor 3.48
+    \label{cor::partition_of_unity}
+（单位分解）。对任意 $n\in\mathbb{N}$，
+\begin{equation}
+    % eq 3.59
+    \label{eq::partition_of_unity}
+\sum_{i=-\infty}^{+\infty} B^{\,n}_i=1.
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+在定理 \ref{thm::bspline_basis} 中取 $k=0$ 即得式 \eqref{eq::partition_of_unity}。
+\end{proof}
+
+\begin{remark}
+    % rem 3.36
+    \label{rem::poU_special_case}
+推论 \ref{cor::partition_of_unity} 是定理 D.151 的一个特例。
+\end{remark}
+
+\begin{theorem}
+    % thm 3.49
+    \label{thm::basis_Sn-1}
+下列 B 样条组成空间 $S^{\,n-1}_n(t_1,t_2,\ldots,t_N)$ 的一组基：
+\begin{equation}
+    % eq 3.60
+\label{eq::basis_list}
+B^{\,n}_{2-n}(x),\ B^{\,n}_{3-n}(x),\ \ldots,\ B^{\,n}_{N}(x).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+容易验证，对任意 $t_i\in\mathbb{R}$，
+\begin{equation}
+    % eq 3.61
+\label{eq::trunc_identity}
+(x-t_i)^{n}_{+}=(x-t_i)^{n}-(-1)^{n}(t_i-x)^{n}_{+}.
+\end{equation}
+由定理 \ref{thm::marsden_identity} 与推论 \ref{cor::truncated_as_linear_comb_bspline} 可知，
+每个截断幂函数 $(x-t_i)^{n}_{+}$ 都可表示为 B 样条的线性组合。由引理 \ref{lem::tp_basis}，$S^{\,n-1}_n(t_1,t_2,\ldots,t_N)$ 中的每个元素都可以表示为
+\[
+1,\ x,\ x^{2},\ldots,x^{n},\ (x-t_2)^{n}_{+},\ (x-t_3)^{n}_{+},\ldots,(x-t_{N-1})^{n}_{+}
+\]
+的线性组合。定理 \ref{thm::bspline_basis} 说明，每个单项式 $x^{j}$ 亦可表示为 B 样条的线性组合。
+由于定义域限制在 $[t_1,t_N]$ 上，依据引理 \ref{lem::support_bspline}，
+我们知道线性组合中只会出现列表 \eqref{eq::basis_list} 中的那些 B 样条。
+因此，这些 B 样条在 $S^{\,n-1}_n(t_1,t_2,\ldots,t_N)$ 中张成。结合引理 B.41、定理 \ref{thm::dim_Sn}，
+以及列表 \eqref{eq::basis_list} 的长度也为 $n+N-1$ 的事实，证明完毕。 
+\end{proof}
+
+\begin{remark}
+    % rem 3.37
+    \label{rem::alt_proof_basis}
+或者，定理 \ref{thm::basis_Sn-1} 也可以用不涉及 \ref{subsubsec::marsden_identity} 与 \ref{subsubsec::symmetric_polynomials} 节内容的方法来证明。
+
+首先，很容易证明
+\[
+\operatorname{span}\{1,x,\ldots,x^{n}\}
+=\operatorname{span}\{(t_{N}-x)^{n},\ldots,(t_{N+n}-x)^{n}\}
+\]
+当 $t_N<t_{N+1}<\cdots<t_{N+n}$ 时成立。于是由引理 \ref{lem::tp_basis} 可知
+\[
+L:=\{(t_2-x)^{n}_{+},\ (t_3-x)^{n}_{+},\ \ldots,\ (t_{N-1}-x)^{n}_{+},\ (t_N-x)^{n},\ (t_{N+1}-x)^{n},\ldots,(t_{N+n}-x)^{n}\}
+\]
+是 $S^{\,n-1}_n(t_1,t_2,\ldots,t_N)$ 的一组基。
+
+其次，由定理 \ref{thm::bspline_as_divdiff_truncated} 与推论 \ref{cor::newton_explicit}，任意 $B^{\,n}_i$ 都可以表示为
+$(t_{i-1}-x)^{n}_{+},\ldots,(t_{i+n}-x)^{n}_{+}$ 的线性组合，且系数均非零。在此情形下，有
+\[
+\begin{aligned}
+B^{\,n}_{2-n}(x)
+&=(t_2-t_{1-n})[t_{1-n},t_{2-n},\ldots,t_2]\,(t-x)^{n}_{+}
+=a_{11}(t_2-x)^{n}_{+},
+\end{aligned}
+\]
+因为 $x\in [t_1,t_N]$ 蕴含对任意 $i\le 1$ 均有 $(t_i-x)^{n}_{+}=0$. 类似地，
+\[
+\begin{aligned}
+B^{\,n}_{3-n}(x)&=a_{21}(t_2-x)^{n}_{+}+a_{22}(t_3-x)^{n}_{+},\\
+&\ \ \vdots\\
+B^{\,n}_{N}(x)
+&=a_{N+n-1,1}(t_2-x)^{n}_{+}+a_{N+n-1,2}(t_3-x)^{n}_{+}
++\cdots+a_{N+n-1,N+n-1}(t_{N+n}-x)^{n}.
+\end{aligned}
+\]
+因此，列表 $L$ 与集合 $\{B^{\,n}_i\}_{i=2-n,\ldots,N}$ 之间通过一个下三角矩阵 $A$ 相联系，且 $A$ 的对角元非零。由于 $A$ 可逆，证明完成。
+\end{remark}
+
+\begin{remark}
+    % rem 3.38
+    \label{rem::extra_knots}
+在记号 \ref{not::Sn_def} 与定理 \ref{thm::dim_Sn} 中，空间 $S^{\,n-1}_n$ 与结点列 $t_1,t_2,\ldots,t_N$ 相关联。
+然而，根据关于 B 样条支撑的引理（引理 \ref{lem::support_bspline}），
+为了得到 $B^{\,n}_{2-n}, B^{\,n}_{3-n},\ldots, B^{\,n}_{0}, B^{\,n}_{1}$，
+我们还需要一些额外的结点 $t_{1-n}, t_{2-n},\ldots, t_{-1}, t_0$；
+同理，为了得到 $B^{\,n}_{N-n+1}, B^{\,n}_{N-n+2},\ldots, B^{\,n}_{N}$，
+我们需要 $t_{N+1}, t_{N+2},\ldots, t_{N+n}$. 
+这些结点从哪里来？答案是：只要它们关于下标严格单调递增，就可以任意选取它们的取值。
+\end{remark}
 
 \bibliography{na.bib}
 \bibliographystyle{plain}
