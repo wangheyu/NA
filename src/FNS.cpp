@@ -3,6 +3,8 @@
 #include <bitset>
 #include <string>
 #include <iomanip>
+#include <cstdint>
+#include <cmath>
 
 // 将二进制字符串转换为浮点数
 float Binary2Float(const std::string& binaryStr) {
@@ -29,6 +31,49 @@ std::string Float2Binary(float num) {
 
 // 主函数入口
 int main() {
+    // 探测浮点数的表示范围和精度
+    // FPN 常数探测: 
+    // 尾数长度 p:
+    int p = std::numeric_limits<double>::digits;
+    std::cout << "Number of digits in the mantissa (p): " << p << std::endl;
+
+    // 基数 Beta:
+    int beta = std::numeric_limits<double>::radix;
+    std::cout << "Base of the floating-point representation (Beta): " << beta << std::endl;
+
+    // 指数范围 [L, U]:
+    int L = std::numeric_limits<double>::min_exponent - 1;
+    int U = std::numeric_limits<double>::max_exponent - 1;
+    std::cout << "Exponent range [L, U]: [" << L << ", " << U << "]" << std::endl;
+
+    // Machine epsilon:
+    double eps = std::numeric_limits<double>::epsilon();
+    std::cout << "Machine epsilon: " << std::setprecision(10) << eps << std::endl;
+    std::cout << "Check: eps = 2^(1 - p) = " << std::pow(2.0, 1 - p) << std::endl; 
+
+    // UFL 和 OFL:
+    double UFL = std::numeric_limits<double>::min();
+    double OFL = std::numeric_limits<double>::max();
+    std::cout << "Underflow Level (UFL): " << UFL << std::endl;
+    std::cout << "Check: UFL = Beta^L = " << std::pow(beta, L) << std::endl;
+    std::cout << "Overflow Level (OFL): " << OFL << std::endl;
+    std::cout << "Check: OFL = (Beta - Beta^(1 - p)) * Beta^U = " 
+    << (beta - std::pow(beta, 1 - p)) * std::pow(beta, U) << std::endl;
+
+    getchar(); // 暂停，等待用户输入
+
+    // 检查 Over Flow 
+    double overflowTest = OFL*(1.0 + eps);
+    std::cout << "Overflow Test (OFL*(1.0 + eps)): " << overflowTest << std::endl;
+    double underflowTest = UFL*eps;
+    std::cout << "Underflow Test (UFL*eps): " << underflowTest << std::endl;
+    double tininessUnderflowTest = UFL*eps*0.5;
+    std::cout << "Tininess Underflow Test (UFL*eps*0.5): " << tininessUnderflowTest << std::endl;
+    double denormMin = std::numeric_limits<double>::denorm_min();
+    std::cout << "Denormalized Minimum (denorm_min): " << denormMin << std::endl;
+
+    getchar(); // 暂停，等待用户输入
+
     // 定义一个float类型的变量，并初始化为3.14f
     float num = 1.0f;
 
@@ -105,9 +150,8 @@ int main() {
     << Float2Binary(Binary2Float(binaryStr) - std::numeric_limits<float>::epsilon() * 0.5) 
     << std::endl;
     
-    num = 1.0 / 3.0;        
+    num = float(2.0 / 3.0);        
     std::cout << "The binary representation of " << num << " is: " << Float2Binary(num) << std::endl;
-
 
     return 0;
 }
