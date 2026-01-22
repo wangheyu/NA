@@ -1,0 +1,1057 @@
+%!Tex Program = xelatex
+%\documentclass[a4paper]{article}
+\documentclass[a4paper]{ctexart}
+\usepackage{xltxtra}
+%\setmainfont[Mapping=tex-text]{AR PL UMing CN:style=Light}
+%\setmainfont[Mapping=tex-text]{AR PL UKai CN:style=Book}
+%\setmainfont[Mapping=tex-text]{WenQuanYi Zen Hei:style=Regular}
+%\setmainfont[Mapping=tex-text]{WenQuanYi Zen Hei Sharp:style=Regular}
+%\setmainfont[Mapping=tex-text]{AR PL KaitiM GB:style=Regular} 
+%\setmainfont[Mapping=tex-text]{AR PL SungtiL GB:style=Regular} 
+%\setmainfont[Mapping=tex-text]{WenQuanYi Zen Hei Mono:style=Regular} 
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{enumitem}  
+\usepackage{tikz}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{数值分析复习要点}
+\author{王何宇}
+\date{}
+
+\newcommand{\remark}[1]
+{\noindent {\bf Remark {#1}}}
+
+\newcommand{\definition}[1]
+{\noindent {\bf Definition {#1}}}
+
+\newcommand{\hl}[1]
+{\noindent {\bf {#1}}}
+
+\newtheorem{theorem}{定理}[section]
+
+\begin{document}
+\maketitle
+\pagestyle{empty}
+
+\section{Finite precision arithmetic and error}
+
+\begin{itemize}
+  \item 计算机使用二进制系统存储数字（64 位和 32 位）
+  \begin{itemize}
+    \item 64 位：符号位 $s$（1 位），指数位 $c$（11 位），尾数位 $f$（52 位）, 十进制表示为：
+    $$ x =  (-1)^s \times 2^{c - 1023} \times (1.f) $$
+    \item 32 位：符号位 $s$（1 位），指数位 $c$（8 位），尾数位 $f$（23 位）, 十进制表示为：
+    $$ x =  (-1)^s \times 2^{c - 127} \times (1.f) $$
+    \item 要会转换，转换时别忘了 $1.f$ 中的 $1$ 和指数偏移量（64 位的 $1023$，32 位的 $127$）.
+    \item 机器精度（Machine Epsilon）: $\epsilon_{mach} = 2^{-52}$（64 位），$\epsilon_{mach} = 2^{-23}$（32 位）.
+    \item 最小正规化数（Smallest Normalized Number）: $x_{min} = 2^{-1022}$（64 位），$x_{min} = 2^{-126}$（32 位）.
+    \item 最大数（Largest Number）: $x_{max} = (2 - 2^{-52}) \times 2^{1023}$（64 位），$x_{max} = (2 - 2^{-23}) \times 2^{127}$（32 位）.
+  \end{itemize}
+  \item 舍入误差（Rounding Errors）
+  \begin{itemize}
+    \item 绝对误差（Absolute Error）: $e = x - \tilde{x}$.
+    \item 相对误差（Relative Error）: $e_r = \left|\frac{x - \tilde{x}}{x}\right|$.
+  \end{itemize}
+  \item 减少舍入误差的方法
+  \begin{itemize}
+    \item 避免相近的数相减.
+    \item 重组计算顺序，比如累加时先加小数后加大数.
+    \item 尽量降低运算次数.
+  \end{itemize}
+\end{itemize}
+
+\section{Linear systems of equations}
+
+\begin{itemize}
+  \item 高斯消去法（Gaussian Elimination）
+  \begin{itemize}
+    \item 计算复杂度为 $O(n^3)$.
+    \item 部分选主元：在每一步消元前，都从当前列选出绝对值最大的元素作为主元并交换行。
+    \item 比例选主元。考虑行内元素的数量级差异。先计算每行的最大元素作为“比例因子”，再选择“当前列元素/比例因子”绝对值最大的行作为主元行。
+    \item 选主元的目的是减少舍入误差，同时避免因主元为零或接近零而导致的计算失败。
+  \end{itemize}
+  \item LU 分解（LU Decomposition）
+  \begin{itemize}
+    \item 每一次 Gauss 消去相当于左乘一个初等变换阵，每一次选主元的行交换相当于左乘一个置换矩阵. 将二者记录下来，
+    最终可得到 $PA = LU$，其中 $P$ 是置换矩阵，$L$ 是单位下三角矩阵，$U$ 是上三角矩阵.
+    \item 可以用于多次求解同一系数矩阵的线性方程组. 对于变化的常数项 $b$，只需重新进行前后代回代即可.
+    \item 务必确认能计算整个过程，包括前代和回代.
+    \item 会利用矩阵性质解决 $A^{-1}$，$A^T x = b$ 等相关问题。
+  \end{itemize}
+  \item 相关的线性代数知识
+  \begin{itemize}
+    \item 线性方程组 $Ax = b$ 有唯一解的充分必要条件是 $A$ 可逆（$\det(A) \neq 0$）.
+    \item 交换阵是正交阵, $P^TP = I$. Gauss 消去时的初等变换阵的逆是对应下三角元素取负.
+    \item $(AB)^T = B^T A^T$, $\det(P) = \pm 1$ （取决于奇交换还是偶交换）
+  \end{itemize}
+\end{itemize}
+
+\section{Root finding}
+
+\begin{itemize}
+  \item 二分法（Bisection Method）
+  \begin{itemize}
+    \item 注意前提条件：适用于连续函数 $f(x)$ 在区间 $[a,b]$ 上有根的情况，要求 $f(a)f(b) < 0$. 相关分析使用介值定理，收敛性可用区间套。
+    \item 收敛速度慢（线性），仅为 1 阶收敛.
+    \item 误差估计：第 $n$ 步后，误差上限为 $\frac{|b-a|}{2^n}$. （一步迭代误差下降一半）
+  \end{itemize}
+  \begin{itemize}
+    \item 不动点迭代法（Fixed Point Iteration）：将 $f(x) = 0$ 改写成等价形式 $x = g(x)$，然后迭代 $x_{n+1} = g(x_n)$. 
+    \item 不动点存在性：若 $g(x)$ 在 $[a, b]$ 连续，且值域包含于 $[a, b]$，则 $[a,b]$ 内至少存在一个不动点。
+    \item 唯一性与收敛：若还有 $|g'(x)| \leq k < 1$ 对所有 $x \in (a,b)$ 成立，则不动点唯一，且对任意初值 $x_0 \in [a,b]$，迭代都收敛。
+    \item 收敛速度：注意这是一个局部性质，需假设迭代序列收敛到某个不动点 $x^*$，然后根据 $g'(x^*)$ 的值判断收敛阶。它只在 $x^*$ 附近成立。
+    \begin{theorem}
+    若不动点迭代 \( x_{n+1} = g(x_n) \) 收敛于 \( x^* \in [a, b] \)，且 \( g \) 满足 \( g \in C^p[a, b] \) 以及  
+\[
+0 = g'(x^*) = g''(x^*) = \ldots = g^{(p-1)}(x^*), \quad g^{(p)}(x^*) \neq 0
+\]  
+（即在 \( x = x^* \) 处前 \( p - 1 \) 阶导数为零），则收敛阶为 \( p \)，且渐近误差常数为  
+\[
+\lambda = \frac{|g^{(p)}(x^*)|}{p!}.
+\]
+    \end{theorem}
+  \end{itemize}
+  \item 牛顿-拉弗森法（Newton-Raphson Method）
+  \begin{itemize}
+    \item 迭代公式：$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$.
+    \item 收敛性：局部收敛，要求初值足够接近真根 $x^*$. 对于单根（$f(x^*)=0, f'(x^*) \neq 0$），具有二阶收敛速度. 对于重根（$f(x^*)=f'(x^*)=0$），收敛速度降为线性.
+    \item 重根处理：使用修正公式恢复二阶收敛：
+    \[x_{n+1} = x_n - \frac{F(x_n)}{F'(x_n)}, F(x) = \frac{f(x)}{f'(x)}\]
+    \item 注意以上定理并没有提供全局收敛性判定，全局收敛性需要针对具体问题分析。
+  \end{itemize}
+  \item Aitken加速法：一种后处理技术，可用于加速任何线性收敛序列。
+  \begin{itemize}
+    \item 对于线性收敛序列$\{x_n\}$，构造新序列$\{\hat{x}_n\}$：
+\[
+\hat{x}_n = x_n - \frac{(x_{n+1} - x_n)^2}{x_{n+2} - 2x_{n+1} + x_n} = x_n - \frac{\Delta x_n^2}{\Delta^2 x_n}.
+\]
+  \end{itemize}
+  \item 多元牛顿法（Multi-dimensional Newton’s method）：非线性方程组求根方法
+  \begin{itemize}
+    \item 迭代公式
+\[
+\mathbf{x}^{(m+1)} = \mathbf{x}^{(m)} - [J(\mathbf{x}^{(m)})]^{-1} \mathbf{f}(\mathbf{x}^{(m)})
+\]
+其中$J$是雅可比矩阵。
+\item 实际操作：避免直接求逆，通过求解线性方程组
+$$
+J(\mathbf{x}^{(m)}) \mathbf{y}^{(m)} = \mathbf{f}(\mathbf{x}^{(m)})，
+$$
+然后令 $\mathbf{x}^{(m+1)} = \mathbf{x}^{(m)} - \mathbf{y}^{(m)}$.
+  \end{itemize}
+\end{itemize}
+
+\section{Interpolation: approximation of curves by polynomials}
+
+\begin{itemize}
+  \item 基本问题设定
+\begin{itemize}
+    \item 已知 $n+1$ 个数据点 $(x_i, f(x_i))$，$i=0,1,\ldots,n$（其中 $x_i$ 互不相同）。
+    \item 目标是构造一个次数不超过 $n$ 的多项式 $P_n(x)$，使得：
+    \[
+    P_n(x_i) = f(x_i), \quad i=0,1,\ldots,n
+    \]
+    这样的 $P_n(x)$ 称为 \textbf{插值多项式}。
+    \item 存在性与唯一性：插值多项式存在且唯一。理由：$n+1$ 个点确定一个 $n$ 次多项式的系数。
+    可以用线性代数方法证明 （Vandermonde 矩阵的非奇异性）。
+\end{itemize}
+\item 拉格朗日插值多项式
+\begin{itemize}
+    \item 拉格朗日基：
+    \[
+    L_{n,k}(x) = \prod_{\substack{i=0 \\ i \neq k}}^{n} \frac{x - x_i}{x_k - x_i}, \quad k=0,1,\ldots,n
+    \]
+    性质：$L_{n,k}(x_j) = \delta_{jk}$（克罗内克 $\delta$ 函数）。
+    \item Lagrange 插值多项式：
+    \[
+    P_n(x) = \sum_{k=0}^{n} f(x_k) L_{n,k}(x)
+    \]
+    \item 插值误差定理：
+    设 $f \in C^{n+1}[a,b]$，$x_0, x_1, \ldots, x_n \in [a,b]$ 互异，则对任意 $x \in [a,b]$，存在 $\xi(x) \in (a,b)$ 使得：
+    \[
+    f(x) - P_n(x) = \frac{f^{(n+1)}(\xi(x))}{(n+1)!} \prod_{i=0}^{n} (x - x_i)
+    \]
+    这是一个高阶的中值定理。
+    \item 给定函数和节点后，可计算误差上界：
+    \[
+    |f(x) - P_n(x)| \leq \frac{M_{n+1}}{(n+1)!} \max_{x \in [a,b]} \left| \prod_{i=0}^{n} (x - x_i) \right|
+    \]
+    其中 $M_{n+1} = \max_{\xi \in [a,b]} |f^{(n+1)}(\xi)|$. 讲义中 $f(x)=1/x$ 在 $[1,2]$ 上的二次插值误差分析。
+\end{itemize}
+\end{itemize}
+
+\section{Differentiation}
+
+\begin{itemize}
+  \item 基本思路：
+\begin{itemize}
+    \item 利用差商近似导数：$ f'(x) \approx \dfrac{f(x+h) - f(x)}{h} $ （或更高阶差商）.
+    \item 等价方法：先用插值多项式近似函数，再对多项式求导。
+    \item 误差估计：
+    $$
+    f'(x) - \frac{f(x+h) - f(x)}{h} = -\frac{h}{2} f''(\xi), \quad \xi \in (x, x+h).
+    $$
+    和初值问题的局部截断误差类似。
+\end{itemize}
+  \item 基本差商公式及误差 （可通过 Taylor 展开推导）
+  \begin{table}[h]
+\centering
+\caption{一阶导数差商公式}
+\begin{tabular}{@{}llll@{}}
+\hline
+\textbf{方法} & \textbf{公式} & \textbf{截断误差} & \textbf{收敛阶} \\ 
+\textbf{向前差商} & $ f'(x_0) \approx \dfrac{f(x_0+h)-f(x_0)}{h} $ & $ -\dfrac{h}{2}f''(\xi) $ & $ O(h) $ \\
+\textbf{向后差商} & $ f'(x_0) \approx \dfrac{f(x_0)-f(x_0-h)}{h} $ & $ \dfrac{h}{2}f''(\xi) $ & $ O(h) $ \\
+\textbf{中心差商} & $ f'(x_0) \approx \dfrac{f(x_0+h)-f(x_0-h)}{2h} $ & $ -\dfrac{h^2}{6}f'''(\xi) $ & $ O(h^2) $ \\ 
+\end{tabular}
+\end{table}
+  \item 二阶导数近似
+  \begin{itemize}
+    \item \textbf{中心差商公式}：
+    \[
+    f''(x_0) \approx \frac{f(x_0+h) - 2f(x_0) + f(x_0-h)}{h^2}
+    \]
+    \item \textbf{截断误差}：$ -\dfrac{h^2}{12}f^{(iv)}(\xi) $，收敛阶 $ O(h^2) $.
+\end{itemize}
+边值问题时常用此公式离散化二阶导数。
+  \item 总误差与最优步长
+  \begin{itemize}
+    \item \textbf{总误差 = 截断误差 + 舍入误差}, 减小 $ h $ $\rightarrow$ 截断误差减小。减小 $ h $ $\rightarrow$ 舍入误差增大。
+    \item 存在\textbf{最优步长} $ h_{\text{opt}} $ 使总误差最小。
+    \item \textbf{示例分析}：对于中心差商近似 $ f'(x_0) $
+    \[
+    \text{总误差} \lesssim \frac{\epsilon|f(x_0)|}{h} + \frac{h^2}{6}|f'''(x_0)|
+    \]
+    最小化得：
+    \[
+    h_{\text{opt}} = \left( \frac{3\epsilon |f(x_0)|}{|f'''(x_0)|} \right)^{1/3}
+    \]
+    其中 $\epsilon$ 是机器精度。
+\end{itemize}
+  \item 提高精度的方法：Richardson外推，外推过程示例：
+对于中心差商公式，已知：
+\[
+f'(x_0) = \frac{f(x_0+h)-f(x_0-h)}{2h} + a_2 h^2 + a_4 h^4 + \cdots
+\]
+
+\textbf{第一步外推}（消除 $ h^2 $ 项）：
+\[
+f'(x_0) \approx \frac{4D(h/2) - D(h)}{3} + O(h^4)
+\]
+其中 $ D(h) = \dfrac{f(x_0+h)-f(x_0-h)}{2h} $.
+
+\textbf{第二步外推}（消除 $ h^4 $ 项）：
+\[
+f'(x_0) \approx \frac{16D^{(1)}(h/2) - D^{(1)}(h)}{15} + O(h^6)
+\]
+其中 $ D^{(1)}(h) $ 是第一步外推结果.
+
+任何带有已知阶截断误差 $O(h^p)$ 的数值方法均可用此法提高精度。将这个思想用到数值积分中，就是 Romberg 积分法。
+\end{itemize}
+
+\section{Integration}
+
+\begin{itemize}
+\item 数值积分（求积）的基本形式
+\[
+I = \int_a^b f(x) \, dx \approx \sum_{i=1}^n c_i f(x_i)
+\]
+$x_i$：求积节点；$c_i$：求积系数（权重）；
+
+\item 代数精度
+\begin{itemize}
+    \item 若求积公式对任意次数 $\leq m$ 的多项式精确成立，则称其具有 \textbf{$m$次代数精度}
+    \item 代数精度越高，对光滑函数逼近越好
+\end{itemize}
+
+\item 基本求积公式及其误差
+\begin{itemize}
+\item 梯形公式
+\[
+\int_{x_0}^{x_1} f(x) dx = \frac{h}{2} [f(x_0) + f(x_1)] - \frac{h^3}{12} f''(\xi), \quad h = x_1 - x_0
+\]
+几何意义：用梯形面积近似曲边梯形面积；代数精度：1次（对线性函数精确）
+\item Simpson公式
+\[
+\int_{x_0}^{x_2} f(x) dx = \frac{h}{3} [f(x_0) + 4f(x_1) + f(x_2)] - \frac{h^5}{90} f^{(iv)}(\xi), \quad h = \frac{x_2 - x_0}{2}
+\]
+虽然基于二次插值，但对三次多项式精确（代数精度3次）；误差阶 $O(h^5)$.
+\end{itemize}
+
+\item 复合求积公式：将区间细分为多个等距小区间，在每个小区间上使用低阶求积公式，然后累加结果。
+\begin{itemize}
+  \item 复合梯形公式
+\[
+T_n = \frac{h}{2} \left[ f(a) + 2\sum_{i=1}^{n-1} f(x_i) + f(b) \right], \quad h = \frac{b-a}{n}
+\]
+误差：$-\dfrac{h^2}{12}(b-a) f''(\xi)$，$O(h^2)$.
+\item 复合Simpson公式（$n$为偶数）
+\[
+S_n = \frac{h}{3} \left[ f(a) + 4\sum_{\substack{i=1 \\ i \text{ odd}}}^{n-1} f(x_i) + 2\sum_{\substack{i=2 \\ i \text{ even}}}^{n-2} f(x_i) + f(b) \right]
+\]
+误差：$-\dfrac{h^4}{180}(b-a) f^{(iv)}(\xi)$，$O(h^4)$.
+\end{itemize}
+
+\item 加速技术：Romberg积分
+\begin{itemize}
+  \item 核心思想: 对复合梯形公式进行\textbf{Richardson外推}；
+  利用梯形公式误差展开为\textbf{偶次幂级数}：
+    \[
+    I = T_n + a_2 h^2 + a_4 h^4 + a_6 h^6 + \cdots
+    \]
+  \item 外推过程
+  \begin{enumerate}
+    \item \textbf{第一次外推}（消去 $T_n$ 的 $h^2$项）：
+    \[
+    T_n^{(1)} = \frac{4T_n - T_{n/2}}{3} = S_n \quad (\text{恰好得到Simpson公式})
+    \]
+    \item \textbf{第二次外推}（消去 $T_n^{(1)}$ 的误差 $h^4$项）：
+    \[
+    T_n^{(2)} = \frac{16T_n^{(1)} - T_{n/2}^{(1)}}{15}
+    \]
+    \item 可继续外推得到更高阶公式
+  \end{enumerate}
+\end{itemize}
+\item 正交多项式理论（Gauss求积的基础）
+\begin{itemize}
+  \item 正交多项式的定义：对于权函数 $w(x) \geq 0$，多项式序列 $\{\phi_n(x)\}$ 满足：
+\[
+\langle \phi_m, \phi_n \rangle = \int_a^b w(x) \phi_m(x) \phi_n(x) dx = 
+\begin{cases}
+0, & m \neq n \\
+\alpha_n > 0, & m = n
+\end{cases}
+\]
+  \item 重要性质
+\begin{enumerate}
+    \item $\phi_n(x)$ 在 $(a,b)$ 内有 $n$ 个互异实根；
+    \item 低次多项式可用正交多项式线性表示（是一组基）；
+    \item \textbf{三项递推关系}（Gram-Schmidt过程导出）：
+    \[
+    \phi_{k+1}(x) = A_{k+1} \left( x\phi_k(x) - \frac{\langle x\phi_k, \phi_k \rangle}{\langle \phi_k, \phi_k \rangle} \phi_k(x) - \frac{\langle x\phi_k, \phi_{k-1} \rangle}{\langle \phi_{k-1}, \phi_{k-1} \rangle} \phi_{k-1}(x) \right)
+    \]
+\end{enumerate}
+  \item 经典正交多项式族
+\begin{table}[h]
+\centering
+\caption{经典正交多项式族}
+\begin{tabular}{@{}llll@{}}
+\hline
+\textbf{名称} & \textbf{区间 $[a,b]$} & \textbf{权函数 $w(x)$} & \textbf{标准记号} \\ \hline
+Legendre & $[-1, 1]$ & $1$ & $P_n(x)$ \\
+Chebyshev (第一类) & $[-1, 1]$ & $(1-x^2)^{-1/2}$ & $T_n(x)$ \\
+Laguerre & $[0, \infty)$ & $e^{-x}$ & $L_n(x)$ \\
+Hermite & $(-\infty, \infty)$ & $e^{-x^2}$ & $H_n(x)$ \\ \hline
+\end{tabular}
+\end{table}
+\end{itemize}
+\end{itemize}
+
+\section{Ordinary differential equations: initial value problems(IVPs)}
+
+\begin{itemize}
+  \item 初值问题（IVP）的标准形式
+\begin{itemize}
+    \item \textbf{一阶方程}：
+    \[
+    \frac{dy}{dt} = f(t, y), \quad a < t < b, \quad y(a) = \alpha
+    \]
+    \item \textbf{高阶方程转化}：任何 $n$ 阶 ODE 可转化为一阶方程组
+    \[
+    \begin{cases}
+    u_1' = u_2 \\
+    u_2' = u_3 \\
+    \vdots \\
+    u_n' = f(t, u_1, u_2, \ldots, u_n)
+    \end{cases}
+    \]
+    \item 记 $\mathbf{u}(t) = (u_1, u_2, \ldots, u_n)^T$，则化为向量形式 $\mathbf{u}' = \mathbf{f}(t, \mathbf{u})$
+\end{itemize}
+\item 数值解法的基本思想：将连续时间离散化为 \textbf{网格点} $t_i = a + ih$，$h$ 为步长，
+用 \textbf{差分方程} 近似微分方程，逐步推进求解。
+\item 欧拉公式
+\begin{itemize}
+\item 格式
+\[
+y_{i+1} = y_i + h f(t_i, y_i), \quad i = 0,1,\ldots,N-1
+\]
+基于向前差商近似导数 $y'(t_i) \approx \frac{y(t_{i+1})-y(t_i)}{h}$.
+ \item 局部截断误差定义（使用 Taylor 展开）：$\tau_{i+1} = \frac{h^2}{2} y''(\xi_i)$，$O(h^2)$;
+ \item 全局误差定义（求解差分方程）：$O(h)$ $\rightarrow$ \textbf{一阶方法}。
+\end{itemize}
+\item 高阶泰勒方法
+\begin{itemize}
+    \item 利用泰勒展开保留更多项：
+    \[
+    y_{i+1} = y_i + h y_i' + \frac{h^2}{2} y_i'' + \frac{h^3}{6} y_i''' + \cdots
+    \]
+    需要计算高阶导数，复杂且实际计算困难。
+    \item 二阶泰勒方法示例：
+    \[
+    y_{i+1} = y_i + h f(t_i, y_i) + \frac{h^2}{2} \left[ f_t(t_i, y_i) + f_y(t_i, y_i) f(t_i, y_i) \right]
+    \]
+\end{itemize}
+\item Runge-Kutta 方法：对 $f(t_i, y_i)$ 做 Taylor 展开并匹配高阶 Taylor 展开的项，避免计算高阶导数。
+\begin{itemize}
+  \item RK2（中点法）
+\[
+\begin{aligned}
+k_1 &= f(t_i, y_i) \\
+k_2 &= f\left(t_i + \frac{h}{2}, y_i + \frac{h}{2} k_1\right) \\
+y_{i+1} &= y_i + h k_2
+\end{aligned}
+\]
+局部误差 $O(h^3)$，全局误差 $O(h^2)$.
+\item 经典 RK4（最常用）
+\[
+\begin{aligned}
+k_1 &= f(t_i, y_i) \\
+k_2 &= f\left(t_i + \frac{h}{2}, y_i + \frac{h}{2} k_1\right) \\
+k_3 &= f\left(t_i + \frac{h}{2}, y_i + \frac{h}{2} k_2\right) \\
+k_4 &= f(t_i + h, y_i + h k_3) \\
+y_{i+1} &= y_i + \frac{h}{6} (k_1 + 2k_2 + 2k_3 + k_4)
+\end{aligned}
+\]
+局部误差 $O(h^5)$，全局误差 $O(h^4)$.
+\end{itemize}
+\item 多步法（Multi-step Methods）利用多个前步信息：
+    \[
+    y_{i+1} = \sum_{j=1}^k \alpha_j y_{i+1-j} + h \sum_{j=0}^k \beta_j f_{i+1-j}
+    \]
+    其中 $f_j = f(t_j, y_j)$, \textbf{显式}：$\beta_0 = 0$，\textbf{隐式}：$\beta_0 \neq 0$.
+    通常 $k$ 步法阶数可达到 $k$（显式）或 $k+1$（隐式）。
+
+\item 数值方法的稳定性理论
+\begin{itemize}
+  \item 零稳定性（Zero-Stability）：\newline
+  定义：当 $h \to 0$ 时，数值解保持有界；\newline
+  判定：特征多项式满足根条件（所有根模 $\leq 1$，模为 $1$ 的根为单根）。
+\item 绝对稳定性（A-Stability）：\newline
+定义：对测试方程 $y' = \lambda y$（$\text{Re}(\lambda)<0$），数值解不爆炸（有界）\newline
+稳定区域：复平面 $h\lambda$ 的区域，其中数值解衰减。
+\end{itemize}
+\item 收敛性与误差分析
+\begin{itemize}
+    \item 收敛性定理：若数值方法需满足：\newline
+    一致性：局部截断误差 $\to 0$（阶数 $\geq 1$）\newline
+    和零稳定性则全局误差 $O(h^p)$，其中 $p$ 为方法阶数。
+\end{itemize}
+\end{itemize}
+
+\section{Ordinary differential equations: boundary value problems (BVPs)}
+
+\begin{itemize}
+\item 标准二阶线性 BVP
+\[
+y'' = f(x, y, y') = p(x) y' + q(x) y + r(x), \quad a < x < b
+\]
+配合可能的如下边界条件：
+\begin{itemize}
+    \item \textbf{Dirichlet边界条件}：
+    \[
+    y(a) = \alpha, \quad y(b) = \beta
+    \]
+    \item \textbf{Neumann边界条件}：指定导数值，如 $y'(a) = \alpha$
+    \item \textbf{Robin（混合）边界条件}：混合函数值与导数值，如 $ay(a) + by'(a) = \alpha$
+\end{itemize}
+
+\item 有限差分法：将区间 $[a,b]$ 离散为网格：$x_i = a + ih$，$i=0,1,\ldots,n$，$h = \frac{b-a}{n}$，
+用\textbf{差商}近似导数，将微分方程转化为\textbf{代数方程组}。
+\begin{itemize}
+  \item 差商近似公式
+\[
+\begin{aligned}
+y'(x_i) &\approx \frac{y_{i+1} - y_{i-1}}{2h} \quad (\text{中心差分，误差} O(h^2)) \\
+y''(x_i) &\approx \frac{y_{i+1} - 2y_i + y_{i-1}}{h^2} \quad (\text{中心差分，误差} O(h^2))
+\end{aligned}
+\]
+
+\item 离散化过程（以Dirichlet边界为例）
+在内部节点 $x_i$（$i=1,2,\ldots,n-1$）处：
+\[
+\frac{y_{i+1} - 2y_i + y_{i-1}}{h^2} = p_i \frac{y_{i+1} - y_{i-1}}{2h} + q_i y_i + r_i
+\]
+其中 $p_i = p(x_i)$，$q_i = q(x_i)$，$r_i = r(x_i)$，$y_i \approx y(x_i)$.
+
+\item 边界条件处理
+\begin{itemize}
+    \item \textbf{Dirichlet条件}：直接代入 $y_0 = \alpha$，$y_n = \beta$
+    \item \textbf{Neumann条件}：如 $y'(a) = \alpha$，用差商近似：
+    \[
+    \frac{y_1 - y_0}{h} = \alpha \quad (\text{向前差分})
+    \]
+    或更精确的：
+    \[
+    \frac{y_1 - y_{-1}}{2h} = \alpha \quad (\text{引入虚拟节点} y_{-1})
+    \]
+\end{itemize}
+
+\item 形成的线性方程组
+整理后得到\textbf{三对角方程组}：
+\[
+\begin{bmatrix}
+a_1 & c_1 & 0 & \cdots & 0 \\
+b_2 & a_2 & c_2 & \ddots & \vdots \\
+0 & \ddots & \ddots & \ddots & 0 \\
+\vdots & \ddots & b_{n-2} & a_{n-2} & c_{n-2} \\
+0 & \cdots & 0 & b_{n-1} & a_{n-1}
+\end{bmatrix}
+\begin{bmatrix}
+y_1 \\ y_2 \\ \vdots \\ y_{n-2} \\ y_{n-1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+d_1 \\ d_2 \\ \vdots \\ d_{n-2} \\ d_{n-1}
+\end{bmatrix}
+\]
+其中系数：
+\[
+\begin{aligned}
+a_i &= -2 - h^2 q_i \\
+b_i &= 1 + \frac{h}{2} p_i \\
+c_i &= 1 - \frac{h}{2} p_i \\
+d_1 &= h^2 r_1 - \alpha\left(1 + \frac{h}{2} p_1\right) \\
+d_i &= h^2 r_i, \quad i=2,\ldots,n-2 \\
+d_{n-1} &= h^2 r_{n-1} - \beta\left(1 - \frac{h}{2} p_{n-1}\right)
+\end{aligned}
+\]
+
+\end{itemize}
+
+\end{itemize}
+
+
+% \subsubsection*{6. 求解与误差}
+% \begin{itemize}
+%     \item \textbf{求解方法}：追赶法（Thomas算法），$O(n)$ 运算量
+%     \item \textbf{误差分析}：整体截断误差 $O(h^2)$
+% \end{itemize}
+
+% \subsection*{三、谱方法简介（课程省略部分）}
+
+% \subsubsection*{1. 基本思想}
+% \begin{itemize}
+%     \item 将解展开为\textbf{光滑基函数}的线性组合：
+%     \[
+%     y(x) \approx \tilde{y}(x) = \sum_{n=1}^N c_n \phi_{n-1}(x)
+%     \]
+%     \item 基函数通常选择\textbf{正交多项式}（如Chebyshev、Legendre）
+% \end{itemize}
+
+% \subsubsection*{2. Galerkin方法}
+% \begin{itemize}
+%     \item 要求残差 $\mathcal{L}\tilde{y} - r(x)$ 与所有基函数正交：
+%     \[
+%     \langle \phi_{m-1}, \mathcal{L}\tilde{y} - r \rangle = 0, \quad m=1,\ldots,N-2
+%     \]
+%     \item 结合边界条件，得到 $N$ 个方程的线性系统
+% \end{itemize}
+
+% \subsubsection*{3. 优点与缺点}
+% \begin{itemize}
+%     \item \textbf{优点}：
+%     \begin{enumerate}
+%         \item \textbf{指数收敛}：对光滑函数，误差随 $N$ 指数衰减
+%         \item \textbf{全局表示}：得到连续函数而不仅是离散点
+%     \end{enumerate}
+%     \item \textbf{缺点}：
+%     \begin{enumerate}
+%         \item 实现复杂
+%         \item 对非光滑解效果差
+%         \item 形成的矩阵可能稠密
+%     \end{enumerate}
+% \end{itemize}
+
+% \subsubsection*{4. 示例：Chebyshev谱方法}
+% \begin{itemize}
+%     \item 区间 $[-1,1]$，基函数 $T_n(x) = \cos(n \arccos x)$
+%     \item 节点：$x_j = \cos\left(\frac{(2j-1)\pi}{2N}\right)$（Chebyshev-Gauss节点）
+%     \item 快速收敛但需要处理端点奇异性
+% \end{itemize}
+
+% \subsection*{四、打靶法（Shooting Method）概念}
+
+% \subsubsection*{1. 基本思想}
+% \begin{itemize}
+%     \item 将BVP转化为\textbf{参数化的IVP}
+%     \item 猜测缺失的初始条件，积分到另一端，调整参数满足边界条件
+%     \item 相当于求根问题：$F(s) = y(b;s) - \beta = 0$，其中 $s = y'(a)$
+% \end{itemize}
+
+% \subsubsection*{2. 算法步骤}
+% \begin{enumerate}
+%     \item 猜测初始斜率 $s^{(0)}$
+%     \item 求解IVP：$y'' = f(x,y,y')$，$y(a)=\alpha$，$y'(a)=s^{(k)}$
+%     \item 计算误差：$e^{(k)} = y(b) - \beta$
+%     \item 用求根法（如牛顿法）更新 $s^{(k+1)}$
+%     \item 重复直到收敛
+% \end{enumerate}
+
+% \subsubsection*{3. 优缺点}
+% \begin{itemize}
+%     \item \textbf{优点}：可利用现有IVP求解器，概念简单
+%     \item \textbf{缺点}：可能不稳定，对初值敏感，计算量可能较大
+% \end{itemize}
+
+% \subsection*{五、方法比较与选择指南}
+
+% \begin{table}[h]
+% \centering
+% \caption{边值问题数值方法比较}
+% \begin{tabular}{@{}lllll@{}}
+% \toprule
+% \textbf{方法} & \textbf{核心思想} & \textbf{精度} & \textbf{稳定性} & \textbf{适用场景} \\ \midrule
+% \textbf{有限差分法} & 局部差分离散化 & $O(h^2)$ & 稳定 & 一般线性/非线性问题，边界规则 \\
+% \textbf{谱方法} & 全局基函数展开 & 指数收敛（光滑解） & 可能不稳定 & 非常光滑的解，周期性边界 \\
+% \textbf{打靶法} & BVP $\to$ IVP + 求根 & 依赖IVP求解器 & 可能不稳定 & 简单边界，好的初值猜测 \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+% \subsection*{六、实际计算建议}
+
+% \subsubsection*{1. 线性问题}
+% \begin{itemize}
+%     \item 有限差分法 + 三对角求解器是最佳选择
+%     \item 可考虑高阶差分格式提高精度
+% \end{itemize}
+
+% \subsubsection*{2. 非线性问题}
+% \begin{itemize}
+%     \item \textbf{有限差分}：离散后得非线性方程组，用牛顿迭代
+%     \item \textbf{打靶法}：结合IVP求解器和求根算法
+%     \item \textbf{拟线性化}：迭代求解线性化问题
+% \end{itemize}
+
+% \subsubsection*{3. 边界条件处理技巧}
+% \begin{itemize}
+%     \item \textbf{Neumann条件}：用中心差分避免精度损失
+%     \item \textbf{混合条件}：类似处理，保持对称性
+%     \item \textbf{周期性边界}：$y_0 = y_n$，修改矩阵结构
+% \end{itemize}
+
+% \subsubsection*{4. 网格细化策略}
+% \begin{itemize}
+%     \item 均匀网格：简单但可能效率低
+%     \item 自适应网格：在解变化快处加密（基于误差估计）
+% \end{itemize}
+
+% \subsubsection*{5. 验证与误差估计}
+% \begin{itemize}
+%     \item \textbf{收敛性测试}：减半步长，观察误差变化
+%     \item \textbf{Richardson外推}：提高精度估计
+%     \item \textbf{解析解比较}：如有简单特例
+% \end{itemize}
+
+% \subsection*{七、关键思想总结}
+
+% \subsubsection*{1. 从局部到全局的视角转换}
+% \begin{itemize}
+%     \item IVP：局部推进，关注时间演化
+%     \item BVP：全局耦合，关注空间分布
+% \end{itemize}
+
+% \subsubsection*{2. 离散化策略的选择}
+% \begin{itemize}
+%     \item \textbf{有限差分}：物理空间离散，直观但精度有限
+%     \item \textbf{谱方法}：频率空间表示，高效但对光滑性敏感
+% \end{itemize}
+
+% \subsubsection*{3. 边界条件的核心作用}
+% \begin{itemize}
+%     \item 不仅影响解的唯一性，还影响数值方法的构造
+%     \item 不同类型的边界需要不同的离散策略
+% \end{itemize}
+
+% \subsubsection*{4. 线性与非线性问题的区别}
+% \begin{itemize}
+%     \item 线性：直接求解线性系统
+%     \item 非线性：需要迭代（牛顿法、拟线性化）
+% \end{itemize}
+
+% \subsubsection*{5. 打靶法的哲学}
+% \begin{itemize}
+%     \item 将空间边界问题转化为时间初值问题
+%     \item 体现了问题转化的数学思想
+% \end{itemize}
+
+% \subsection*{八、与其他章节的联系}
+
+% \subsubsection*{1. 与线性代数的关系}
+% \begin{itemize}
+%     \item 有限差分法产生稀疏矩阵（三对角）
+%     \item 谱方法可能产生稠密但结构化的矩阵
+% \end{itemize}
+
+% \subsubsection*{2. 与数值积分的关系}
+% \begin{itemize}
+%     \item 某些积分方程可转化为微分方程边值问题
+% \end{itemize}
+
+% \subsubsection*{3. 与偏微分方程的关系}
+% \begin{itemize}
+%     \item BVP数值方法是PDE数值方法的基础（如椭圆型方程）
+% \end{itemize}
+
+% \subsubsection*{4. 与求根方法的关系}
+% \begin{itemize}
+%     \item 打靶法需要求解非线性方程（牛顿法等）
+% \end{itemize}
+
+% \subsection*{实用建议}
+% \begin{enumerate}
+%     \item \textbf{首选有限差分法}：除非有特殊理由（如周期性、高光滑性）
+%     \item \textbf{测试多个网格}：验证收敛性
+%     \item \textbf{检查边界处理}：边界误差常常主导整体误差
+%     \item \textbf{利用对称性}：如有，可减少计算量
+%     \item \textbf{考虑物理背景}：选择合适的离散化方法
+% \end{enumerate}
+
+% \textbf{边值问题的数值求解在工程和科学中极为常见}（如结构力学、量子力学、热传导等）。掌握有限差分法这一基础工具，并了解其他高级方法的思想，是解决实际工程问题的关键能力。
+
+% \end{document}
+
+
+
+% \subsubsection*{2. 误差来源}
+% \begin{itemize}
+%     \item \textbf{局部截断误差}：单步误差
+%     \item \textbf{传播误差}：前面误差的放大
+%     \item \textbf{舍入误差}：计算机有限精度
+% \end{itemize}
+
+% \subsection*{七、刚性问题（Stiff Problems）}
+
+% \subsubsection*{1. 刚性现象}
+% \begin{itemize}
+%     \item 方程包含快变和慢变分量
+%     \item 显式方法需要极小的步长（由快变分量决定）
+%     \item 示例：$y' = -100(y - \cos t) - \sin t$，解 $y(t)=\cos t$
+% \end{itemize}
+
+% \subsubsection*{2. 刚性比}
+% \[
+% R = \frac{\max |\text{Re}(\lambda)|}{\min |\text{Re}(\lambda)|}
+% \]
+% \begin{itemize}
+%     \item $R$ 很大时问题刚性严重
+% \end{itemize}
+
+% \subsubsection*{3. 求解策略}
+% \begin{itemize}
+%     \item 使用 \textbf{隐式方法}（A-稳定）
+%     \item 常用方法：隐式欧拉、梯形法、BDF、Rosenbrock 方法
+%     \item 避免使用显式 Runge-Kutta
+% \end{itemize}
+
+% \subsection*{八、方法比较与选择指南}
+
+% \begin{table}[h]
+% \centering
+% \caption{常微分方程数值方法比较}
+% \begin{tabular}{@{}lllll@{}}
+% \toprule
+% \textbf{方法} & \textbf{类型} & \textbf{阶数} & \textbf{稳定性} & \textbf{适用场景} \\ \midrule
+% \textbf{欧拉法} & 显式 & 1 & 条件稳定 & 教学，简单问题 \\
+% \textbf{隐式欧拉} & 隐式 & 1 & A-稳定 & 刚性问题 \\
+% \textbf{梯形法} & 隐式 & 2 & A-稳定 & 一般问题，中等精度 \\
+% \textbf{RK4} & 显式 & 4 & 条件稳定 & 一般问题，高精度 \\
+% \textbf{AB4} & 显式 & 4 & 条件稳定 & 光滑问题，高效率 \\
+% \textbf{BDF2} & 隐式 & 2 & 刚稳定 & 刚性问题 \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+% \subsubsection*{计算成本备注：}
+% \begin{itemize}
+%     \item \textbf{显式方法}：每步计算一次或几次函数值 $f$
+%     \item \textbf{隐式方法}：每步需解方程（可能非线性），通常用牛顿迭代
+%     \item \textbf{多步法}：启动后每步计算一次 $f$（高效）
+% \end{itemize}
+
+% \subsection*{九、实际计算建议}
+
+% \subsubsection*{1. 步长选择}
+% \begin{itemize}
+%     \item \textbf{固定步长}：适用于光滑、非刚性、变化缓慢的问题
+%     \item \textbf{自适应步长}：基于误差估计自动调整步长
+%     \begin{itemize}
+%         \item 嵌入对：如 RK4(5) $\rightarrow$ Dormand-Prince 方法
+%         \item 误差估计：比较不同阶方法的结果
+%     \end{itemize}
+% \end{itemize}
+
+% \subsubsection*{2. 误差控制}
+% \begin{itemize}
+%     \item \textbf{局部误差估计}：比较不同阶方法的结果
+%     \item \textbf{事后误差估计}：Richardson 外推
+% \end{itemize}
+
+% \subsubsection*{3. 启动策略}
+% \begin{itemize}
+%     \item 多步法：用单步法（如 RK）计算前几步
+%     \item 从大步长开始，逐步细化
+% \end{itemize}
+
+% \subsubsection*{4. 方程组求解}
+% \begin{itemize}
+%     \item 所有方法直接推广到向量形式
+%     \item 隐式方法需要解非线性方程组：牛顿迭代
+% \end{itemize}
+
+% \subsection*{十、与其他章节的联系}
+
+% \subsubsection*{1. 与数值微分的关系}
+% \begin{itemize}
+%     \item 欧拉法基于向前差商
+%     \item 高阶方法基于高阶差商或泰勒展开
+% \end{itemize}
+
+% \subsubsection*{2. 与数值积分的关系}
+% \begin{itemize}
+%     \item 隐式方法对应于积分近似
+%     \begin{itemize}
+%         \item 梯形法 $\leftrightarrow$ 梯形积分
+%         \item Adams 方法 $\leftrightarrow$ 多项式积分
+%     \end{itemize}
+% \end{itemize}
+
+% \subsubsection*{3. 与线性代数的关系}
+% \begin{itemize}
+%     \item 求解线性化方程组（隐式方法）
+%     \item 稳定性分析涉及特征值
+% \end{itemize}
+
+% \subsection*{十一、关键思想总结}
+
+% \subsubsection*{1. 精度与稳定的权衡}
+% \begin{itemize}
+%     \item 高阶方法精度高，但可能稳定性差
+%     \item 隐式方法稳定，但需解方程，计算量大
+% \end{itemize}
+
+% \subsubsection*{2. 显式 vs. 隐式}
+% \begin{itemize}
+%     \item \textbf{显式}：简单、快速，适合非刚性
+%     \item \textbf{隐式}：稳定、适合刚性，但复杂
+% \end{itemize}
+
+% \subsubsection*{3. 单步 vs. 多步}
+% \begin{itemize}
+%     \item \textbf{单步}：自启动、易变步长
+%     \item \textbf{多步}：高效（函数求值少），但启动复杂
+% \end{itemize}
+
+% \subsubsection*{4. 适应性是关键}
+% \begin{itemize}
+%     \item 没有万能方法
+%     \item 根据问题特性（刚性、光滑度、精度要求）选择方法
+% \end{itemize}
+
+% \subsubsection*{5. 刚性问题的挑战}
+% \begin{itemize}
+%     \item 显式方法失效
+%     \item 需要专门方法（隐式、指数积分器等）
+% \end{itemize}
+
+% \subsection*{实用建议}
+% \begin{enumerate}
+%     \item \textbf{非刚性问题}：RK4 或 Adams 方法
+%     \item \textbf{刚性问题}：隐式方法（BDF、隐式 RK）
+%     \item \textbf{未知特性问题}：从 RK4 开始，观察数值行为
+%     \item \textbf{高精度需求}：高阶方法 + 自适应步长
+%     \item \textbf{大规模问题}：考虑计算效率，可能选多步法
+% \end{enumerate}
+
+% \textbf{本章建立的 ODE 数值解法框架是科学计算的基石}，广泛应用于物理、生物、化学、工程等领域的动态系统模拟。理解不同方法的稳定性、精度和适用范围，对于正确选择数值方法和获得可靠结果至关重要。
+
+
+
+
+
+
+
+
+% \subsection*{六、Gauss求积：最优代数精度}
+
+% \subsubsection*{1. 核心定理}
+% \begin{itemize}
+%     \item 对于权函数 $w(x)$ 和相应的正交多项式 $\phi_n(x)$
+%     \item 取 $\phi_n(x)$ 的 $n$ 个零点作为求积节点
+%     \item 构造的 $n$ 点求积公式具有 \textbf{$2n-1$ 次代数精度}（达到理论最优）
+% \end{itemize}
+
+% \subsubsection*{2. Gauss-Legendre求积（最常用）}
+% \begin{itemize}
+%     \item 区间 $[-1, 1]$，权函数 $w(x)=1$
+%     \item \textbf{节点}：Legendre多项式 $P_n(x)$ 的零点
+%     \item \textbf{权重}：通过积分基函数得到
+% \end{itemize}
+
+% \paragraph{低阶公式示例：}
+% \begin{itemize}
+%     \item \textbf{1点公式}（中点公式）：$\int_{-1}^1 f(x)dx \approx 2f(0)$，精度1次
+%     \item \textbf{2点公式}：$\int_{-1}^1 f(x)dx \approx f(-1/\sqrt{3}) + f(1/\sqrt{3})$，精度3次
+%     \item \textbf{3点公式}：$\int_{-1}^1 f(x)dx \approx \frac{5}{9}f(-\sqrt{3/5}) + \frac{8}{9}f(0) + \frac{5}{9}f(\sqrt{3/5})$，精度5次
+% \end{itemize}
+
+% \subsubsection*{3. 区间变换}
+% 对于一般区间 $[a,b]$，作线性变换：
+% \[
+% x = \frac{b-a}{2}t + \frac{b+a}{2}, \quad dx = \frac{b-a}{2}dt
+% \]
+% 将积分化为 $[-1,1]$ 上的标准形式。
+
+% \subsubsection*{4. Gauss-Chebyshev求积的特色}
+% \begin{itemize}
+%     \item 节点：$x_j = \cos\left(\dfrac{(2j-1)\pi}{2n}\right)$
+%     \item 权重：$w_j = \dfrac{\pi}{n}$（全部相等！）
+%     \item 显式公式，计算特别方便
+% \end{itemize}
+
+% \subsection*{七、特殊积分问题的处理}
+
+% \subsubsection*{1. 常见困难类型}
+% \begin{enumerate}
+%     \item \textbf{被积函数有奇点}（如 $f(x) = e^{-x}/\sqrt{x}$）
+%     \item \textbf{积分区间无限}
+%     \item \textbf{被积函数剧烈振荡}
+%     \item \textbf{被积函数导数不连续}
+% \end{enumerate}
+
+% \subsubsection*{2. 处理技巧}
+% \begin{enumerate}
+%     \item \textbf{变量替换消去奇点}（例：令 $x=t^2$ 消去 $1/\sqrt{x}$）
+%     \item \textbf{区间分割}：在奇点附近细分
+%     \item \textbf{映射无穷区间到有限区间}（如 $t=1/x$）
+%     \item \textbf{专门振荡积分方法}（不在本章范围）
+% \end{enumerate}
+
+% \subsubsection*{3. 示例：$\displaystyle\int_0^\infty \frac{\ln x}{1+x^4} dx$ 的处理}
+% \begin{itemize}
+%     \item 分解为 $[0,1]$ 和 $[1,\infty)$ 两部分
+%     \item 对后者作变换 $x=1/t$
+%     \item 合并化简为有限区间上的光滑积分
+% \end{itemize}
+
+% \subsection*{八、方法比较与选择指南}
+
+% \begin{table}[h]
+% \centering
+% \caption{数值积分方法比较}
+% \begin{tabular}{@{}lllll@{}}
+% \toprule
+% \textbf{方法} & \textbf{节点要求} & \textbf{代数精度} & \textbf{优点} & \textbf{缺点} \\ \midrule
+% \textbf{复合梯形} & 等距 & 1次 & 简单稳定，易于实现 & 收敛慢 \\[4pt]
+% \textbf{复合Simpson} & 等距，偶数子区间 & 3次 & 精度较高，实现简单 & 需要偶数子区间 \\[4pt]
+% \textbf{Romberg积分} & 等距，$n=2^k$ & 可高阶 & 精度高，重复利用函数值 & 需要规则网格 \\[4pt]
+% \textbf{Gauss求积} & 正交多项式零点 & $2n-1$次 & 精度最高，节点数最少 & 节点不规则，权重需查表 \\[4pt]
+% \textbf{Gauss-Chebyshev} & 余弦分布点 & $2n-1$次 & 权重相等，公式简单 & 只适用特定权函数 \\ \bottomrule
+% \end{tabular}
+% \end{table}
+
+% \subsubsection*{适用场景建议：}
+% \begin{itemize}
+%     \item \textbf{复合梯形}：快速粗略估计，光滑性差函数
+%     \item \textbf{复合Simpson}：一般精度要求，函数较光滑
+%     \item \textbf{Romberg积分}：高精度需求，函数光滑
+%     \item \textbf{Gauss求积}：最高精度需求，函数非常光滑
+%     \item \textbf{Gauss-Chebyshev}：含权 $(1-x^2)^{-1/2}$ 的积分
+% \end{itemize}
+
+% \subsection*{九、关键思想与实用建议}
+
+% \subsubsection*{1. 核心思想演进}
+% \begin{enumerate}
+%     \item \textbf{插值型求积}：用多项式逼近被积函数 $\rightarrow$ 基本公式
+%     \item \textbf{分段低次}：避免高次振荡 $\rightarrow$ 复合公式
+%     \item \textbf{误差外推}：利用误差展开式 $\rightarrow$ Romberg积分
+%     \item \textbf{节点优化}：选择节点最大化精度 $\rightarrow$ Gauss求积
+% \end{enumerate}
+
+% \subsubsection*{2. 收敛阶与计算成本}
+% \begin{itemize}
+%     \item 代数精度 $\neq$ 实际误差：还依赖函数的光滑性
+%     \item \textbf{复合公式}：误差 $O(h^p)$，成本 $O(n)$
+%     \item \textbf{Gauss公式}：误差 $O(C^{-n})$（指数收敛！），但函数需非常光滑
+% \end{itemize}
+
+% \subsubsection*{3. 稳定性考虑}
+% \begin{itemize}
+%     \item 正系数的公式更稳定（梯形、Simpson、Gauss）
+%     \item 高次Newton-Cotes可能出现负系数 $\rightarrow$ 数值不稳定
+% \end{itemize}
+
+% \subsubsection*{4. 自适应策略}
+% 实际软件常采用：
+% \begin{enumerate}
+%     \item 先用低阶公式估算
+%     \item 估计误差，在误差大处细分
+%     \item 递归进行直到满足精度
+% \end{enumerate}
+
+% \subsection*{十、与其他章节的联系}
+
+% \subsubsection*{1. 与插值的关系}
+% \begin{itemize}
+%     \item 所有插值型求积公式都基于\textbf{用插值多项式代替被积函数}
+%     \item 误差分析直接来自插值误差定理
+% \end{itemize}
+
+% \subsubsection*{2. 与微分方程的关系}
+% \begin{itemize}
+%     \item 常微分方程数值解中，积分公式用于近似时间积分
+%     \item 例如：隐式方法中的积分近似
+% \end{itemize}
+
+% \subsubsection*{3. 与函数逼近的关系}
+% \begin{itemize}
+%     \item Gauss求积基于正交多项式理论
+%     \item 体现了用特殊函数系展开的思想
+% \end{itemize}
+
+% \subsection*{总结要点}
+% \begin{enumerate}
+%     \item \textbf{没有绝对最好的方法}：需权衡精度需求、函数性质、计算成本
+%     \item \textbf{Gauss求积是精度冠军}：但对函数光滑性要求高，节点不规则
+%     \item \textbf{Romberg是实用之选}：在规则网格上实现高精度，易于编程
+%     \item \textbf{注意异常积分}：奇点、无穷区间等需要特殊处理
+%     \item \textbf{误差估计很重要}：实际计算中应监控误差，必要时自适应细分
+% \end{enumerate}
+
+% \textbf{数值积分是应用最广泛的数值方法之一}，本章建立的理论框架和实用方法为科学计算奠定了坚实基础。理解不同方法背后的思想（而不仅是公式），才能在实际问题中选择合适的积分策略。
+
+\bibliography{../bibtexlib/crazyfish.bib}
+\bibliographystyle{plain}
+
+\end{document}
+
